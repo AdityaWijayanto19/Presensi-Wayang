@@ -1,0 +1,339 @@
+@extends('layouts.presensi')
+
+@section('header')
+    <div class="appHeader bg-coklat text-light">
+        <div class="left">
+            <a href="/wfh" class="headerButton goBack">
+                <i data-lucide="chevron-left"></i>
+            </a>
+        </div>
+        <div class="pageTitle">Pengajuan Work From Home</div>
+        <div class="right"></div>
+    </div>
+@endsection
+
+@section('content')
+    <div class="flex mt-[70px]">
+        <div class="w-full px-3">
+            @if (Session::get('success'))
+                <div class="bg-[#ecfdf5] border border-[#a7f3d0] text-[#065f46] text-[13px] rounded-xl py-2.5 px-3.5 mb-3">
+                    {{ Session::get('success') }}</div>
+            @endif
+            @if (Session::get('error'))
+                <div class="bg-[#fef2f2] border border-[#fecaca] text-[#991b1b] text-[13px] rounded-xl py-2.5 px-3.5 mb-3">
+                    {{ Session::get('error') }}</div>
+            @endif
+            @if ($errors->any())
+                <div class="bg-[#fef2f2] border border-[#fecaca] text-[#991b1b] text-[13px] rounded-xl py-2.5 px-3.5 mb-3">
+                    <ul class="mb-0 list-disc pl-4">
+                        @foreach ($errors->all() as $e)
+                            <li>{{ $e }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
+            <form method="POST" action="/wfh/store" id="form_wfh" autocomplete="off">
+                @csrf
+
+                {{-- Auto Info --}}
+                <div class="bg-white rounded-2xl border border-[#f0ece8] p-4 mb-3">
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="w-10 h-10 rounded-xl bg-[#fdf8f4] border border-[#f0ece8] flex items-center justify-center text-coklat">
+                            <i data-lucide="user" style="width:18px;height:18px;"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="text-[11px] font-semibold tracking-wide text-[#a8a29e] uppercase">Pengaju</div>
+                            <div class="text-[14px] font-bold text-[#1c1917]">{{ $karyawan->nama_lengkap }}</div>
+                            <div class="text-[12px] text-[#78716c]">{{ $karyawan->posisi }} • {{ $karyawan->unit }}
+                                ({{ $karyawan->unitperusahaan->perusahaan ?? '' }})</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="text-[12px] font-semibold text-[#44403c] mb-1 block">
+                        Tanggal WFH <span class="text-red-500">*</span>
+                    </label>
+
+                    <!-- Wrapper relatif untuk mengunci posisi ikon -->
+                    <div class="relative flex items-center">
+                        <!-- Ikon di-position absolute di dalam input -->
+                        <div
+                            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500 z-10">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" class="icon icon-tabler icon-tabler-calendar-time">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+                                <path d="M14 18a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" />
+                                <path d="M15 3v4" />
+                                <path d="M7 3v4" />
+                                <path d="M3 11h16" />
+                                <path d="M18 16.496v1.504l1 1" />
+                            </svg>
+                        </div>
+
+                        <input type="text"
+                            class="w-full pl-10 pr-3 py-2 text-sm bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-black focus:border-black"
+                            name="tgl_wfh" id="tgl_wfh" placeholder="Pilih Tanggal WFH" autocomplete="off" required>
+                    </div>
+
+                    <!-- Teks Helper -->
+                    <div class="mt-1">
+                        @if ($disableToday)
+                            <small class="text-[11px] text-red-500 block">
+                                Hari ini sudah lewat jam masuk, minimal 15 menit sebelum jam masuk.
+                            </small>
+                        @else
+                            <small class="text-[11px] text-[#a8a29e] block">
+                                Minimal H+1, tidak bisa hari ini jika sudah lewat jam masuk.
+                            </small>
+                        @endif
+                    </div>
+                </div>
+
+                {{-- Keterangan WFH / Alasan WFH --}}
+                <div class="form-group mt-3">
+                    <label class="text-[12px] font-semibold text-[#44403c] mb-1 block">Keterangan WFH / Alasan WFH <span
+                            class="text-red-500">*</span></label>
+                    <textarea name="keterangan" id="keterangan" rows="3" class="form-control"
+                        placeholder="Jelaskan alasan mengapa harus WFH hari ini..." required>{{ old('keterangan') }}</textarea>
+                    <small class="text-[11px] text-[#a8a29e]">Contoh: kondisi kesehatan, jarak tempuh jauh, dll.</small>
+                </div>
+
+                {{-- Deskripsi Pekerjaan --}}
+                <div class="form-group mt-3">
+                    <label class="text-[12px] font-semibold text-[#44403c] mb-1 block">Deskripsi Pekerjaan <span
+                            class="text-red-500">*</span></label>
+                    <textarea name="deskripsi_pekerjaan" id="deskripsi_pekerjaan" rows="5" class="form-control"
+                        placeholder="1. Menuliskan list pekerjaan&#10;2. List pekerjaan dibuat numerik/berurutan&#10;3. Dokumentasikan hasil kerja untuk laporan" required>{{ old('deskripsi_pekerjaan') }}</textarea>
+                    <small class="text-[11px] text-[#a8a29e]"><span id="charCount">0</span>/2000 karakter • Maksimal 10
+                        poin</small>
+                </div>
+
+                <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 mt-3 flex gap-2.5">
+                    <i data-lucide="info"
+                        class="text-amber-600 shrink-0 mt-0.5" style="width:18px;height:18px;"></i>
+                    <p class="text-[11px] leading-relaxed text-amber-800">Setelah submit, Surat WFH menunggu
+                        persetujuan.
+                        Setelah disetujui, kamu bisa input laporan setelah absen pulang.</p>
+                </div>
+
+                <div class="form-group mt-4">
+                    <button type="submit" class="btn btn-primary w-full">
+                        <i data-lucide="send" style="margin-right:6px;"></i> Ajukan WFH
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+@endsection
+
+@push('myscript')
+    <script>
+        $(function() {
+
+            // ── Flatpickr Initialization ────────────────────────
+            var minDateSetting = "{{ $disableToday ? date('Y-m-d', strtotime('+1 day')) : date('Y-m-d') }}";
+
+            flatpickr("#tgl_wfh", {
+                locale: "id",
+                dateFormat: "Y-m-d",
+                altInput: true,
+                altFormat: "j F Y",
+                allowInput: true,
+                disableMobile: "true",
+                minDate: minDateSetting
+            });
+
+            var $el = $("#deskripsi_pekerjaan");
+            var MAX = 10;
+
+            // ── Helpers ──────────────────────────────────────────
+
+            // Cari nomor terbesar dari semua baris yang punya prefix "N. "
+            function maxLineNumber(text) {
+                var max = 0;
+                text.split("\n").forEach(function(l) {
+                    var m = l.match(/^(\d+)\.\s/);
+                    if (m) max = Math.max(max, parseInt(m[1]));
+                });
+                return max;
+            }
+
+            // Renumber semua baris (dipanggil saat line dihapus)
+            function renumber(text) {
+                var lines = text.split("\n");
+                var out = [],
+                    num = 1;
+                for (var i = 0; i < lines.length; i++) {
+                    var content = lines[i].replace(/^\d+[\.\s]*/, "");
+                    if (content === "" && i === lines.length - 1) {
+                        out.push(""); // trailing empty
+                    } else if (content === "") {
+                        continue; // skip baris kosong di tengah
+                    } else {
+                        out.push(num + ". " + content);
+                        num++;
+                    }
+                }
+                return out.join("\n");
+            }
+
+            // ── Focus ────────────────────────────────────────────
+
+            $el.on("focus", function() {
+                if (this.value === "") {
+                    this.value = "1. ";
+                }
+            });
+
+            // ── Keydown: Enter + Backspace ───────────────────────
+
+            $el.on("keydown", function(e) {
+                var val = this.value;
+                var pos = this.selectionStart;
+
+                // ═══════════════ ENTER ═══════════════
+                if (e.keyCode === 13) {
+                    e.preventDefault();
+                    var lines = val.split("\n");
+                    var trailing = lines[lines.length - 1] === "";
+                    var totalLines = trailing ? lines.length - 1 : lines.length;
+                    if (totalLines >= MAX) return;
+
+                    var nextNum = maxLineNumber(val) + 1;
+
+                    // Hapus trailing newline dulu supaya gak double
+                    var cleanVal = trailing ? val.substring(0, val.length - 1) : val;
+                    var cleanPos = Math.min(pos, cleanVal.length);
+                    var before = cleanVal.substring(0, cleanPos);
+                    var after = cleanVal.substring(cleanPos);
+
+                    this.value = before + "\n" + nextNum + ". " + after;
+                    var newPos = before.length + 1 + String(nextNum).length + 2;
+                    this.setSelectionRange(newPos, newPos);
+                    return;
+                }
+
+                // ═══════════════ BACKSPACE ═══════════════
+                if (e.keyCode === 8 && pos > 0) {
+                    var beforeCursor = val.substring(0, pos);
+                    var lines = val.split("\n");
+                    var lineIdx = beforeCursor.split("\n").length - 1;
+                    var currentLine = lines[lineIdx];
+
+                    // Case A: baris cuma berisi prefix "N. " atau "N." → hapus seluruh baris
+                    if (/^\d+\.?\s?$/.test(currentLine)) {
+                        e.preventDefault();
+
+                        // Jika cuma 1 baris → clear semua
+                        if (lines.length <= 1) {
+                            this.value = "";
+                            this.setSelectionRange(0, 0);
+                            return;
+                        }
+
+                        // Hapus baris, renumber sisa
+                        lines.splice(lineIdx, 1);
+                        var newVal = renumber(lines.join("\n"));
+                        this.value = newVal;
+
+                        // Cursor ke akhir baris sebelumnya
+                        var targetIdx = Math.max(0, lineIdx - 1);
+                        var newLines = newVal.split("\n");
+                        var cursorPos = 0;
+                        for (var i = 0; i < targetIdx; i++) cursorPos += newLines[i].length + 1;
+                        cursorPos += newLines[targetIdx].length;
+                        this.setSelectionRange(cursorPos, cursorPos);
+                        return;
+                    }
+
+                    // Case B: cursor di awal baris (posisi = awal baris) dan baris punya prefix
+                    var lineStart = beforeCursor.lastIndexOf("\n") + 1;
+                    var linePrefix = currentLine.match(/^(\d+)\.\s/);
+                    if (linePrefix && pos === lineStart + linePrefix[0].length) {
+                        // Cursor tepat setelah prefix, backspace = merge dengan baris sebelumnya
+                        // Biarkan browser handle normal (hapus spasi terakhir prefix)
+                        // Tapi kita bisa skip prefix sekaligus:
+                        e.preventDefault();
+                        var prevLineIdx = lineIdx - 1;
+                        if (prevLineIdx < 0) return;
+
+                        var prevLine = lines[prevLineIdx];
+                        var content = currentLine.replace(/^\d+\.\s/, "");
+                        lines[prevLineIdx] = prevLine + content;
+                        lines.splice(lineIdx, 1);
+                        var newVal = renumber(lines.join("\n"));
+                        this.value = newVal;
+
+                        // Cursor di akhir prevLine content (sebelum content dari line yang dihapus)
+                        var newLines = newVal.split("\n");
+                        var cursorPos = 0;
+                        for (var i = 0; i < prevLineIdx; i++) cursorPos += newLines[i].length + 1;
+                        cursorPos += prevLine.length;
+                        this.setSelectionRange(cursorPos, cursorPos);
+                        return;
+                    }
+                }
+            });
+
+            // ── Input: HANYA update char count ───────────────────
+
+            $el.on("input", function() {
+                $("#charCount").text(this.value.length);
+            });
+
+            // ── Init ─────────────────────────────────────────────
+
+            $("#charCount").text($el.val().length);
+
+            // ── Submit validation ────────────────────────────────
+
+            $("#form_wfh").submit(function(e) {
+                e.preventDefault();
+                var tgl = $("#tgl_wfh").val();
+                var keterangan = $("#keterangan").val().trim();
+                var desk = $el.val().trim();
+                if (!tgl) {
+                    Swal.fire({
+                        icon: "warning",
+                        text: "Tanggal WFH harus diisi",
+                        confirmButtonColor: "#7a5234"
+                    });
+                    return;
+                }
+                if (!keterangan || keterangan.length < 5) {
+                    Swal.fire({
+                        icon: "warning",
+                        text: "Keterangan WFH minimal 5 karakter",
+                        confirmButtonColor: "#7a5234"
+                    });
+                    return;
+                }
+                if (!desk || desk.length < 10) {
+                    Swal.fire({
+                        icon: "warning",
+                        text: "Deskripsi minimal 10 karakter",
+                        confirmButtonColor: "#7a5234"
+                    });
+                    return;
+                }
+                Swal.fire({
+                    title: "Ajukan WFH?",
+                    text: "Data akan digenerate jadi PDF dan dikirim untuk persetujuan.",
+                    icon: "question",
+                    showCancelButton: true,
+                    confirmButtonColor: "#7a5234",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "Ya, Ajukan",
+                    cancelButtonText: "Batal"
+                }).then(function(r) {
+                    if (r.isConfirmed) $("#form_wfh")[0].submit();
+                });
+            });
+        });
+    </script>
+@endpush
