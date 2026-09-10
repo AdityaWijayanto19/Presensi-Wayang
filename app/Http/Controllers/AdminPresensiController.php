@@ -12,6 +12,11 @@ use App\Services\IzinService;
 use App\Services\LemburService;
 use App\Services\MonitoringService;
 use App\Services\LaporanService;
+use App\Http\Requests\RejectRequest;
+use App\Http\Requests\Presensi\UpdatePresensiAdminRequest;
+use App\Http\Requests\Presensi\UpdateIzinAdminRequest;
+use App\Http\Requests\Presensi\UpdateLemburAdminRequest;
+use App\Http\Requests\Presensi\UpdateWfhAdminRequest;
 use Illuminate\Http\Request;
 
 class AdminPresensiController extends Controller
@@ -110,9 +115,8 @@ class AdminPresensiController extends Controller
         return redirect()->back()->with($result['success'] ? 'success' : 'error', $result['message']);
     }
 
-    public function rejectWfhAdmin(Request $request, int $id)
+    public function rejectWfhAdmin(RejectRequest $request, int $id)
     {
-        $request->validate(['rejected_reason' => 'required|string|min:5|max:500']);
         $result = WfhService::rejectWfhAdmin($id, $request->rejected_reason);
 
         return redirect()->back()->with($result['success'] ? 'success' : 'error', $result['message']);
@@ -124,9 +128,8 @@ class AdminPresensiController extends Controller
         return redirect()->back()->with($result['success'] ? 'success' : 'error', $result['message']);
     }
 
-    public function rejectLaporanAdmin(Request $request, int $id)
+    public function rejectLaporanAdmin(RejectRequest $request, int $id)
     {
-        $request->validate(['rejected_reason' => 'required|string|min:5|max:500']);
         $result = WfhService::rejectLaporanAdmin($id, $request->rejected_reason);
 
         return redirect()->back()->with($result['success'] ? 'success' : 'error', $result['message']);
@@ -138,13 +141,8 @@ class AdminPresensiController extends Controller
         return response()->json($presensi);
     }
 
-    public function updatePresensiAdmin(Request $request, int $id)
+    public function updatePresensiAdmin(UpdatePresensiAdminRequest $request, int $id)
     {
-        $request->validate([
-            'jam_in' => 'required|date_format:H:i:s',
-            'jam_out' => 'nullable|date_format:H:i:s',
-        ]);
-
         $presensi = Presensi::findOrFail($id);
         $presensi->update([
             'jam_in' => $request->jam_in,
@@ -160,13 +158,8 @@ class AdminPresensiController extends Controller
         return response()->json($izin);
     }
 
-    public function updateIzinAdmin(Request $request, int $id)
+    public function updateIzinAdmin(UpdateIzinAdminRequest $request, int $id)
     {
-        $request->validate([
-            'tgl_izin' => 'required|date',
-            'jenis_izin' => 'required|in:i,s',
-        ]);
-
         $izin = Izin::findOrFail($id);
         $izin->update([
             'tgl_izin' => $request->tgl_izin,
@@ -182,13 +175,8 @@ class AdminPresensiController extends Controller
         return response()->json($lembur);
     }
 
-    public function updateLemburAdmin(Request $request, int $id)
+    public function updateLemburAdmin(UpdateLemburAdminRequest $request, int $id)
     {
-        $request->validate([
-            'tgl_lembur' => 'required|date',
-            'durasi' => 'required|integer|min:1|max:5',
-        ]);
-
         $lembur = Lembur::findOrFail($id);
         $lembur->update([
             'tgl_lembur' => $request->tgl_lembur,
@@ -204,14 +192,8 @@ class AdminPresensiController extends Controller
         return response()->json($wfh);
     }
 
-    public function updateWfhAdmin(Request $request, int $id)
+    public function updateWfhAdmin(UpdateWfhAdminRequest $request, int $id)
     {
-        $request->validate([
-            'tgl_wfh' => 'required|date',
-            'deskripsi_pekerjaan' => 'required|string|min:5',
-            'keterangan' => 'nullable|string',
-        ]);
-
         $wfh = Wfh::findOrFail($id);
         $wfh->update([
             'tgl_wfh' => $request->tgl_wfh,

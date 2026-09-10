@@ -2,7 +2,7 @@
 
 @section('content')
 
-<x-app.page-header title="Data Unit Perusahaan" pretitle="WAG - Presensi Digital" />
+@section('page_title', 'Data Unit Perusahaan')
 
 <x-app.page-body>
 
@@ -134,7 +134,7 @@
                                             @can('unit-edit')
                                             <a href="#"
                                                class="edit bg-cyan-500 text-white px-2 py-1 rounded-md hover:bg-cyan-600 transition-colors text-xs font-medium inline-flex items-center gap-1"
-                                               unit="{{ $u->unit }}">
+                                               unit="{{ $u->id }}">
 
                                                 <svg xmlns="http://www.w3.org/2000/svg"
                                                      width="18"
@@ -163,7 +163,7 @@
 
                                             {{-- Delete --}}
                                             @can('unit-delete')
-                                            <form action="/unitperusahaan/{{ $u->unit }}/delete"
+                                             <form action="/unitperusahaan/{{ $u->id }}/delete"
                                                   method="POST"
                                                   class="inline">
 
@@ -482,7 +482,7 @@
 
 <script>
 
-$(function () {
+document.addEventListener('DOMContentLoaded', function () {
 
     /*
     |--------------------------------------------------------------------------
@@ -490,7 +490,7 @@ $(function () {
     |--------------------------------------------------------------------------
     */
 
-    $("#btnTambahunitperusahaan").click(function () {
+    document.getElementById('btnTambahunitperusahaan').addEventListener('click', function () {
 
         window.dispatchEvent(new CustomEvent('open-modal-modal-inputunitperusahaan'));
 
@@ -504,35 +504,39 @@ $(function () {
     |--------------------------------------------------------------------------
     */
 
-    $(".edit").click(function () {
+    document.querySelectorAll('.edit').forEach(function (el) {
 
-        let unit = $(this).attr("unit");
+        el.addEventListener('click', function (e) {
 
-        $.ajax({
+            let unit = e.target.closest('.edit').getAttribute('unit');
 
-            type: "POST",
+            fetch('/unitperusahaan/edit', {
 
-            url: "/unitperusahaan/edit",
+                method: 'POST',
 
-            cache: false,
+                headers: {
 
-            data: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
 
-                _token: "{{ csrf_token() }}",
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
 
-                unit: unit
+                },
 
-            },
+                body: new URLSearchParams({ id: unit })
 
-            success: function (respond) {
+            })
 
-                $("#loadeditform").html(respond);
+            .then(function (r) { return r.text(); })
 
-            }
+            .then(function (html) {
+
+                document.getElementById('loadeditform').innerHTML = html;
+
+            });
+
+            window.dispatchEvent(new CustomEvent('open-modal-modal-editunitperusahaan'));
 
         });
-
-        window.dispatchEvent(new CustomEvent('open-modal-modal-editunitperusahaan'));
 
     });
 
@@ -544,37 +548,41 @@ $(function () {
     |--------------------------------------------------------------------------
     */
 
-    $(".delete-confirm").click(function (e) {
+    document.querySelectorAll('.delete-confirm').forEach(function (el) {
 
-        let form = $(this).closest("form");
+        el.addEventListener('click', function (e) {
 
-        e.preventDefault();
+            let form = e.target.closest('form');
 
-        Swal.fire({
+            e.preventDefault();
 
-            title: "Yakin data ini akan dihapus?",
+            Swal.fire({
 
-            text: "Data yang sudah dihapus tidak bisa dikembalikan!",
+                title: "Yakin data ini akan dihapus?",
 
-            icon: "warning",
+                text: "Data yang sudah dihapus tidak bisa dikembalikan!",
 
-            showCancelButton: true,
+                icon: "warning",
 
-            confirmButtonColor: "#3085d6",
+                showCancelButton: true,
 
-            cancelButtonColor: "#d33",
+                confirmButtonColor: "#3085d6",
 
-            confirmButtonText: "Hapus Data",
+                cancelButtonColor: "#d33",
 
-            backdrop: false
+                confirmButtonText: "Hapus Data",
 
-        }).then((result) => {
+                backdrop: false
 
-            if (result.isConfirmed) {
+            }).then((result) => {
 
-                form.submit();
+                if (result.isConfirmed) {
 
-            }
+                    form.submit();
+
+                }
+
+            });
 
         });
 
@@ -588,13 +596,13 @@ $(function () {
     |--------------------------------------------------------------------------
     */
 
-    $("#formUnitperusahaan").submit(function () {
+    document.getElementById('formUnitperusahaan').addEventListener('submit', function (e) {
 
-        let unit = $("#unit").val();
-
-        let perusahaan = $("#perusahaan").val();
+        let unit = document.getElementById('unit').value;
 
         if (unit == "") {
+
+            e.preventDefault();
 
             Swal.fire({
 
@@ -610,11 +618,9 @@ $(function () {
 
             }).then(() => {
 
-                $("#unit").focus();
+                document.getElementById('unit').focus();
 
             });
-
-            return false;
 
         }
 

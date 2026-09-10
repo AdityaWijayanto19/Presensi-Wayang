@@ -14,8 +14,17 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
-            'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
         ]);
+
+        $middleware->redirectGuestsTo(function ($request) {
+            if (\Illuminate\Support\Facades\Auth::guard('user')->check()) {
+                return '/panel/dashboard';
+            }
+            if (\Illuminate\Support\Facades\Auth::guard('karyawan')->check()) {
+                return '/dashboard';
+            }
+            return '/';
+        });
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

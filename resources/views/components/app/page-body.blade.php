@@ -1,7 +1,5 @@
 @props(['class' => ''])
 
-<div class="p-3">
-    <div class="max-w-7xl mx-auto {{ $class }}">
-        {{ $slot }}
-    </div>
+<div class="px-3 pt-3 pb-3 {{ $class }}">
+    {{ $slot }}
 </div>

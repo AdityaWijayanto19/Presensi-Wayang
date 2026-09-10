@@ -162,7 +162,7 @@
                                     class="w-[44px] h-[44px] sm:w-[50px] sm:h-[50px] flex-shrink-0 flex items-center justify-center">
                                     @if ($presensihariini != null)
                                         @php
-                                            $path = Storage::url('/uploads/absensi/' . $presensihariini->foto_in);
+                                            $path = Storage::url('uploads/absensi/' . $presensihariini->foto_in);
                                         @endphp
                                         <img src="{{ url($path) }}?v={{ time() }}" alt=""
                                             class="w-[44px] h-[44px] sm:w-[50px] sm:h-[50px] object-cover rounded-xl">
@@ -190,7 +190,7 @@
                                     class="w-[44px] h-[44px] sm:w-[50px] sm:h-[50px] flex-shrink-0 flex items-center justify-center">
                                     @if ($presensihariini != null && $presensihariini->jam_out != null)
                                         @php
-                                            $path = Storage::url('/uploads/absensi/' . $presensihariini->foto_out);
+                                            $path = Storage::url('uploads/absensi/' . $presensihariini->foto_out);
                                         @endphp
                                         <img src="{{ url($path) }}?v={{ time() }}" alt=""
                                             class="w-[44px] h-[44px] sm:w-[50px] sm:h-[50px] object-cover rounded-xl">

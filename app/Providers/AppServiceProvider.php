@@ -19,21 +19,21 @@ class AppServiceProvider extends ServiceProvider
         View::composer('layouts.admin.sidebar', function ($view) {
             $pending = cache()->remember('pending_wfh_count', 30, function () {
                 try {
-                    return DB::table('wfh')->whereIn('status', ['pending_atasan','pending_admin'])->count();
+                    return DB::table('wfhs')->whereIn('status', ['pending_atasan','pending_admin'])->count();
                 } catch (\Exception $e) {
                     return 0;
                 }
             });
             $pendingAdmin = cache()->remember('pending_wfh_admin_count', 30, function () {
                 try {
-                    return DB::table('wfh')->where('status', 'pending_admin')->count();
+                    return DB::table('wfhs')->where('status', 'pending_admin')->count();
                 } catch (\Exception $e) {
                     return 0;
                 }
             });
             $pendingLaporanAdmin = cache()->remember('pending_laporan_admin_count', 30, function () {
                 try {
-                    return DB::table('wfh')->where('laporan_status', 'pending_admin')->count();
+                    return DB::table('wfhs')->where('laporan_status', 'pending_admin')->count();
                 } catch (\Exception $e) {
                     return 0;
                 }
@@ -45,7 +45,7 @@ class AppServiceProvider extends ServiceProvider
 
         View::composer('layouts.admin.tabler', function ($view) {
             try {
-                $cnt = DB::table('wfh')->whereIn('status', ['pending_atasan','pending_admin'])->count();
+                $cnt = DB::table('wfhs')->whereIn('status', ['pending_atasan','pending_admin'])->count();
                 $view->with('pendingWfhCount', $cnt);
             } catch (\Exception $e) {
                 $view->with('pendingWfhCount', 0);

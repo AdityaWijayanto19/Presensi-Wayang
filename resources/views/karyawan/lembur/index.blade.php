@@ -114,7 +114,7 @@
                     </div>
                 </div>
             @empty
-                <div class="bg-white rounded-2xl border border-[#f0ece8] shadow-sm p-8 mt-6 text-center">
+                <x-app.card class="p-8 mt-6 text-center">
                     <div class="w-20 h-20 rounded-2xl bg-[#f5f3ff] border border-[#ede9fe] flex items-center justify-center mx-auto text-[#7c3aed]">
                         <i data-lucide="timer" class="text-[#7c3aed]" style="width:40px;height:40px;"></i>
                     </div>
@@ -123,7 +123,7 @@
                     <a href="/lembur/create" class="inline-flex items-center gap-2 mt-5 px-5 py-2.5 rounded-full bg-coklat text-white text-[13px] font-semibold shadow-sm hover:bg-coklat-dark transition">
                         <i data-lucide="plus" style="width:16px;height:16px;"></i> Ajukan Lembur
                     </a>
-                </div>
+                </x-app.card>
             @endforelse
         </div>
     </div>

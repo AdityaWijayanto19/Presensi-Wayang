@@ -20,27 +20,25 @@ class MarkUnpaid extends Command
         // - status approved
         // - tgl_wfh sudah lewat
         // - laporan kosong ATAU belum absen pulang
-        $wfhList = DB::table('wfh')
-            ->leftJoin('presensi', function ($join) {
-                $join->on('wfh.nik', '=', 'presensi.nik')
-                     ->on('wfh.tgl_wfh', '=', 'presensi.tgl_presensi');
+        $wfhList = DB::table('wfhs')
+            ->leftJoin('presensis', function ($join) {
+                $join->on('wfhs.nik', '=', 'presensis.nik')
+                     ->on('wfhs.tgl_wfh', '=', 'presensis.tgl_presensi');
             })
-            ->where('wfh.status', WfhStatus::Approved->value)
-            ->where('wfh.tgl_wfh', '<', $hariIni)
+            ->where('wfhs.status', WfhStatus::Approved->value)
+            ->where('wfhs.tgl_wfh', '<', $hariIni)
             ->where(function ($q) {
-                // Kondisi 1: laporan kosong
-                $q->whereNull('wfh.laporan_deskripsi')
-                  ->orWhere('wfh.laporan_deskripsi', '');
+                $q->whereNull('wfhs.laporan_deskripsi')
+                  ->orWhere('wfhs.laporan_deskripsi', '');
             })
             ->orWhere(function ($q) use ($hariIni) {
-                // Kondisi 2: laporan ada + belum absen pulang
-                $q->where('wfh.status', WfhStatus::Approved->value)
-                  ->where('wfh.tgl_wfh', '<', $hariIni)
-                  ->whereNotNull('wfh.laporan_deskripsi')
-                  ->where('wfh.laporan_deskripsi', '!=', '')
-                  ->whereNull('presensi.jam_out');
+                $q->where('wfhs.status', WfhStatus::Approved->value)
+                  ->where('wfhs.tgl_wfh', '<', $hariIni)
+                  ->whereNotNull('wfhs.laporan_deskripsi')
+                  ->where('wfhs.laporan_deskripsi', '!=', '')
+                  ->whereNull('presensis.jam_out');
             })
-            ->select('wfh.*', 'presensi.jam_out')
+            ->select('wfhs.*', 'presensis.jam_out')
             ->get();
 
         if ($wfhList->isEmpty()) {
@@ -48,8 +46,7 @@ class MarkUnpaid extends Command
             return 0;
         }
 
-        // Update status ke unpaid
-        $affected = DB::table('wfh')
+        $affected = DB::table('wfhs')
             ->whereIn('id', $wfhList->pluck('id'))
             ->update(['status' => WfhStatus::Unpaid->value]);
 

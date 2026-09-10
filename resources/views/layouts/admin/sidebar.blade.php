@@ -14,41 +14,34 @@
     </div>
 
     <div class="lg:hidden border-b border-slate-800 px-3 py-2">
-        <div x-data="{ dropdownOpen: false }" class="relative">
-            <button @click="dropdownOpen = !dropdownOpen" class="flex items-center gap-2 w-full text-left">
-                <span class="w-7 h-7 rounded bg-slate-700 flex items-center justify-center text-xs font-medium text-white overflow-hidden"
-                      style="background-image: url('{{ asset('assets/img/admin_icon.png') }}'); background-size: cover;">
-                </span>
-                <div class="flex-1 min-w-0">
-                    <div class="text-xs font-medium text-white truncate">{{ Auth::guard('user')->user()->name }}</div>
-                    <div class="text-[10px] text-slate-400">
-                        @if(Auth::guard('user')->user()->hasRole('super_admin'))
-                            Super Admin
-                        @elseif(Auth::guard('user')->user()->hasRole('admin'))
-                            Admin
-                        @else
-                            Owner
-                        @endif
+        <x-app.dropdown align="left" class="w-full">
+            <x-slot:trigger>
+                <button class="flex items-center gap-2 w-full text-left">
+                    <span class="w-7 h-7 rounded bg-slate-700 flex items-center justify-center text-white">
+                        <i data-lucide="user-cog" style="width:14px;height:14px;"></i>
+                    </span>
+                    <div class="flex-1 min-w-0">
+                        <div class="text-xs font-medium text-white truncate">{{ Auth::guard('user')->user()->name }}</div>
+                        <div class="text-[10px] text-slate-400">
+                            @if(Auth::guard('user')->user()->hasRole('super_admin'))
+                                Super Admin
+                            @elseif(Auth::guard('user')->user()->hasRole('admin'))
+                                Admin
+                            @else
+                                Owner
+                            @endif
+                        </div>
                     </div>
-                </div>
-                <svg class="w-3 h-3 text-slate-400 transition-transform" :class="dropdownOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                </svg>
-            </button>
-            <div x-show="dropdownOpen" x-cloak
-                 x-transition:enter="transition ease-out duration-100"
-                 x-transition:enter-start="opacity-0 scale-95"
-                 x-transition:enter-end="opacity-100 scale-100"
-                 x-transition:leave="transition ease-in duration-75"
-                 x-transition:leave-start="opacity-100 scale-100"
-                 x-transition:leave-end="opacity-0 scale-95"
-                 @click.away="dropdownOpen = false"
-                 class="absolute left-0 right-0 mt-1 bg-white rounded shadow-lg border border-slate-200 py-1 z-50">
-                <a href="/panel/settings" class="block px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-100">Pengaturan</a>
-                <div class="border-t border-slate-100 my-0.5"></div>
-                <a href="/proseslogoutadmin" class="block px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-100">Logout</a>
-            </div>
-        </div>
+                    <svg class="w-3 h-3 text-slate-400 transition-transform" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+            </x-slot:trigger>
+
+            <a href="/panel/settings" class="block px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-100">Pengaturan</a>
+            <div class="border-t border-slate-100 my-0.5"></div>
+            <a href="/proseslogoutadmin" class="block px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-100">Logout</a>
+        </x-app.dropdown>
     </div>
 
     <nav class="flex-1 overflow-y-auto py-2 px-2 space-y-0.5">
@@ -97,7 +90,18 @@
             <span class="flex-shrink-0 w-4 h-4">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 5a1 1 0 0 1 1 -1h16a1 1 0 0 1 1 1v10a1 1 0 0 1 -1 1h-16a1 1 0 0 1 -1 -1l0 -10"/><path d="M7 20h10"/><path d="M9 16v4"/><path d="M15 16v4"/><path d="M9 12v-4"/><path d="M12 12v-1"/><path d="M15 12v-2"/><path d="M12 12v-1"/></svg>
             </span>
-            <span>Monitoring</span>
+            <span>Monitoring Presensi</span>
+        </a>
+        @endcan
+
+         {{-- Laporan --}}
+        @can('laporan-view')
+        <a class="flex items-center gap-2 px-2.5 py-2 rounded text-xs font-medium transition-colors {{ request()->is('panel/laporan') ? 'bg-white/10 text-white' : 'text-slate-300 hover:bg-white/5 hover:text-white' }}"
+           href="/panel/laporan">
+            <span class="flex-shrink-0 w-4 h-4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M15 3v4a1 1 0 0 0 1 1h4"/><path d="M6 8v-3a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-7"/><path d="M3 15l3 -3l3 3"/></svg>
+            </span>
+            <span>Laporan Presensi</span>
         </a>
         @endcan
 
@@ -108,7 +112,7 @@
             <span class="flex-shrink-0 w-4 h-4">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M15 21h-9a3 3 0 0 1 -3 -3v-1h10v2a2 2 0 0 0 4 0v-14a2 2 0 1 1 2 2h-2m2 -4h-11a3 3 0 0 0 -3 3v11"/><path d="M9 7l4 0"/><path d="M9 11l4 0"/></svg>
             </span>
-            <span>Data Izin</span>
+            <span>Data Izin Karyawan</span>
         </a>
         @endcan
 
@@ -119,7 +123,7 @@
             <span class="flex-shrink-0 w-4 h-4">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 7v5l3 3"/><path d="M12 21a9 9 0 1 0 0 -18a9 9 0 0 0 0 18"/></svg>
             </span>
-            <span>Data Lembur</span>
+            <span>Data Lembur Karyawan</span>
         </a>
         @endcan
 
@@ -130,23 +134,12 @@
             <span class="flex-shrink-0 w-4 h-4">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M5 12l-2 0l9 -9l9 9l-2 0"/><path d="M5 12v7a2 2 0 0 0 2 2h3v-6h4v6h3a2 2 0 0 0 2 -2v-7"/></svg>
             </span>
-            <span>Data WFH</span>
+            <span>Data WFH Karyawan</span>
             @php
                 $totalPending = ($pendingWfhAdminCount ?? 0) + ($pendingLaporanAdminCount ?? 0);
             @endphp
             <span id="adminWfhBadge" class="ml-auto inline-flex items-center justify-center min-w-[16px] h-4 px-1 rounded bg-red-500 text-white text-[10px] font-bold"
                   style="{{ $totalPending > 0 ? '' : 'display:none;' }}">{{ $totalPending }}</span>
-        </a>
-        @endcan
-
-        {{-- Laporan --}}
-        @can('laporan-view')
-        <a class="flex items-center gap-2 px-2.5 py-2 rounded text-xs font-medium transition-colors {{ request()->is('panel/laporan') ? 'bg-white/10 text-white' : 'text-slate-300 hover:bg-white/5 hover:text-white' }}"
-           href="/panel/laporan">
-            <span class="flex-shrink-0 w-4 h-4">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M15 3v4a1 1 0 0 0 1 1h4"/><path d="M6 8v-3a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-7"/><path d="M3 15l3 -3l3 3"/></svg>
-            </span>
-            <span>Laporan</span>
         </a>
         @endcan
 
@@ -157,7 +150,7 @@
             <span class="flex-shrink-0 w-4 h-4">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0"/><path d="M6 21v-2a4 4 0 0 1 4 -4h4c.348 0 .686 .045 1.008 .128"/><path d="M19 16v3"/><path d="M19 22v.01"/></svg>
             </span>
-            <span>User / Admin</span>
+            <span>Pengguna Administrator</span>
         </a>
         @endcan
 

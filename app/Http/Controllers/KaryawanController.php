@@ -13,6 +13,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
+use App\Services\ImageService;
+use App\Http\Requests\Karyawan\StoreKaryawanRequest;
+use App\Http\Requests\Karyawan\UpdateKaryawanRequest;
 
 class KaryawanController extends Controller
 {
@@ -39,18 +42,8 @@ class KaryawanController extends Controller
         return view('admin.karyawan.index', compact('karyawan', 'unitperusahaan'));
     }
 
-    public function store(Request $request)
+    public function store(StoreKaryawanRequest $request)
     {
-        $request->validate([
-            'nik' => 'required|unique:karyawan,nik',
-            'nama_lengkap' => 'required',
-            'jabatan' => 'required|in:Intern,Staff,SPV,Manager,GM,Direktur',
-            'posisi' => 'required',
-            'role_approved' => 'nullable|in:Staff,Manager,GM,Direktur',
-            'atasan_nik' => 'nullable|exists:karyawan,nik',
-            'unit' => 'required|exists:unitperusahaan,unit',
-            'no_hp' => 'required',
-        ]);
 
         $roleApproved = $request->role_approved ?: null;
         $atasanNik = $request->atasan_nik ?: null;
@@ -64,20 +57,27 @@ class KaryawanController extends Controller
 
         $foto = 'nophoto.png';
         if ($request->hasFile('foto')) {
-            $foto = $request->nik . '.' . $request->file('foto')->getClientOriginalExtension();
+            $imageService = app(ImageService::class);
+            $fotoPath = $imageService->processUpload($request->file('foto'), 'karyawan');
+            if ($fotoPath) {
+                $foto = basename($fotoPath);
+            }
         }
+
+        $unitId = Unitperusahaan::where('unit', $request->unit)->value('id');
 
         $karyawan = Karyawan::create([
             'nik' => $request->nik,
             'nama_lengkap' => $request->nama_lengkap,
             'unit' => $request->unit,
+            'unit_id' => $unitId,
             'jabatan' => $request->jabatan,
             'posisi' => $request->posisi,
             'role_approved' => $roleApproved,
             'atasan_nik' => $atasanNik,
             'no_hp' => $request->no_hp,
             'foto' => $foto,
-            'password' => Hash::make('12345'),
+            'password' => Hash::make($request->password),
         ]);
 
         if ($request->hasFile('foto')) {
@@ -96,16 +96,8 @@ class KaryawanController extends Controller
         return view('admin.karyawan.edit', compact('unitperusahaan', 'karyawan', 'page'));
     }
 
-    public function update(string $nik, Request $request)
+    public function update(string $nik, UpdateKaryawanRequest $request)
     {
-        $request->validate([
-            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-            'password' => 'nullable|min:5',
-            'jabatan' => 'required|in:Intern,Staff,SPV,Manager,GM,Direktur',
-            'posisi' => 'required',
-            'role_approved' => 'nullable|in:Staff,Manager,GM,Direktur',
-            'atasan_nik' => 'nullable|exists:karyawan,nik',
-        ]);
 
         $karyawan = Karyawan::findOrFail($nik);
         $roleApproved = $request->role_approved ?: null;
@@ -122,12 +114,20 @@ class KaryawanController extends Controller
         $foto = $fotoLama;
 
         if ($request->hasFile('foto')) {
-            $foto = $nik . '.' . $request->file('foto')->getClientOriginalExtension();
+            $imageService = app(ImageService::class);
+
+            if ($fotoLama && $fotoLama !== 'nophoto.png') {
+                $imageService->deleteFile('uploads/karyawan/' . $fotoLama);
+            }
+
+            $fotoPath = $imageService->processUpload($request->file('foto'), 'karyawan');
+            $foto = $fotoPath ? basename($fotoPath) : $fotoLama;
         }
 
         $updateData = [
             'nama_lengkap' => $request->nama_lengkap,
             'unit' => $request->unit,
+            'unit_id' => Unitperusahaan::where('unit', $request->unit)->value('id'),
             'jabatan' => $request->jabatan,
             'posisi' => $request->posisi,
             'role_approved' => $roleApproved,
@@ -142,24 +142,8 @@ class KaryawanController extends Controller
 
         $karyawan->update($updateData);
 
-        if ($request->hasFile('foto') && $fotoLama !== 'nophoto.png') {
-            $path = public_path('storage/uploads/karyawan/' . $fotoLama);
-            if (file_exists($path)) {
-                unlink($path);
-            }
-            $request->file('foto')->move(public_path('storage/uploads/karyawan'), $foto);
-        }
-
-        return Redirect::to('/karyawan?page=' . $request->page)
+        return Redirect::to('/panel/karyawan?page=' . $request->page)
             ->with('success', 'Data karyawan berhasil diperbarui!');
-    }
-
-    public function resetpassword(string $nik)
-    {
-        $karyawan = Karyawan::findOrFail($nik);
-        $karyawan->update(['password' => Hash::make('12345')]);
-
-        return Redirect::back()->with('success', 'Password berhasil direset menjadi 12345');
     }
 
     public function getAtasan(Request $request)
@@ -199,12 +183,10 @@ class KaryawanController extends Controller
         DB::beginTransaction();
 
         try {
-            // Hapus foto profil
+            $imageService = app(ImageService::class);
+
             if ($karyawan->foto !== 'nophoto.png') {
-                $path = public_path('storage/uploads/karyawan/' . $karyawan->foto);
-                if (file_exists($path)) {
-                    unlink($path);
-                }
+                $imageService->deleteFile('uploads/karyawan/' . $karyawan->foto);
             }
 
             // Hapus foto presensi

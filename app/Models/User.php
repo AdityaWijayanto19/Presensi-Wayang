@@ -24,6 +24,7 @@ class User extends Authenticatable
         'email',
         'password',
         'unit',
+        'unit_id',
     ];
 
     /**
@@ -48,6 +49,6 @@ class User extends Authenticatable
 
     public function unitperusahaan(): BelongsTo
     {
-        return $this->belongsTo(Unitperusahaan::class, 'unit', 'unit');
+        return $this->belongsTo(Unitperusahaan::class, 'unit_id', 'id');
     }
 }

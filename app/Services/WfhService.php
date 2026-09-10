@@ -13,6 +13,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Minishlink\WebPush\WebPush;
 
@@ -128,11 +129,14 @@ class WfhService
     {
         $nik = $karyawan->nik;
 
-        $request->validate([
-            'tgl_wfh' => 'required|date|after_or_equal:today',
-            'keterangan' => 'required|string|min:5|max:1000',
-            'deskripsi_pekerjaan' => 'required|string|min:10|max:2000',
-        ]);
+        if ($request->tgl_wfh === date('Y-m-d')) {
+            $karyawanFresh = Karyawan::with('unitperusahaan')->where('nik', $nik)->first();
+            $unitKerja = $karyawanFresh?->unitperusahaan;
+            $jamMasuk = $unitKerja?->jam_masuk ?? '08:00:00';
+            if (date('H:i:s') >= $jamMasuk) {
+                return ['success' => false, 'message' => 'Pengajuan WFH untuk hari ini sudah ditutup setelah jam masuk. Silakan pilih tanggal lain.'];
+            }
+        }
 
         $cek = Wfh::where('nik', $nik)->where('tgl_wfh', $request->tgl_wfh)->exists();
         if ($cek) {
@@ -155,7 +159,7 @@ class WfhService
         $pdfData = [
             'headerSuratPath' => 'assets/img/header-surat.png',
             'nama_lengkap' => $karyawanFresh->nama_lengkap,
-            'jabatan' => $jabatan instanceof Jabatan ? $jabatan->value : $jabatan,
+            'jabatan' => $jabatan,
             'posisi' => $posisi ?? '-',
             'perusahaan' => $perusahaan,
             'tgl_wfh' => $request->tgl_wfh,
@@ -195,7 +199,7 @@ class WfhService
                         self::sendWebPush($atasanNik, 'Pengajuan WFH Baru', $karyawanFresh->nama_lengkap . ' mengajukan WFH ' . $request->tgl_wfh, '/presensi/datawfh', 'wfh-submitted-' . $wfh->id);
                     }
                 } catch (\Exception $e) {
-                    \Log::warning('WFH atasan notification failed: ' . $e->getMessage());
+                    Log::warning('WFH atasan notification failed: ' . $e->getMessage());
                 }
             }
 
@@ -205,7 +209,7 @@ class WfhService
             return ['success' => true, 'message' => 'Pengajuan WFH berhasil! Menunggu persetujuan.'];
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('storewfh failed: ' . $e->getMessage());
+            Log::error('storewfh failed: ' . $e->getMessage());
             return ['success' => false, 'message' => 'Gagal mengajukan WFH. Silakan coba lagi.'];
         }
     }
@@ -217,8 +221,8 @@ class WfhService
             return ['success' => false, 'message' => 'Data tidak ditemukan!'];
         }
 
-        if (!in_array($wfh->status, [WfhStatus::PendingAtasan->value, WfhStatus::PendingAdmin->value])) {
-            return ['success' => false, 'message' => 'WFH yang sudah disetujui/ditolak tidak bisa dihapus!'];
+        if (!in_array($wfh->status, [WfhStatus::PendingAtasan->value])) {
+            return ['success' => false, 'message' => 'WFH yang sudah disetujui atau masuk ke admin tidak bisa dihapus!'];
         }
 
         self::deleteWfhFiles($wfh);
@@ -231,6 +235,10 @@ class WfhService
     {
         $wfh = Wfh::find($id);
         if (!$wfh) return ['success' => false, 'message' => 'Data tidak ditemukan'];
+
+        if (!in_array($wfh->status, [WfhStatus::PendingAdmin->value, WfhStatus::Rejected->value])) {
+            return ['success' => false, 'message' => 'Hanya data dengan status pending atau ditolak yang bisa dihapus!'];
+        }
 
         self::deleteWfhFiles($wfh);
         $wfh->delete();
@@ -260,7 +268,7 @@ class WfhService
                 self::sendWebPush($wfh->nik, 'WFH Disetujui', 'WFH ' . $wfh->tgl_wfh . ' disetujui, menunggu persetujuan selanjutnya', null, 'wfh-approved-atasan-' . $wfh->id);
             }
         } catch (\Exception $e) {
-            \Log::warning('WFH atasan approval notification failed: ' . $e->getMessage());
+            Log::warning('WFH atasan approval notification failed: ' . $e->getMessage());
         }
         cache()->forget('pending_wfh_count');
         cache()->forget('pending_wfh_admin_count');
@@ -271,7 +279,8 @@ class WfhService
     public static function rejectWfhAtasan(int $id, string $rejectedReason, Karyawan $karyawan): array
     {
         $wfh = Wfh::find($id);
-        if (!$wfh || $wfh->atasan_nik !== $karyawan->nik) return ['success' => false, 'message' => 'Akses ditolak'];
+        if (!$wfh) return ['success' => false, 'message' => 'Data tidak ditemukan'];
+        if ($wfh->atasan_nik !== $karyawan->nik) return ['success' => false, 'message' => 'Anda bukan atasan untuk pengajuan ini'];
         if ($wfh->status !== WfhStatus::PendingAtasan->value) return ['success' => false, 'message' => 'Status tidak valid untuk penolakan'];
 
         $wfh->update([
@@ -287,7 +296,7 @@ class WfhService
                 self::sendWebPush($wfh->nik, 'WFH Ditolak', 'WFH ' . $wfh->tgl_wfh . ' ditolak: ' . $rejectedReason, null, 'wfh-rejected-atasan-' . $wfh->id);
             }
         } catch (\Exception $e) {
-            \Log::warning('WFH atasan rejection notification failed: ' . $e->getMessage());
+            Log::warning('WFH atasan rejection notification failed: ' . $e->getMessage());
         }
         cache()->forget('pending_wfh_count');
 
@@ -314,7 +323,7 @@ class WfhService
                 self::sendWebPush($wfh->nik, 'WFH Disetujui ', 'WFH ' . $wfh->tgl_wfh . ' disetujui! Silakan input Laporan.', '/presensi/wfh/' . $id . '/laporan', 'wfh-approved-admin-' . $wfh->id);
             }
         } catch (\Exception $e) {
-            \Log::warning('WFH admin approval notification failed: ' . $e->getMessage());
+            Log::warning('WFH admin approval notification failed: ' . $e->getMessage());
         }
         cache()->forget('pending_wfh_count');
         cache()->forget('pending_wfh_admin_count');
@@ -342,7 +351,7 @@ class WfhService
                 self::sendWebPush($wfh->nik, 'WFH Ditolak', 'WFH ' . $wfh->tgl_wfh . ' ditolak Admin', null, 'wfh-rejected-admin-' . $wfh->id);
             }
         } catch (\Exception $e) {
-            \Log::warning('WFH admin rejection notification failed: ' . $e->getMessage());
+            Log::warning('WFH admin rejection notification failed: ' . $e->getMessage());
         }
         cache()->forget('pending_wfh_count');
         cache()->forget('pending_wfh_admin_count');
@@ -378,12 +387,6 @@ class WfhService
 
     public static function storeLaporanWfh(Request $request, int $id, string $nik): array
     {
-        $request->validate([
-            'laporan_deskripsi' => 'required|string|min:10|max:3000',
-            'laporan_images' => 'required|array|min:2|max:5',
-            'laporan_images.*' => 'required|image|mimes:jpg,jpeg,png|max:4096',
-        ]);
-
         $wfh = Wfh::where('id', $id)->where('nik', $nik)->where('status', WfhStatus::Approved->value)->first();
         if (!$wfh) return ['success' => false, 'message' => 'Akses ditolak'];
 
@@ -396,10 +399,12 @@ class WfhService
         try {
             $imagePaths = [];
             if ($request->hasFile('laporan_images')) {
+                $imageService = app(ImageService::class);
                 foreach ($request->file('laporan_images') as $idx => $file) {
-                    $nama = Str::uuid() . '-laporan-' . ($idx + 1) . '.' . $file->getClientOriginalExtension();
-                    $path = $file->storeAs('wfh/laporan', $nama, 'public');
-                    $imagePaths[] = $path;
+                    $path = $imageService->processUpload($file, 'wfh/laporan');
+                    if ($path) {
+                        $imagePaths[] = $path;
+                    }
                 }
             }
 
@@ -441,7 +446,7 @@ class WfhService
 
             $stempelPath = self::getStempelPath();
 
-            $pdf = Pdf::loadView('presensi.laporan-pdf', array_merge($pdfData, ['stempelPath' => $stempelPath]));
+            $pdf = Pdf::loadView('admin.presensi.laporan-pdf', array_merge($pdfData, ['stempelPath' => $stempelPath]));
             $pdf->setPaper('A4', 'portrait');
             $pdfFilename = Str::uuid() . '-laporan-' . Str::slug($karyawan->nama_lengkap) . '.pdf';
             $pdfPath = 'wfh/laporan/' . $pdfFilename;
@@ -468,13 +473,13 @@ class WfhService
                     }
                 }
             } catch (\Exception $e) {
-                \Log::warning('Laporan submission notification failed: ' . $e->getMessage());
+                Log::warning('Laporan submission notification failed: ' . $e->getMessage());
             }
 
             return ['success' => true, 'message' => 'Laporan WFH berhasil dikirim! Menunggu persetujuan atasan dan administrator.'];
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('storeLaporanWfh failed: ' . $e->getMessage());
+            Log::error('storeLaporanWfh failed: ' . $e->getMessage());
             return ['success' => false, 'message' => 'Gagal mengirim laporan WFH. Silakan coba lagi.'];
         }
     }
@@ -498,7 +503,7 @@ class WfhService
                 self::sendWebPush($wfh->nik, 'Laporan Disetujui Atasan', 'Laporan WFH ' . $wfh->tgl_wfh . ' disetujui atasan, menunggu persetujuan HR', null, 'laporan-approved-atasan-' . $wfh->id);
             }
         } catch (\Exception $e) {
-            \Log::warning('Laporan atasan approval notification failed: ' . $e->getMessage());
+            Log::warning('Laporan atasan approval notification failed: ' . $e->getMessage());
         }
         cache()->forget('pending_laporan_admin_count');
 
@@ -524,7 +529,7 @@ class WfhService
                 self::sendWebPush($wfh->nik, 'Laporan Ditolak Atasan', 'Laporan WFH ' . $wfh->tgl_wfh . ' ditolak atasan: ' . $rejectedReason, null, 'laporan-rejected-atasan-' . $wfh->id);
             }
         } catch (\Exception $e) {
-            \Log::warning('Laporan atasan rejection notification failed: ' . $e->getMessage());
+            Log::warning('Laporan atasan rejection notification failed: ' . $e->getMessage());
         }
         cache()->forget('pending_laporan_admin_count');
 
@@ -551,7 +556,7 @@ class WfhService
                 self::sendWebPush($wfh->nik, 'Laporan Disetujui HR', 'Laporan WFH ' . $wfh->tgl_wfh . ' telah disetujui.', null, 'laporan-approved-admin-' . $wfh->id);
             }
         } catch (\Exception $e) {
-            \Log::warning('Laporan admin approval notification failed: ' . $e->getMessage());
+            Log::warning('Laporan admin approval notification failed: ' . $e->getMessage());
         }
         cache()->forget('pending_laporan_admin_count');
 
@@ -578,7 +583,7 @@ class WfhService
                 self::sendWebPush($wfh->nik, 'Laporan Ditolak Admin', 'Laporan WFH ' . $wfh->tgl_wfh . ' ditolak Admin', null, 'laporan-rejected-admin-' . $wfh->id);
             }
         } catch (\Exception $e) {
-            \Log::warning('Laporan admin rejection notification failed: ' . $e->getMessage());
+            Log::warning('Laporan admin rejection notification failed: ' . $e->getMessage());
         }
         cache()->forget('pending_laporan_admin_count');
 
@@ -587,15 +592,8 @@ class WfhService
 
     public static function getStempelPath(): ?string
     {
-        if (file_exists(public_path('storage/uploads/stempel/stempel.png'))) {
-            return 'storage/uploads/stempel/stempel.png';
-        }
-        if (file_exists(storage_path('app/template/stempel.png'))) {
-            if (!is_dir(public_path('storage/uploads/stempel'))) {
-                @mkdir(public_path('storage/uploads/stempel'), 0755, true);
-            }
-            @copy(storage_path('app/template/stempel.png'), public_path('storage/uploads/stempel/stempel.png'));
-            return 'storage/uploads/stempel/stempel.png';
+        if (file_exists(public_path('assets/img/stempel.png'))) {
+            return 'assets/img/stempel.png';
         }
         return null;
     }
@@ -612,7 +610,7 @@ class WfhService
 
     public static function generatePdf(array $data, ?string $stempelPath = null): string
     {
-        $pdf = Pdf::loadView('presensi.pengajuan-wfh-pdf', array_merge($data, ['stempelPath' => $stempelPath]));
+        $pdf = Pdf::loadView('admin.presensi.pengajuan-wfh-pdf', array_merge($data, ['stempelPath' => $stempelPath]));
         $pdf->setPaper('A4', 'portrait');
         $dir = 'wfh';
         $filename = Str::uuid() . '-' . Str::slug($data['nama_lengkap']) . '-wfh.pdf';
@@ -638,8 +636,10 @@ class WfhService
             }
         }
 
-        $wfh = Wfh::where('pdf_form_path', 'like', '%/' . $file)
-            ->orWhere('laporan_file', 'like', '%/' . $file)
+        $safeFile = str_replace(['%', '_'], ['\\%', '\\_'], $file);
+
+        $wfh = Wfh::where('pdf_form_path', 'like', '%/' . $safeFile, '\\')
+            ->orWhere('laporan_file', 'like', '%/' . $safeFile, '\\')
             ->first();
 
         if ($wfh) {
@@ -691,7 +691,7 @@ class WfhService
                 $webPush->sendOneNotification($subscription, $payload, ['TTL' => 3600]);
             }
         } catch (\Exception $e) {
-            \Log::warning('Web push failed: ' . $e->getMessage());
+            Log::warning('Web push failed: ' . $e->getMessage());
         }
     }
 }

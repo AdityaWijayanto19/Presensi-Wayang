@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Unitperusahaan;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
+use App\Http\Requests\Unitperusahaan\StoreUnitperusahaanRequest;
+use App\Http\Requests\Unitperusahaan\UpdateUnitperusahaanRequest;
 
 class UnitperusahaanController extends Controller
 {
@@ -15,13 +18,8 @@ class UnitperusahaanController extends Controller
         return view('admin.unitperusahaan.index', compact('unitperusahaan'));
     }
 
-    public function store(Request $request)
+    public function store(StoreUnitperusahaanRequest $request)
     {
-        $request->validate([
-            'unit' => 'required|string|max:255|unique:unitperusahaan,unit',
-            'perusahaan' => 'required|string|max:255',
-            'jam_masuk' => 'required',
-        ]);
 
         Unitperusahaan::create($request->only('unit', 'perusahaan', 'jam_masuk'));
 
@@ -30,28 +28,40 @@ class UnitperusahaanController extends Controller
 
     public function edit(Request $request)
     {
-        $unitperusahaan = Unitperusahaan::findOrFail($request->unit);
+        $unitperusahaan = Unitperusahaan::findOrFail($request->id);
 
         return view('admin.unitperusahaan.edit', compact('unitperusahaan'));
     }
 
-    public function update(string $unit, Request $request)
+    public function update(string $id, UpdateUnitperusahaanRequest $request)
     {
-        $request->validate([
-            'unit' => 'required|string|max:255',
-            'perusahaan' => 'required|string|max:255',
-            'jam_masuk' => 'required',
-        ]);
 
-        $unitperusahaan = Unitperusahaan::findOrFail($unit);
-        $unitperusahaan->update($request->only('unit', 'perusahaan', 'jam_masuk'));
+        $unitperusahaan = Unitperusahaan::findOrFail($id);
+        $oldUnit = $unitperusahaan->unit;
+        $newUnit = $request->unit;
 
-        return Redirect::back()->with('success', 'Data Berhasil Diperbarui!');
+        DB::beginTransaction();
+
+        try {
+            $unitperusahaan->update($request->only('unit', 'perusahaan', 'jam_masuk'));
+
+            if ($oldUnit !== $newUnit) {
+                DB::table('karyawans')->where('unit', $oldUnit)->update(['unit' => $newUnit]);
+                DB::table('users')->where('unit', $oldUnit)->update(['unit' => $newUnit]);
+            }
+
+            DB::commit();
+
+            return Redirect::back()->with('success', 'Data Berhasil Diperbarui!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return Redirect::back()->with('error', 'Data Gagal Diperbarui!');
+        }
     }
 
-    public function delete(string $unit)
+    public function delete(string $id)
     {
-        $unitperusahaan = Unitperusahaan::findOrFail($unit);
+        $unitperusahaan = Unitperusahaan::findOrFail($id);
         $unitperusahaan->delete();
 
         return Redirect::back()->with('success', 'Data Berhasil Dihapus!');

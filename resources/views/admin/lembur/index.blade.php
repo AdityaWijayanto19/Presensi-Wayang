@@ -1,14 +1,8 @@
 @extends('layouts.admin.app')
 
 @section('content')
-    {{-- ================================================== --}}
-    {{-- Page Header --}}
-    {{-- ================================================== --}}
-    <x-app.page-header title="Data Lembur Karyawan" pretitle="WAG - Presensi Digital" />
+@section('page_title', 'Data Lembur Karyawan')
 
-    {{-- ================================================== --}}
-    {{-- Page Body --}}
-    {{-- ================================================== --}}
     <x-app.page-body>
 
         <div class="bg-white rounded-md shadow-sm border border-slate-200 p-4">
@@ -115,16 +109,16 @@
 
                         <tr>
 
-                            <th class="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">No.</th>
-                            <th class="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Tanggal Lembur</th>
-                            <th class="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">NIK</th>
-                            <th class="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Nama Karyawan</th>
-                            <th class="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Jabatan</th>
-                            <th class="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Unit Perusahaan</th>
-                            <th class="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Durasi</th>
-                            <th class="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Form Lembur</th>
-                            <th class="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Laporan Lembur</th>
-                            <th class="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Actions</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">No.</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Tanggal Lembur</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">NIK</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Nama Karyawan</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Jabatan</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Unit Perusahaan</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Durasi</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Form Lembur</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Laporan Lembur</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Actions</th>
 
                         </tr>
 
@@ -135,25 +129,25 @@
                         @forelse ($datalembur as $d)
                             <tr class="hover:bg-slate-50 transition-colors">
 
-                                <td class="px-3 py-2 text-sm text-slate-700">
+                                <td class="px-2 py-1.5 text-xs text-slate-700">
                                     {{ ($datalembur->currentPage() - 1) * $datalembur->perPage() + $loop->iteration }}
                                 </td>
 
-                                <td class="px-3 py-2 text-sm text-slate-700">
+                                <td class="px-2 py-1.5 text-xs text-slate-700">
                                     {{ date('d-m-Y', strtotime($d->tgl_lembur)) }}
                                 </td>
 
-                                <td class="px-3 py-2 text-sm text-slate-700">{{ $d->nik }}</td>
+                                <td class="px-2 py-1.5 text-xs text-slate-700">{{ $d->nik }}</td>
 
-                                <td class="px-3 py-2 text-sm text-slate-700">{{ $d->nama_lengkap }}</td>
+                                <td class="px-2 py-1.5 text-xs text-slate-700 truncate-cell">{{ $d->nama_lengkap }}</td>
 
-                                <td class="px-3 py-2 text-sm text-slate-700">{{ $d->jabatan }}</td>
+                                <td class="px-2 py-1.5 text-xs text-slate-700 truncate-cell">{{ $d->jabatan }}</td>
 
-                                <td class="px-3 py-2 text-sm text-slate-700">{{ $d->perusahaan }}</td>
+                                <td class="px-2 py-1.5 text-xs text-slate-700 truncate-cell">{{ $d->perusahaan }}</td>
 
-                                <td class="px-3 py-2 text-sm text-slate-700">{{ $d->durasi }}</td>
+                                <td class="px-2 py-1.5 text-xs text-slate-700">{{ $d->durasi }}</td>
 
-                                <td class="px-3 py-2 text-sm">
+                                <td class="px-2 py-1.5 text-xs">
 
                                     <a href="/presensi/showfilelembur/{{ $d->file_form }}" target="_blank"
                                         class="inline-flex items-center gap-1 bg-blue-600 text-white px-2 py-1 rounded-md hover:bg-blue-700 transition-colors text-xs font-medium">
@@ -164,7 +158,7 @@
 
                                 </td>
 
-                                <td class="px-3 py-2 text-sm">
+                                <td class="px-2 py-1.5 text-xs">
 
                                     <a href="/presensi/showfilelembur/{{ $d->file_laporan }}" target="_blank"
                                         class="inline-flex items-center gap-1 bg-green-600 text-white px-2 py-1 rounded-md hover:bg-green-700 transition-colors text-xs font-medium">
@@ -175,7 +169,7 @@
 
                                 </td>
 
-                                <td class="px-3 py-2 text-sm">
+                                <td class="px-2 py-1.5 text-xs">
 
                                     @can('presensi-edit')
                                     <button type="button"
@@ -230,7 +224,7 @@
 
                             <tr>
 
-                                <td colspan="10" class="text-center text-slate-500 px-3 py-2 text-sm">
+                                <td colspan="10" class="text-center text-slate-500 px-2 py-1.5 text-xs">
 
                                     Data lembur tidak ditemukan
 
@@ -288,7 +282,7 @@
 
 @push('myscript')
     <script>
-        $(function() {
+        document.addEventListener('DOMContentLoaded', function() {
 
             flatpickr("#tanggal", {
                 locale: "id",
@@ -299,30 +293,29 @@
                 disableMobile: "true"
             });
 
-            $('input[name="tanggal"]').change(function() {
-
-                $(this).closest('form').submit();
-
+            document.querySelector('input[name="tanggal"]').addEventListener('change', function() {
+                this.closest('form').submit();
             });
 
-            $('select[name="unit"]').change(function() {
-
-                $(this).closest('form').submit();
-
+            document.querySelector('select[name="unit"]').addEventListener('change', function() {
+                this.closest('form').submit();
             });
 
             // ==================================================
             // Edit Lembur Modal
             // ==================================================
-            $(document).on('click', '.edit-lembur', function() {
-                var id = $(this).data('id');
-                var tgl = $(this).data('tgl_lembur');
-                var durasi = $(this).data('durasi');
+            document.addEventListener('click', function(e) {
+                var btn = e.target.closest('.edit-lembur');
+                if (!btn) return;
 
-                $('#edit_lembur_id').val(id);
-                $('#edit_tgl_lembur').val(tgl);
-                $('#edit_durasi').val(durasi);
-                $('#formEditLembur').attr('action', '/presensi/lembur/' + id + '/update');
+                var id = btn.dataset.id;
+                var tgl = btn.dataset.tgl_lembur;
+                var durasi = btn.dataset.durasi;
+
+                document.getElementById('edit_lembur_id').value = id;
+                document.getElementById('edit_tgl_lembur').value = tgl;
+                document.getElementById('edit_durasi').value = durasi;
+                document.getElementById('formEditLembur').setAttribute('action', '/presensi/lembur/' + id + '/update');
                 window.dispatchEvent(new CustomEvent('open-modal-modal-editlembur'));
             });
 
@@ -331,11 +324,13 @@
         // ==================================================
         // Konfirmasi Hapus
         // ==================================================
-        $(".delete-confirm").click(function(e) {
-
-            var form = $(this).closest("form");
+        document.addEventListener('click', function(e) {
+            var btn = e.target.closest('.delete-confirm');
+            if (!btn) return;
 
             e.preventDefault();
+
+            var form = btn.closest('form');
 
             Swal.fire({
 

@@ -25,7 +25,7 @@
 
         @include('layouts.admin.sidebar')
 
-        <div class="flex-1 flex flex-col lg:pl-60">
+        <div class="flex-1 flex flex-col lg:pl-56">
 
             @include('layouts.admin.header')
 
@@ -33,43 +33,44 @@
                 @yield('content')
             </main>
 
-            @include('layouts.admin.footer')
-
         </div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
-        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
-
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://npmcdn.com/flatpickr/dist/l10n/id.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script>document.addEventListener('DOMContentLoaded',function(){if(window.lucide)lucide.createIcons();});</script>
+
     <script>
-        $(document).ready(function() {
-            $("#logout-admin").click(function(e) {
-                e.preventDefault();
-                let url = $(this).attr('href');
-                Swal.fire({
-                    title: 'Yakin ingin logout?',
-                    text: 'Anda akan keluar dari sistem.',
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Ya, Logout',
-                    cancelButtonText: 'Batal',
-                    backdrop: false
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        window.location.href = url;
-                    }
+        document.addEventListener('DOMContentLoaded', function() {
+            var logoutBtn = document.getElementById('logout-admin');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    var url = this.getAttribute('href');
+                    Swal.fire({
+                        title: 'Yakin ingin logout?',
+                        text: 'Anda akan keluar dari sistem.',
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Ya, Logout',
+                        cancelButtonText: 'Batal',
+                        backdrop: false
+                    }).then(function(result) {
+                        if (result.isConfirmed) {
+                            window.location.href = url;
+                        }
+                    });
                 });
-            });
+            }
         });
     </script>
 

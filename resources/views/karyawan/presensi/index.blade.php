@@ -18,7 +18,7 @@
             <div class="flex flex-wrap -mx-2">
                 <div class="w-full px-2">
                     <div class="form-group">
-                        <select name="bulan" id="bulan" class="form-control">
+                        <select name="bulan" id="bulan" class="w-full rounded-md border border-slate-300 px-2.5 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
                             <option value="">Pilih Bulan</option>
                             @for ($i = 1; $i <= 12; $i++)
                                 <option value="{{ $i }}" {{ date('m') == $i ? 'selected' : '' }}>
@@ -33,7 +33,7 @@
             <div class="flex flex-wrap -mx-2 mt-2">
                 <div class="w-full px-2">
                     <div class="form-group">
-                        <select name="tahun" id="tahun" class="form-control">
+                        <select name="tahun" id="tahun" class="w-full rounded-md border border-slate-300 px-2.5 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
                             <option value="">Pilih Tahun</option>
                             @php
                                 $tahunmulai = 2025;
@@ -74,36 +74,38 @@
 
 <script>
 
-    $(function () {
+    document.addEventListener('DOMContentLoaded', function () {
 
-        $(document).on('click', '.foto-histori', function () {
-            let foto = $(this).attr('src');
-            Swal.fire({
-                html: `<img src="${foto}" style="width:100%;height:auto;border-radius:12px;display:block;">`,
-                showConfirmButton: false,
-                showCloseButton: true,
-                width: '390px',
-                padding: '10px',
-                background: 'transparent'
-            });
+        document.addEventListener('click', function (e) {
+            var img = e.target.closest('.foto-histori');
+            if (img) {
+                var foto = img.getAttribute('src');
+                Swal.fire({
+                    html: '<img src="' + foto + '" style="width:100%;height:auto;border-radius:12px;display:block;">',
+                    showConfirmButton: false,
+                    showCloseButton: true,
+                    width: '390px',
+                    padding: '10px',
+                    background: 'transparent'
+                });
+            }
         });
 
-        $('#getdata').click(function () {
-            var bulan = $('#bulan').val();
-            var tahun = $('#tahun').val();
+        document.getElementById('getdata').addEventListener('click', function () {
+            var bulan = document.getElementById('bulan').value;
+            var tahun = document.getElementById('tahun').value;
 
-            $.ajax({
-                type: 'POST',
-                url: '/gethistori',
-                data: {
-                    _token: "{{ csrf_token() }}",
-                    bulan: bulan,
-                    tahun: tahun
+            fetch('/gethistori', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
-                cache: false,
-                success: function (respond) {
-                    $("#showhistori").html(respond);
-                }
+                body: '_token={{ csrf_token() }}&bulan=' + encodeURIComponent(bulan) + '&tahun=' + encodeURIComponent(tahun)
+            })
+            .then(function (response) { return response.text(); })
+            .then(function (respond) {
+                document.getElementById('showhistori').innerHTML = respond;
             });
         });
 

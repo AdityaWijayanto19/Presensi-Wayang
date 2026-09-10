@@ -36,7 +36,7 @@
                 @csrf
 
                 {{-- Info Compact: Pengaju + Tanggal + Lokasi --}}
-                <div class="bg-white rounded-2xl border border-[#f0ece8] p-4 mb-3">
+                <x-app.card class="p-4 mb-3">
                     <div class="flex items-center gap-3 mb-3">
                         <div class="w-10 h-10 rounded-xl bg-[#fdf8f4] border border-[#f0ece8] flex items-center justify-center text-coklat">
                             <i data-lucide="user" style="width:18px;height:18px;"></i>
@@ -65,19 +65,19 @@
                             <div class="text-[13px] font-bold text-[#1c1917]">{{ $liveLocation }}</div>
                         </div>
                     </div>
-                </div>
+                </x-app.card>
 
                 {{-- Detail Hasil Pekerjaan (Deskripsi) --}}
                 <div class="form-group mb-3">
                     <label class="text-[12px] font-semibold text-[#44403c] mb-1 block">Deskripsi Hasil Pekerjaan <span class="text-red-500">*</span></label>
-                    <textarea name="laporan_deskripsi" id="deskripsi_laporan" rows="5" class="form-control" placeholder="1. Menuliskan list pekerjaan&#10;2. List pekerjaan dibuat numerik/berurutan&#10;3. Dokumentasikan hasil kerja" required>{{ old('laporan_deskripsi', $wfh->laporan_deskripsi) }}</textarea>
+                    <textarea name="laporan_deskripsi" id="deskripsi_laporan" rows="5" class="w-full rounded-md border border-slate-300 px-2.5 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" placeholder="1. Menuliskan list pekerjaan&#10;2. List pekerjaan dibuat numerik/berurutan&#10;3. Dokumentasikan hasil kerja" required>{{ old('laporan_deskripsi', $wfh->laporan_deskripsi) }}</textarea>
                     <small class="text-[11px] text-[#a8a29e]"><span id="charCountDesk">0</span>/3000 karakter &bull; Maksimal 10 poin</small>
                 </div>
 
                 {{-- Upload Gambar Hasil Pekerjaan (Min 2, Max 5) --}}
                 <div class="form-group mb-3">
                     <label class="text-[12px] font-semibold text-[#44403c] mb-1 block">Foto Hasil Pekerjaan <span class="text-red-500">*</span></label>
-                    <input type="file" name="laporan_images[]" id="laporan_images" class="form-control" accept="image/*" multiple>
+                    <input type="file" name="laporan_images[]" id="laporan_images" class="w-full rounded-md border border-slate-300 px-2.5 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" accept="image/*" multiple>
                     <small class="text-[11px] text-[#a8a29e]">Minimal 2 foto, maksimal 5 foto. Format: JPG, JPEG, PNG. Maks 4MB per foto.</small>
                     <div id="image-preview" class="flex flex-wrap gap-2 mt-2"></div>
                 </div>
@@ -122,7 +122,7 @@
 </div>
 
 <script>
-$(function(){
+document.addEventListener('DOMContentLoaded', function() {
     const fileInput = document.getElementById('laporan_images');
     const previewContainer = document.getElementById('image-preview');
     const imgPreviewModal = document.getElementById('imgPreviewModal');
@@ -212,7 +212,7 @@ $(function(){
     });
 
     // ── Deskripsi Auto-Numbering ──────────────────────────
-    var $desk = $('#deskripsi_laporan');
+    var desk = document.getElementById('deskripsi_laporan');
     var MAX_PPOINT = 10;
 
     function maxLineNumberDesk(text) {
@@ -241,11 +241,11 @@ $(function(){
         return out.join("\n");
     }
 
-    $desk.on("focus", function() {
+    desk.addEventListener("focus", function() {
         if (this.value === "") this.value = "1. ";
     });
 
-    $desk.on("keydown", function(e) {
+    desk.addEventListener("keydown", function(e) {
         var val = this.value;
         var pos = this.selectionStart;
 
@@ -315,16 +315,16 @@ $(function(){
         }
     });
 
-    $desk.on("input", function() {
-        $("#charCountDesk").text(this.value.length);
+    desk.addEventListener("input", function() {
+        document.getElementById('charCountDesk').textContent = this.value.length;
     });
 
-    $("#charCountDesk").text($desk.val().length);
+    document.getElementById('charCountDesk').textContent = desk.value.length;
 
-    $('#form_laporan').submit(function(e){
+    document.getElementById('form_laporan').addEventListener('submit', function(e){
         e.preventDefault();
-        const desk = $('textarea[name="laporan_deskripsi"]').val().trim();
-        if(!desk || desk.length < 10){
+        const deskValue = document.querySelector('textarea[name="laporan_deskripsi"]').value.trim();
+        if(!deskValue || deskValue.length < 10){
             Swal.fire({icon:'warning', text:'Deskripsi minimal 10 karakter', confirmButtonColor:'#7a5234'});
             return;
         }
@@ -351,7 +351,7 @@ $(function(){
             cancelButtonColor: "#d33",
             confirmButtonText: "Ya, Kirim",
             cancelButtonText: "Batal"
-        }).then((r)=>{ if(r.isConfirmed) $('#form_laporan')[0].submit(); });
+        }).then((r)=>{ if(r.isConfirmed) document.getElementById('form_laporan').submit(); });
     });
 });
 </script>

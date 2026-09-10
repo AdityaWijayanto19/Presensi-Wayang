@@ -20,12 +20,6 @@ class IzinService
     {
         $nik = Auth::guard('karyawan')->user()->nik;
 
-        $request->validate([
-            'tgl_izin' => 'required|date',
-            'jenis_izin' => 'required',
-            'file' => 'required|mimes:pdf,doc,docx|max:4096',
-        ]);
-
         $cek = Izin::where('nik', $nik)
             ->where('tgl_izin', $request->tgl_izin)
             ->count();

@@ -1,4 +1,4 @@
-<form action="/unitperusahaan/{{ $unitperusahaan->unit }}/update"
+<form action="/unitperusahaan/{{ $unitperusahaan->id }}/update"
       method="POST"
       id="formUnitperusahaan"
       enctype="multipart/form-data">

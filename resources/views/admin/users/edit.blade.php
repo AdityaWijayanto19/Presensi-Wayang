@@ -135,10 +135,10 @@
                     <option value="">Role</option>
 
                     @foreach ($role as $d)
-                        <option value="{{ $d->id }}"
-                            {{ $user->role_id == $d->id ? 'selected' : '' }}>
+                        <option value="{{ $d->name }}"
+                            {{ $user->roles->pluck('name')->first() === $d->name ? 'selected' : '' }}>
 
-                            {{ ucwords($d->name) }}
+                            {{ ucwords(str_replace('_', ' ', $d->name)) }}
 
                         </option>
                     @endforeach

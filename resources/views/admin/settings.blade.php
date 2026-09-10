@@ -2,7 +2,7 @@
 
 @section('content')
 
-<x-app.page-header title="Izin Browser" pretitle="Pengaturan" />
+@section('page_title', 'Izin Browser')
 
 <x-app.page-body>
 

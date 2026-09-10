@@ -1,14 +1,8 @@
 @extends('layouts.admin.app')
 
 @section('content')
-    {{-- ================================================== --}}
-    {{-- Page Header --}}
-    {{-- ================================================== --}}
-    <x-app.page-header title="Data Izin Karyawan" pretitle="WAG - Presensi Digital" />
+@section('page_title', 'Data Izin Karyawan')
 
-    {{-- ================================================== --}}
-    {{-- Page Body --}}
-    {{-- ================================================== --}}
     <x-app.page-body>
 
         <div class="bg-white rounded-md shadow-sm border border-slate-200 p-4">
@@ -141,14 +135,14 @@
 
                         <tr>
 
-                            <th class="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">No.</th>
-                            <th class="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Tanggal Izin</th>
-                            <th class="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">NIK</th>
-                            <th class="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Nama Karyawan</th>
-                            <th class="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Jabatan</th>
-                            <th class="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Unit Perusahaan</th>
-                            <th class="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Jenis Izin</th>
-                            <th class="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Actions</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">No.</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Tanggal Izin</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">NIK</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Nama Karyawan</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Jabatan</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Unit Perusahaan</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Jenis Izin</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Actions</th>
 
                         </tr>
 
@@ -159,23 +153,23 @@
                         @forelse ($dataizin as $d)
                             <tr class="hover:bg-slate-50 transition-colors">
 
-                                <td class="px-3 py-2 text-sm text-slate-700">
+                                <td class="px-2 py-1.5 text-xs text-slate-700">
                                     {{ ($dataizin->currentPage() - 1) * $dataizin->perPage() + $loop->iteration }}
                                 </td>
 
-                                <td class="px-3 py-2 text-sm text-slate-700">
+                                <td class="px-2 py-1.5 text-xs text-slate-700">
                                     {{ date('d-m-Y', strtotime($d->tgl_izin)) }}
                                 </td>
 
-                                <td class="px-3 py-2 text-sm text-slate-700">{{ $d->nik }}</td>
+                                <td class="px-2 py-1.5 text-xs text-slate-700">{{ $d->nik }}</td>
 
-                                <td class="px-3 py-2 text-sm text-slate-700">{{ $d->nama_lengkap }}</td>
+                                <td class="px-2 py-1.5 text-xs text-slate-700 truncate-cell">{{ $d->nama_lengkap }}</td>
 
-                                <td class="px-3 py-2 text-sm text-slate-700">{{ $d->jabatan }}</td>
+                                <td class="px-2 py-1.5 text-xs text-slate-700 truncate-cell">{{ $d->jabatan }}</td>
 
-                                <td class="px-3 py-2 text-sm text-slate-700">{{ $d->perusahaan }}</td>
+                                <td class="px-2 py-1.5 text-xs text-slate-700 truncate-cell">{{ $d->perusahaan }}</td>
 
-                                <td class="px-3 py-2 text-sm text-slate-700">
+                                <td class="px-2 py-1.5 text-xs text-slate-700">
 
                                     {{ $d->jenis_izin == 'i' ? 'Izin' : 'Sakit' }}
 
@@ -298,7 +292,7 @@
 
 @push('myscript')
     <script>
-        $(function() {
+        document.addEventListener('DOMContentLoaded', function() {
             flatpickr("#tanggal", {
                 locale: "id",
                 dateFormat: "Y-m-d",
@@ -308,69 +302,64 @@
                 disableMobile: "true"
             });
 
-            $('input[name="tanggal"]').change(function() {
-
-                $(this).closest('form').submit();
-
+            document.querySelector('input[name="tanggal"]').addEventListener('change', function() {
+                this.closest('form').submit();
             });
 
-            $('select[name="unit"]').change(function() {
-
-                $(this).closest('form').submit();
-
+            document.querySelector('select[name="unit"]').addEventListener('change', function() {
+                this.closest('form').submit();
             });
 
-            $('select[name="jenis_izin"]').change(function() {
-
-                $(this).closest('form').submit();
-
+            document.querySelector('select[name="jenis_izin"]').addEventListener('change', function() {
+                this.closest('form').submit();
             });
 
             // ==================================================
             // Edit Izin Modal
             // ==================================================
-            $(document).on('click', '.edit-izin', function() {
-                var id = $(this).data('id');
-                var tgl = $(this).data('tgl_izin');
-                var jenis = $(this).data('jenis_izin');
+            var tbody = document.querySelector('tbody');
+            if (tbody) {
+                tbody.addEventListener('click', function(e) {
+                    var btn = e.target.closest('.edit-izin');
+                    if (!btn) return;
 
-                $('#edit_izin_id').val(id);
-                $('#edit_tgl_izin').val(tgl);
-                $('#edit_jenis_izin').val(jenis);
-                $('#formEditIzin').attr('action', '/presensi/izin/' + id + '/update');
-                window.dispatchEvent(new CustomEvent('open-modal-modal-editizin'));
+                    var id = btn.dataset.id;
+                    var tgl = btn.dataset.tgl_izin;
+                    var jenis = btn.dataset.jenis_izin;
+
+                    document.getElementById('edit_izin_id').value = id;
+                    document.getElementById('edit_tgl_izin').value = tgl;
+                    document.getElementById('edit_jenis_izin').value = jenis;
+                    document.getElementById('formEditIzin').setAttribute('action', '/presensi/izin/' + id + '/update');
+                    window.dispatchEvent(new CustomEvent('open-modal-modal-editizin'));
+                });
+            }
+
+            // ==================================================
+            // Konfirmasi Hapus
+            // ==================================================
+            document.addEventListener('click', function(e) {
+                var btn = e.target.closest('.delete-confirm');
+                if (!btn) return;
+
+                var form = btn.closest('form');
+                e.preventDefault();
+
+                Swal.fire({
+                    title: 'Yakin data ini akan dihapus?',
+                    text: "Data yang sudah dihapus tidak bisa dikembalikan!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Hapus Data',
+                    backdrop: false
+                }).then(function(result) {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
             });
-
-        });
-
-        // ==================================================
-        // Konfirmasi Hapus
-        // ==================================================
-        $(".delete-confirm").click(function(e) {
-
-            var form = $(this).closest("form");
-
-            e.preventDefault();
-
-            Swal.fire({
-
-                title: 'Yakin data ini akan dihapus?',
-                text: "Data yang sudah dihapus tidak bisa dikembalikan!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Hapus Data',
-                backdrop: false
-
-            }).then((result) => {
-
-                if (result.isConfirmed) {
-                    form.submit();
-                }
-
-            });
-
         });
     </script>
 @endpush

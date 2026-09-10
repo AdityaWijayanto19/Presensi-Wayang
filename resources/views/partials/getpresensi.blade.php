@@ -1,160 +1,89 @@
-<?php
-
-// ==================================================
-// Menghitung Selisih Jam Kerja
-// ==================================================
-function selisih($jam_in, $jam_out)
-{
-    $awal = strtotime($jam_in);
-    $akhir = strtotime($jam_out);
-
-    $selisih = $akhir - $awal;
-
-    $jam = floor($selisih / 3600);
-    $menit = floor(($selisih % 3600) / 60);
-
-    return $jam . " Jam " . $menit . " Menit";
-}
-
-?>
-
-{{-- ================================================== --}}
-{{-- Data Presensi --}}
-{{-- ================================================== --}}
 @if ($presensi->count() > 0)
 
     @foreach ($presensi as $p)
 
         @php
             $foto_in = Storage::url('uploads/absensi/' . $p->foto_in);
-            $foto_out = Storage::url('uploads/absensi/' . $p->foto_out);
+            $foto_out = $p->foto_out ? Storage::url('uploads/absensi/' . $p->foto_out) : null;
         @endphp
 
-        <tr>
+        <tr class="hover:bg-slate-50">
 
-            <td>{{ $loop->iteration }}</td>
+            <td class="px-2 py-1.5 text-xs">{{ $loop->iteration }}</td>
 
-            <td>{{ $p->nik }}</td>
+            <td class="px-2 py-1.5 text-xs">{{ $p->nik }}</td>
 
-            <td>{{ $p->nama_lengkap }}</td>
+            <td class="px-2 py-1.5 text-xs truncate-cell">{{ $p->karyawan->nama_lengkap ?? '-' }}</td>
 
-            <td>{{ $p->unitkerja }}</td>
+            <td class="px-2 py-1.5 text-xs truncate-cell">{{ $p->karyawan->unit ?? '-' }}</td>
 
-            <td>{{ $p->jam_in }}</td>
+            <td class="px-2 py-1.5 text-xs">{{ $p->jam_in }}</td>
 
-            <td>
-
+            <td class="px-2 py-1.5 text-xs">
                 <img src="{{ url($foto_in) }}"
-                    class="avatar foto-monitoring"
-                    style="cursor:pointer">
-
+                    class="w-10 h-10 rounded-lg object-cover cursor-pointer foto-monitoring">
             </td>
 
-            <td>
-
-                {!! $p->jam_out != null
-                    ? $p->jam_out
-                    : '<span class="badge bg-warning">Belum Presensi</span>' !!}
-
-            </td>
-
-            <td>
-
+            <td class="px-2 py-1.5 text-xs">
                 @if ($p->jam_out != null)
-
-                    <img src="{{ url($foto_out) }}"
-                        class="avatar foto-monitoring"
-                        style="cursor:pointer">
-
+                    {{ $p->jam_out }}
                 @else
-
-                    <svg xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        class="icon icon-tabler icons-tabler-outline icon-tabler-hourglass">
-
-                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                        <path d="M6.5 7h11" />
-                        <path d="M6.5 17h11" />
-                        <path d="M6 20v-2a6 6 0 1 1 12 0v2a1 1 0 0 1 -1 1h-10a1 1 0 0 1 -1 -1" />
-                        <path d="M6 4v2a6 6 0 1 0 12 0v-2a1 1 0 0 0 -1 -1h-10a1 1 0 0 0 -1 1" />
-
-                    </svg>
-
+                    <span class="inline-flex items-center rounded-full bg-amber-100 text-amber-700 text-[10px] px-2 py-0.5 font-medium">Belum Presensi</span>
                 @endif
-
             </td>
 
-            <td>
-
-                @if ($p->terlambat > 0)
-
-                    <span class="badge bg-danger">
-                        Terlambat {{ $p->terlambat }} Menit
-                    </span>
-
+            <td class="px-2 py-1.5 text-xs">
+                @if ($foto_out)
+                    <img src="{{ url($foto_out) }}"
+                        class="w-10 h-10 rounded-lg object-cover cursor-pointer foto-monitoring">
                 @else
+                    <span class="text-slate-400">-</span>
+                @endif
+            </td>
 
-                    <span class="badge bg-success">
+            <td class="px-2 py-1.5 text-xs">
+                @if ($p->terlambat > 0)
+                    <span class="inline-flex items-center rounded-full bg-red-100 text-red-700 text-[10px] px-2 py-0.5 font-medium">
+                        Terlambat {{ $p->terlambat }}m
+                    </span>
+                @else
+                    <span class="inline-flex items-center rounded-full bg-green-100 text-green-700 text-[10px] px-2 py-0.5 font-medium">
                         Tepat Waktu
                     </span>
-
                 @endif
-
             </td>
 
-            <td style="min-width: 100px;">
-
-                <div class="d-flex flex-column gap-1">
-
-                    <a href="#"
-                        class="btn btn-sm btn-primary tampilkanpetamasuk"
-                        id="{{ $p->id }}">
-
+            <td class="px-2 py-1.5 text-xs" style="min-width: 100px;">
+                <div class="flex flex-col gap-1">
+                    <button type="button"
+                        class="inline-flex items-center justify-center rounded bg-blue-600 px-2 py-0.5 text-[10px] font-medium text-white hover:bg-blue-700 transition-colors tampilkanpetamasuk"
+                        data-id="{{ $p->id }}">
                         Masuk
-
-                    </a>
+                    </button>
 
                     @if ($p->lokasi_out != null)
-
-                        <a href="#"
-                            class="btn btn-sm btn-primary tampilkanpetapulang"
-                            id="{{ $p->id }}">
-
+                        <button type="button"
+                            class="inline-flex items-center justify-center rounded bg-blue-600 px-2 py-0.5 text-[10px] font-medium text-white hover:bg-blue-700 transition-colors tampilkanpetapulang"
+                            data-id="{{ $p->id }}">
                             Pulang
-
-                        </a>
-
+                        </button>
                     @endif
 
-                    @can('presensi-edit')
-                    <a href="#"
-                        class="btn btn-sm btn-info edit-presensi"
-                        data-id="{{ $p->id }}"
-                        data-jam_in="{{ $p->jam_in }}"
-                        data-jam_out="{{ $p->jam_out }}">
-
-                        Edit
-
-                    </a>
+                    @can('presensi-edit', null, 'user')
+                        <button type="button"
+                            class="inline-flex items-center justify-center rounded bg-slate-600 px-2 py-0.5 text-[10px] font-medium text-white hover:bg-slate-700 transition-colors edit-presensi"
+                            data-id="{{ $p->id }}"
+                            data-jam_in="{{ $p->jam_in }}"
+                            data-jam_out="{{ $p->jam_out }}">
+                            Edit
+                        </button>
                     @endcan
-
                 </div>
-
             </td>
 
-            <td>
-
-                {{ $p->durasi ?? '-' }}
-
+            <td class="px-2 py-1.5 text-xs">
+                {{ $p->lembur->durasi ?? '-' }}
             </td>
-
         </tr>
 
     @endforeach
@@ -162,66 +91,10 @@ function selisih($jam_in, $jam_out)
 @else
 
     <tr>
-
         <td colspan="10"
-            class="text-center text-muted py-4">
-
+            class="px-2 py-6 text-center text-xs text-slate-500">
             Data presensi tidak ditemukan
-
         </td>
-
     </tr>
 
 @endif
-
-{{-- ================================================== --}}
-{{-- Tampilkan Peta Presensi Masuk --}}
-{{-- ================================================== --}}
-<script>
-
-    $(".tampilkanpetamasuk").click(function () {
-
-        var id = $(this).attr("id");
-
-        $.ajax({
-            type: "POST",
-            url: "/tampilkanpetamasuk",
-            data: {
-                _token: "{{ csrf_token() }}",
-                id: id
-            },
-            cache: false,
-            success: function (respond) {
-                $("#loadmap").html(respond);
-            }
-        });
-
-        $("#modal-tampilkanpeta").modal("show");
-
-    });
-
-    // ==================================================
-    // Tampilkan Peta Presensi Pulang
-    // ==================================================
-    $(".tampilkanpetapulang").click(function () {
-
-        var id = $(this).attr("id");
-
-        $.ajax({
-            type: "POST",
-            url: "/tampilkanpetapulang",
-            data: {
-                _token: "{{ csrf_token() }}",
-                id: id
-            },
-            cache: false,
-            success: function (respond) {
-                $("#loadmap").html(respond);
-            }
-        });
-
-        $("#modal-tampilkanpeta").modal("show");
-
-    });
-
-</script>

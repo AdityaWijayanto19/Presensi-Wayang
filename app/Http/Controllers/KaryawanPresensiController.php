@@ -12,6 +12,12 @@ use App\Services\LemburService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use App\Http\Requests\RejectRequest;
+use App\Http\Requests\Presensi\GetHistoriRequest;
+use App\Http\Requests\Service\StoreIzinRequest;
+use App\Http\Requests\Service\StoreLemburRequest;
+use App\Http\Requests\Service\StoreWfhRequest;
+use App\Http\Requests\Service\StoreLaporanWfhRequest;
 
 class KaryawanPresensiController extends Controller
 {
@@ -38,7 +44,7 @@ class KaryawanPresensiController extends Controller
         return view('karyawan.presensi.index', compact('namabulan'));
     }
 
-    public function gethistori(Request $request)
+    public function gethistori(GetHistoriRequest $request)
     {
         $nik = Auth::guard('karyawan')->user()->nik;
 
@@ -67,13 +73,18 @@ class KaryawanPresensiController extends Controller
 
     public function showfile(string $file)
     {
+        $file = basename($file);
+        if (!preg_match('/^[a-zA-Z0-9._-]+$/', $file)) {
+            abort(404);
+        }
+
         $path = storage_path('app/public/uploads/izin/' . $file);
         if (!file_exists($path)) abort(404);
 
         return response()->file($path);
     }
 
-    public function storeizin(Request $request)
+    public function storeizin(StoreIzinRequest $request)
     {
         $izinService = new IzinService();
         $result = $izinService->storeIzin($request);
@@ -108,13 +119,18 @@ class KaryawanPresensiController extends Controller
 
     public function showfilelembur(string $file)
     {
+        $file = basename($file);
+        if (!preg_match('/^[a-zA-Z0-9._-]+$/', $file)) {
+            abort(404);
+        }
+
         $path = storage_path('app/public/uploads/lembur/' . $file);
         if (!file_exists($path)) abort(404);
 
         return response()->file($path);
     }
 
-    public function storelembur(Request $request)
+    public function storelembur(StoreLemburRequest $request)
     {
         $lemburService = new LemburService();
         $result = $lemburService->storeLembur($request);
@@ -169,7 +185,7 @@ class KaryawanPresensiController extends Controller
         abort(404);
     }
 
-    public function storewfh(Request $request)
+    public function storewfh(StoreWfhRequest $request)
     {
         $karyawan = Auth::guard('karyawan')->user();
         $result = WfhService::storeWfh($request, $karyawan);
@@ -196,9 +212,8 @@ class KaryawanPresensiController extends Controller
         return redirect()->back()->with($result['success'] ? 'success' : 'error', $result['message']);
     }
 
-    public function rejectWfhAtasan(Request $request, int $id)
+    public function rejectWfhAtasan(RejectRequest $request, int $id)
     {
-        $request->validate(['rejected_reason' => 'required|string|min:5|max:500']);
         $karyawan = Auth::guard('karyawan')->user();
         $result = WfhService::rejectWfhAtasan($id, $request->rejected_reason, $karyawan);
 
@@ -210,20 +225,21 @@ class KaryawanPresensiController extends Controller
         $nik = Auth::guard('karyawan')->user()->nik;
         $wfh = WfhService::getLaporanData($id, $nik);
 
-        if (isset($wfh->error)) {
-            return redirect()->back()->with('error', $wfh->error);
+        if (!$wfh || isset($wfh->error)) {
+            $msg = $wfh->error ?? 'Data tidak ditemukan';
+            return redirect()->back()->with('error', $msg);
         }
 
         $presensiToday = Presensi::where('nik', $nik)
             ->where('tgl_presensi', date('Y-m-d'))
             ->first();
         $presensiService = new PresensiService();
-        $liveLocation = $presensiService->reverseGeocode($presensiToday->lokasi_in ?? '');
+        $liveLocation = $presensiService->reverseGeocode($presensiToday?->lokasi_in ?? '');
 
         return view('karyawan.wfh.laporan', compact('wfh', 'liveLocation'));
     }
 
-    public function storeLaporanWfh(Request $request, int $id)
+    public function storeLaporanWfh(StoreLaporanWfhRequest $request, int $id)
     {
         $nik = Auth::guard('karyawan')->user()->nik;
         $result = WfhService::storeLaporanWfh($request, $id, $nik);
@@ -242,9 +258,8 @@ class KaryawanPresensiController extends Controller
         return redirect()->back()->with($result['success'] ? 'success' : 'error', $result['message']);
     }
 
-    public function rejectLaporanAtasan(Request $request, int $id)
+    public function rejectLaporanAtasan(RejectRequest $request, int $id)
     {
-        $request->validate(['rejected_reason' => 'required|string|min:5|max:500']);
         $karyawan = Auth::guard('karyawan')->user();
         $result = WfhService::rejectLaporanAtasan($id, $request->rejected_reason, $karyawan);
 

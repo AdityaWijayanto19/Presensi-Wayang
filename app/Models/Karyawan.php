@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -10,7 +9,7 @@ use Illuminate\Notifications\Notifiable;
 
 class Karyawan extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use Notifiable;
 
     protected $table = 'karyawans';
     protected $primaryKey = 'nik';
@@ -25,6 +24,7 @@ class Karyawan extends Authenticatable
         'role_approved', // Role Approved dropdown (Staff/Manager/GM/Direktur)
         'atasan_nik',
         'unit',
+        'unit_id',
         'no_hp',
         'foto',
         'password',
@@ -41,17 +41,12 @@ class Karyawan extends Authenticatable
 
     public function unitperusahaan(): BelongsTo
     {
-        return $this->belongsTo(Unitperusahaan::class, 'unit', 'unit');
+        return $this->belongsTo(Unitperusahaan::class, 'unit_id', 'id');
     }
 
     public function atasan(): BelongsTo
     {
         return $this->belongsTo(self::class, 'atasan_nik', 'nik');
-    }
-
-    public function bawahan(): HasMany
-    {
-        return $this->hasMany(self::class, 'atasan_nik', 'nik');
     }
 
     public function presensi(): HasMany

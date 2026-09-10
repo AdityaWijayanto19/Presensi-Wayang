@@ -8,6 +8,7 @@ use App\Models\Unitperusahaan;
 use App\Models\Wfh;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class PresensiService
 {
@@ -26,48 +27,57 @@ class PresensiService
         }
 
         $karyawan = Karyawan::where('nik', $nik)->first();
-        $unitKerja = Unitperusahaan::where('unit', $karyawan->unit)->first();
-        $jamMasuk = $unitKerja->jam_masuk;
+        if (!$karyawan) {
+            return ['success' => false, 'message' => 'Data karyawan tidak ditemukan.', 'type' => 'in'];
+        }
 
+        $unitKerja = Unitperusahaan::where('unit', $karyawan->unit)->first();
+        if (!$unitKerja) {
+            return ['success' => false, 'message' => 'Unit kerja tidak ditemukan.', 'type' => 'in'];
+        }
+
+        $jamMasuk = $unitKerja->jam_masuk;
         $terlambat = $this->hitungKeterlambatan($karyawan->unit, $jamMasuk, $jam);
 
-        $cek = Presensi::where('tgl_presensi', $tglPresensi)
-            ->where('nik', $nik)
-            ->first();
-
-        $status = $cek ? 'out' : 'in';
-
-        if ($cek && $cek->jam_out == null) {
-            $jamMasukTime = strtotime($cek->jam_in);
-            $jamSekarang = strtotime($jam);
-            $selisihJamKerja = ($jamSekarang - $jamMasukTime) / 3600;
-
-            if ($selisihJamKerja < self::MINIMAL_JAM_KERJA) {
-                return ['success' => false, 'message' => 'Belum bisa presensi pulang! Minimal bekerja 8 jam.', 'type' => 'out'];
-            }
-        }
-
-        if ($cek && $cek->jam_out == null) {
-            $wfhToday = Wfh::where('nik', $nik)
-                ->where('tgl_wfh', $tglPresensi)
-                ->where('status', 'approved')
+        return DB::transaction(function () use ($nik, $tglPresensi, $jam, $karyawan, $terlambat, $request) {
+            $cek = Presensi::where('tgl_presensi', $tglPresensi)
+                ->where('nik', $nik)
                 ->first();
-            if ($wfhToday && empty($wfhToday->laporan_deskripsi)) {
-                return ['success' => false, 'message' => 'Anda harus mengupload laporan WFH terlebih dahulu sebelum presensi pulang.', 'type' => 'out'];
+
+            $status = $cek ? 'out' : 'in';
+
+            if ($cek && $cek->jam_out == null) {
+                $jamMasukTime = strtotime($cek->jam_in);
+                $jamSekarang = strtotime($jam);
+                $selisihJamKerja = ($jamSekarang - $jamMasukTime) / 3600;
+
+                if ($selisihJamKerja < self::MINIMAL_JAM_KERJA) {
+                    return ['success' => false, 'message' => 'Belum bisa presensi pulang! Minimal bekerja 8 jam.', 'type' => 'out'];
+                }
             }
-        }
 
-        if ($cek && $cek->jam_out != null) {
-            return ['success' => false, 'message' => 'Anda sudah melakukan presensi pulang!', 'type' => 'done'];
-        }
+            if ($cek && $cek->jam_out == null) {
+                $wfhToday = Wfh::where('nik', $nik)
+                    ->where('tgl_wfh', $tglPresensi)
+                    ->where('status', 'approved')
+                    ->first();
+                if ($wfhToday && empty($wfhToday->laporan_deskripsi)) {
+                    return ['success' => false, 'message' => 'Anda harus mengupload laporan WFH terlebih dahulu sebelum presensi pulang.', 'type' => 'out'];
+                }
+            }
 
-        $fileName = $this->simpanFoto($nik, $tglPresensi, $status, $request->image);
+            if ($cek && $cek->jam_out != null) {
+                return ['success' => false, 'message' => 'Anda sudah melakukan presensi pulang!', 'type' => 'done'];
+            }
 
-        if ($cek) {
-            return $this->prosesPulang($nik, $tglPresensi, $fileName, $request->lokasi);
-        } else {
-            return $this->prosesMasuk($nik, $tglPresensi, $jam, $fileName, $request->lokasi, $terlambat);
-        }
+            $fileName = $this->simpanFoto($nik, $tglPresensi, $status, $request->image);
+
+            if ($cek) {
+                return $this->prosesPulang($nik, $tglPresensi, $fileName, $request->lokasi);
+            } else {
+                return $this->prosesMasuk($nik, $tglPresensi, $jam, $fileName, $request->lokasi, $terlambat);
+            }
+        });
     }
 
     private function hitungKeterlambatan(string $unit, string $jamMasuk, string $jamSekarang): int
@@ -83,28 +93,25 @@ class PresensiService
             return 0;
         }
 
-        $selisihMenit = floor(($jamAbsen - $jamMasukTime) / 60);
+        $selisihMenit = (int) floor(($jamAbsen - $jamMasukTime) / 60);
 
         if ($selisihMenit <= 60) {
             return $selisihMenit;
         }
 
-        return floor($selisihMenit / 60) * 60;
+        return (int) ceil($selisihMenit / 60) * 60;
     }
 
     private function simpanFoto(string $nik, string $tglPresensi, string $status, string $image): string
     {
-        $formatName = $nik . '-' . $tglPresensi . '-' . $status;
-        $imageParts = explode(';base64', $image);
-        $imageBase64 = base64_decode($imageParts[1]);
-        $fileName = $formatName . '.png';
+        $imageService = app(ImageService::class);
+        $path = $imageService->processBase64($image, $nik, $status);
 
-        file_put_contents(
-            public_path('storage/uploads/absensi/' . $fileName),
-            $imageBase64
-        );
+        if (!$path) {
+            return '';
+        }
 
-        return $fileName;
+        return basename($path);
     }
 
     private function prosesPulang(string $nik, string $tglPresensi, string $fileName, string $lokasi): array

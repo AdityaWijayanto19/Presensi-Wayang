@@ -2,11 +2,11 @@
 
 @section('content')
 
-    <x-app.page-header title="Data Karyawan" pretitle="WAG - Presensi Digital" />
+    @section('page_title', 'Data Karyawan')
 
     <x-app.page-body>
 
-        <div class="bg-white rounded-md shadow-sm border border-slate-200">
+        <x-app.card>
 
             <div class="p-3">
 
@@ -97,7 +97,7 @@
                                 type="text"
                                 name="nama_karyawan"
                                 id="nama_karyawan"
-                                class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                class="w-full rounded-md border border-slate-300 px-2 py-1.5 text-xs focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                 placeholder="Cari Karyawan"
                                 value="{{ Request('nama_karyawan') }}"
                                 autocomplete="off">
@@ -105,7 +105,7 @@
                         </div>
 
                         <div class="col-span-12 md:col-span-2">
-                            <select name="jabatan_filter" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
+                            <select name="jabatan_filter" class="w-full rounded-md border border-slate-300 px-2 py-1.5 text-xs focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
                                 <option value="">Semua Jabatan</option>
                                 <option value="Intern" {{ Request('jabatan_filter')=='Intern'?'selected':'' }}>Intern</option>
                                 <option value="Staff" {{ Request('jabatan_filter')=='Staff'?'selected':'' }}>Staff</option>
@@ -121,7 +121,7 @@
                             <select
                                 name="unit"
                                 id="unit_search"
-                                class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
+                                class="w-full rounded-md border border-slate-300 px-2 py-1.5 text-xs focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
 
                                 <option value="">
                                     Semua Unit
@@ -193,25 +193,25 @@
 
                             <tr>
 
-                                <th class="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">No</th>
+                                <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">No</th>
 
-                                <th class="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">NIK</th>
+                                <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">NIK</th>
 
-                                <th class="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Nama</th>
+                                <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Nama</th>
 
-                                <th class="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Jabatan</th>
+                                <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Jabatan</th>
 
-                                <th class="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Posisi</th>
+                                <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Posisi</th>
 
-                                <th class="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Atasan</th>
+                                <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Atasan</th>
 
-                                <th class="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">No. HP</th>
+                                <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">No. HP</th>
 
-                                <th class="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Foto</th>
+                                <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Foto</th>
 
-                                <th class="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Unit Perusahaan</th>
+                                <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Unit Perusahaan</th>
 
-                                <th class="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider" width="170">
+                                <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider" width="170">
                                     Actions
                                 </th>
 
@@ -229,19 +229,19 @@
 
                             <tr class="hover:bg-slate-50">
 
-                                <td class="px-3 py-2 text-sm">
+                                <td class="px-2 py-1.5 text-xs">
                                     {{ $loop->iteration + $karyawan->firstItem() - 1 }}
                                 </td>
 
-                                <td class="px-3 py-2 text-sm">
+                                <td class="px-2 py-1.5 text-xs">
                                     {{ $k->nik }}
                                 </td>
 
-                                <td class="px-3 py-2 text-sm">
+                                <td class="px-2 py-1.5 text-xs truncate-cell">
                                     {{ $k->nama_lengkap }}
                                 </td>
 
-                                <td class="px-3 py-2 text-sm">
+                                <td class="px-2 py-1.5 text-xs">
                                     @if($k->jabatan)
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                                             {{ $k->jabatan=='Direktur' ? 'bg-red-100 text-red-700' : ($k->jabatan=='GM' ? 'bg-yellow-100 text-yellow-700' : ($k->jabatan=='Manager' ? 'bg-cyan-100 text-cyan-700' : ($k->jabatan=='SPV' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'))) }}">{{ $k->jabatan }}{{ $k->jabatan=='GM' ? ' (General Manager)' : ($k->jabatan=='SPV' ? ' (Supervisor)' : '') }}</span>
@@ -250,11 +250,11 @@
                                     @endif
                                 </td>
 
-                                <td class="px-3 py-2 text-sm">
+                                <td class="px-2 py-1.5 text-xs truncate-cell">
                                     {{ $k->posisi }}
                                 </td>
 
-                                <td class="px-3 py-2 text-sm">
+                                <td class="px-2 py-1.5 text-xs truncate-cell">
                                     @if($k->jabatan=='Direktur')
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">Langsung Admin</span><br><small class="text-slate-500">Tidak ada atasan</small>
                                     @else
@@ -263,22 +263,20 @@
                                     @endif
                                 </td>
 
-                                <td class="px-3 py-2 text-sm">
+                                <td class="px-2 py-1.5 text-xs">
                                     {{ $k->no_hp }}
                                 </td>
 
                                 {{-- ================================================== --}}
                                 {{-- Foto --}}
                                 {{-- ================================================== --}}
-                                <td class="px-3 py-2 text-sm">
+                                <td class="px-2 py-1.5 text-xs">
 
                                     @if ($k->foto == 'nophoto.png')
 
-                                        <img
-                                            src="{{ asset('assets/img/nophoto.png') }}"
-                                            class="w-8 h-8 rounded-full foto-karyawan"
-                                            style="cursor:pointer;"
-                                            alt="Foto Default">
+                                        <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center foto-karyawan" style="cursor:pointer;">
+                                            <i data-lucide="user" style="width:16px;height:16px;"></i>
+                                        </div>
 
                                     @else
 
@@ -292,14 +290,14 @@
 
                                 </td>
 
-                                <td class="px-3 py-2 text-sm">
-                                    {{ $k->perusahaan }}
+                                <td class="px-2 py-1.5 text-xs truncate-cell">
+                                    {{ $k->unitperusahaan->perusahaan ?? '' }}
                                 </td>
 
                                 {{-- ================================================== --}}
                                 {{-- Actions --}}
                                 {{-- ================================================== --}}
-                                <td class="px-3 py-2 text-sm">
+                                <td class="px-2 py-1.5 text-xs">
 
                                     <div class="flex flex-wrap gap-1">
 
@@ -333,45 +331,6 @@
                                             </svg>
 
                                         </a>
-                                        @endcan
-
-                                        {{-- ================= Reset Password ================= --}}
-                                        @can('karyawan-edit')
-                                        <form action="/karyawan/{{ $k->nik }}/resetpassword"
-                                            method="POST"
-                                            class="inline">
-
-                                            @csrf
-
-                                            <button
-                                                type="submit"
-                                                class="inline-flex items-center gap-2 bg-yellow-500 text-white px-2 py-1 rounded-md hover:bg-yellow-600 transition-colors text-xs font-medium reset-password-confirm">
-
-                                                <svg xmlns="http://www.w3.org/2000/svg"
-                                                    width="18"
-                                                    height="18"
-                                                    viewBox="0 0 24 24"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    stroke-width="2"
-                                                    stroke-linecap="round"
-                                                    stroke-linejoin="round">
-
-                                                    <path stroke="none"
-                                                        d="M0 0h24v24H0z"
-                                                        fill="none"/>
-
-                                                    <path d="M3.06 13a9 9 0 1 0 .49 -4.087"/>
-
-                                                    <path d="M3 4.001v5h5"/>
-
-                                                    <path d="M11 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/>
-
-                                                </svg>
-
-                                            </button>
-
-                                        </form>
                                         @endcan
 
                                         {{-- ================= Delete ================= --}}
@@ -429,7 +388,7 @@
 
             </div>
 
-        </div>
+        </x-app.card>
 
     </x-app.page-body>
 
@@ -552,7 +511,7 @@
             {{-- Jabatan (Dropdown) --}}
             <div class="space-y-1 mb-2">
                 <label class="block text-sm font-medium text-slate-700 mb-1">Jabatan <span class="text-red-500">*</span></label>
-                <select name="jabatan" id="jabatan" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white" required>
+                <select name="jabatan" id="jabatan" class="w-full rounded-md border border-slate-300 px-2 py-1.5 text-xs focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white" required>
                     <option value="">Pilih Jabatan</option>
                     <option value="Intern">Intern</option>
                     <option value="Staff">Staff</option>
@@ -566,7 +525,7 @@
             {{-- Role Approved (Dropdown) --}}
             <div class="space-y-1 mb-2" id="role-approved-wrapper" style="display:none;">
                 <label class="block text-sm font-medium text-slate-700 mb-1">Role Approved</label>
-                <select name="role_approved" id="role_approved" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
+                <select name="role_approved" id="role_approved" class="w-full rounded-md border border-slate-300 px-2 py-1.5 text-xs focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
                     <option value="">Pilih Role Approved</option>
                     <option value="Staff">Staff</option>
                     <option value="Manager">Manager</option>
@@ -578,7 +537,7 @@
 
             {{-- Atasan (dinamis berdasarkan Role Approved) --}}
             <div class="space-y-1 mb-2" id="atasan-wrapper" style="display:none;">
-                <select name="atasan_nik" id="atasan_nik" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
+                <select name="atasan_nik" id="atasan_nik" class="w-full rounded-md border border-slate-300 px-2 py-1.5 text-xs focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
                     <option value="">Pilih Atasan</option>
                 </select>
                 <small class="text-slate-500">Atasan muncul sesuai Role Approved yang dipilih.</small>
@@ -590,7 +549,7 @@
                 <select
                     name="unit"
                     id="unit"
-                    class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
+                    class="w-full rounded-md border border-slate-300 px-2 py-1.5 text-xs focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
 
                     <option value="">
                         Pilih Unit
@@ -643,6 +602,57 @@
 
             </div>
 
+            {{-- Password --}}
+            <div class="relative mb-2">
+
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round">
+
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M12 3a2 2 0 0 0 -2 2v1a2 2 0 0 0 2 2v1a2 2 0 0 0 2 2v1a2 2 0 0 0 2 2v1a2 2 0 0 0 2 2h-14a2 2 0 0 0 -2 -2v-1a2 2 0 0 0 -2 -2v-1a2 2 0 0 0 -2 -2h-1"/>
+                        <path d="M12 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"/>
+
+                    </svg>
+                </span>
+
+                <input
+                    type="password"
+                    name="password"
+                    id="password_input"
+                    class="w-full rounded-md border border-slate-300 pl-8 pr-10 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    placeholder="Password"
+                    required>
+
+                <button type="button"
+                    onclick="togglePassword('password_input', this)"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                    tabindex="-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-open">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/>
+                        <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6"/>
+                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-closed" style="display:none;">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M21 21l-6 -6l-5 -5"/>
+                        <path d="M3 3l18 18"/>
+                        <path d="M10.5 10.5a2 2 0 1 0 2.936 2.942"/>
+                        <path d="M4.487 4.489c-1.168 .735 -1.988 1.687 -2.487 2.511c2.4 -4 5.4 -6 9 -6c1.036 0 2.032 .18 2.968 .512"/>
+                        <path d="M19.5 15c.847 .543 1.555 1.159 2 1.814"/>
+                        <path d="M3 3l18 18"/>
+                    </svg>
+                </button>
+
+            </div>
+
             {{-- Upload Foto --}}
             <div class="space-y-1 mb-2">
 
@@ -653,7 +663,7 @@
                 <input
                     type="file"
                     name="foto"
-                    class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                    class="w-full rounded-md border border-slate-300 px-2 py-1.5 text-xs focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
 
             </div>
 
@@ -689,13 +699,31 @@
 
 <script>
 
-$(function () {
+document.addEventListener('DOMContentLoaded', function () {
+
+    // =====================================================
+    // Toggle Password Visibility
+    // =====================================================
+    window.togglePassword = function (inputId, btn) {
+        var input = document.getElementById(inputId);
+        var eyeOpen = btn.querySelector('.eye-open');
+        var eyeClosed = btn.querySelector('.eye-closed');
+        if (input.type === 'password') {
+            input.type = 'text';
+            eyeOpen.style.display = 'none';
+            eyeClosed.style.display = '';
+        } else {
+            input.type = 'password';
+            eyeOpen.style.display = '';
+            eyeClosed.style.display = 'none';
+        }
+    };
 
     // =====================================================
     // Modal Tambah Karyawan
     // =====================================================
 
-    $("#btnTambahkaryawan").click(function () {
+    document.getElementById('btnTambahkaryawan').addEventListener('click', function () {
 
         window.dispatchEvent(new CustomEvent('open-modal-modal-inputkaryawan'));
 
@@ -706,32 +734,36 @@ $(function () {
     // Modal Edit Karyawan
     // =====================================================
 
-    $(".edit").click(function () {
+    document.querySelector('tbody').addEventListener('click', function (e) {
 
-        let nik = $(this).attr("nik");
-        let page = $(this).attr("page");
+        var editBtn = e.target.closest('.edit');
 
-        $.ajax({
+        if (!editBtn) return;
 
-            type: "POST",
+        e.preventDefault();
 
-            url: "/karyawan/edit",
+        var nik = editBtn.getAttribute('nik');
+        var page = editBtn.getAttribute('page');
 
-            data: {
-                _token: "{{ csrf_token() }}",
-                nik: nik,
-                page: page
+        fetch('/karyawan/edit', {
+
+            method: 'POST',
+
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
             },
 
-            cache: false,
+            body: new URLSearchParams({
+                nik: nik,
+                page: page
+            })
 
-            success: function (respond) {
+        }).then(function (r) { return r.text(); }).then(function (html) {
 
-                $("#loadeditform").html(respond);
+            document.getElementById('loadeditform').innerHTML = html;
 
-                window.dispatchEvent(new CustomEvent('open-modal-modal-editkaryawan'));
-
-            }
+            window.dispatchEvent(new CustomEvent('open-modal-modal-editkaryawan'));
 
         });
 
@@ -741,67 +773,92 @@ $(function () {
     // =====================================================
     // Jabatan change -> show Role Approved
     // =====================================================
-    $(document).on("change", "#jabatan", function(){
-        let jabatan = $(this).val();
-        let roleWrapper = $("#role-approved-wrapper");
-        let atasanWrapper = $("#atasan-wrapper");
-        if(jabatan==="Direktur" || jabatan===""){
-            roleWrapper.hide();
-            atasanWrapper.hide();
-            $("#atasan_nik").html("<option value=\"\">Pilih Atasan</option>");
+    document.getElementById('jabatan').addEventListener('change', function () {
+        var jabatan = this.value;
+        var roleWrapper = document.getElementById('role-approved-wrapper');
+        var atasanWrapper = document.getElementById('atasan-wrapper');
+        if (jabatan === "Direktur" || jabatan === "") {
+            roleWrapper.style.display = 'none';
+            atasanWrapper.style.display = 'none';
+            document.getElementById('atasan_nik').innerHTML = '<option value="">Pilih Atasan</option>';
             return;
         }
-        roleWrapper.show();
+        roleWrapper.style.display = '';
         // Reset atasan when jabatan changes
-        atasanWrapper.hide();
-        $("#role_approved").val("");
-        $("#atasan_nik").html("<option value=\"\">Pilih Atasan</option>");
+        atasanWrapper.style.display = 'none';
+        document.getElementById('role_approved').value = '';
+        document.getElementById('atasan_nik').innerHTML = '<option value="">Pilih Atasan</option>';
     });
 
     // =====================================================
     // Role Approved change -> fetch Atasan
     // =====================================================
-    $(document).on("change", "#role_approved", function(){
-        let roleApproved = $(this).val();
-        let wrapper = $("#atasan-wrapper");
-        let select = $("#atasan_nik");
-        if(!roleApproved || roleApproved===""){ wrapper.hide(); select.html("<option value=\"\">Pilih Atasan</option>"); return; }
-        $.ajax({ type:"GET", url:"/karyawan/get-atasan", data:{role_approved:roleApproved}, success:function(res){
-            let atasanMap = {"Staff":"Manager","Manager":"GM","GM":"Direktur","Direktur":""};
-            let target = atasanMap[roleApproved] || '';
-            let html = "<option value=\"\">Pilih Atasan ("+ target +")</option>";
-            res.forEach(function(k){ html += "<option value=\""+k.nik+"\">"+k.nama_lengkap+" ("+k.jabatan+" - "+k.posisi+")</option>"; });
-            select.html(html); wrapper.show();
-        }});
+    document.getElementById('role_approved').addEventListener('change', function () {
+        var roleApproved = this.value;
+        var wrapper = document.getElementById('atasan-wrapper');
+        var select = document.getElementById('atasan_nik');
+        if (!roleApproved || roleApproved === "") {
+            wrapper.style.display = 'none';
+            select.innerHTML = '<option value="">Pilih Atasan</option>';
+            return;
+        }
+        fetch('/karyawan/get-atasan?role_approved=' + encodeURIComponent(roleApproved), {
+            credentials: 'same-origin'
+        }).then(function (r) { return r.json(); }).then(function (res) {
+            var atasanMap = {"Staff":"Manager","Manager":"GM","GM":"Direktur","Direktur":""};
+            var target = atasanMap[roleApproved] || '';
+            var html = '<option value="">Pilih Atasan (' + target + ')</option>';
+            res.forEach(function (k) {
+                html += '<option value="' + k.nik + '">' + k.nama_lengkap + ' (' + k.jabatan + ' - ' + k.posisi + ')</option>';
+            });
+            select.innerHTML = html;
+            wrapper.style.display = '';
+        });
     });
 
     // =====================================================
     // Edit: Role Approved change -> fetch Atasan
     // =====================================================
-    $(document).on("change", "#edit_role_approved", function(){
-        let roleApproved = $(this).val();
-        let wrapper = $("#edit_atasan_wrapper");
-        let select = $("#edit_atasan_nik");
-        let nik = $("#edit_atasan_wrapper").closest("form").find("input[name=nik]").val() || '';
-        if(!roleApproved || roleApproved===""){ wrapper.hide(); select.html("<option value=\"\">Pilih Atasan</option>"); return; }
-        $.ajax({ type:"GET", url:"/karyawan/get-atasan", data:{role_approved:roleApproved, exclude_nik: nik}, success:function(res){
-            let atasanMap = {"Staff":"Manager","Manager":"GM","GM":"Direktur","Direktur":""};
-            let target = atasanMap[roleApproved] || '';
-            let html = "<option value=\"\">Pilih Atasan ("+ target +")</option>";
-            res.forEach(function(k){ html += "<option value=\""+k.nik+"\">"+k.nama_lengkap+" ("+k.jabatan+" - "+k.posisi+")</option>"; });
-            select.html(html); wrapper.show();
-        }});
+    document.addEventListener('change', function (e) {
+        if (e.target && e.target.id === 'edit_role_approved') {
+            var roleApproved = e.target.value;
+            var wrapper = document.getElementById('edit_atasan_wrapper');
+            var select = document.getElementById('edit_atasan_nik');
+            var editWrapper = document.getElementById('edit_atasan_wrapper');
+            var editForm = editWrapper ? editWrapper.closest('form') : null;
+            var nikInput = editForm ? editForm.querySelector('input[name="nik"]') : null;
+            var nik = nikInput ? nikInput.value : '';
+            if (!roleApproved || roleApproved === "") {
+                wrapper.style.display = 'none';
+                select.innerHTML = '<option value="">Pilih Atasan</option>';
+                return;
+            }
+            fetch('/karyawan/get-atasan?role_approved=' + encodeURIComponent(roleApproved) + '&exclude_nik=' + encodeURIComponent(nik), {
+                credentials: 'same-origin'
+            }).then(function (r) { return r.json(); }).then(function (res) {
+                var atasanMap = {"Staff":"Manager","Manager":"GM","GM":"Direktur","Direktur":""};
+                var target = atasanMap[roleApproved] || '';
+                var html = '<option value="">Pilih Atasan (' + target + ')</option>';
+                res.forEach(function (k) {
+                    html += '<option value="' + k.nik + '">' + k.nama_lengkap + ' (' + k.jabatan + ' - ' + k.posisi + ')</option>';
+                });
+                select.innerHTML = html;
+                wrapper.style.display = '';
+            });
+        }
     });
 
     // =====================================================
     // Preview Foto
     // =====================================================
 
-    $(document).on("click", ".foto-karyawan", function () {
+    document.addEventListener('click', function (e) {
+        var fotoEl = e.target.closest('.foto-karyawan');
+        if (!fotoEl) return;
 
         Swal.fire({
 
-            imageUrl: $(this).attr("src"),
+            imageUrl: fotoEl.getAttribute('src'),
 
             imageAlt: "Foto Karyawan",
 
@@ -819,57 +876,18 @@ $(function () {
 
 
     // =====================================================
-    // Reset Password
-    // =====================================================
-
-    $(".reset-password-confirm").click(function (e) {
-
-        e.preventDefault();
-
-        let form = $(this).closest("form");
-
-        Swal.fire({
-
-            title: "Reset Password?",
-
-            text: "Password karyawan akan direset menjadi 12345.",
-
-            icon: "warning",
-
-            showCancelButton: true,
-
-            confirmButtonColor: "#3085d6",
-
-            cancelButtonColor: "#d33",
-
-            confirmButtonText: "Ya, Reset!",
-
-            cancelButtonText: "Batal",
-
-            backdrop: false
-
-        }).then((result) => {
-
-            if (result.isConfirmed) {
-
-                form.submit();
-
-            }
-
-        });
-
-    });
-
-
-    // =====================================================
     // Delete Karyawan
     // =====================================================
 
-    $(".delete-confirm").click(function (e) {
+    document.addEventListener('click', function (e) {
+
+        var deleteBtn = e.target.closest('.delete-confirm');
+
+        if (!deleteBtn) return;
 
         e.preventDefault();
 
-        let form = $(this).closest("form");
+        var form = deleteBtn.closest('form');
 
         Swal.fire({
 
@@ -891,7 +909,7 @@ $(function () {
 
             backdrop: false
 
-        }).then((result) => {
+        }).then(function (result) {
 
             if (result.isConfirmed) {
 
@@ -908,20 +926,22 @@ $(function () {
     // Validasi Form Tambah
     // =====================================================
 
-    $("#formKaryawan").submit(function () {
+    document.getElementById('formKaryawan').addEventListener('submit', function (e) {
 
-        let nik = $("#nik").val();
+        var nik = document.getElementById('nik').value;
 
-        let nama = $("#nama_lengkap").val();
+        var nama = document.getElementById('nama_lengkap').value;
 
-        let jabatan = $("#jabatan").val();
+        var jabatan = document.getElementById('jabatan').value;
 
-        let unit = $("#formKaryawan").find("#unit").val();
+        var unit = document.getElementById('unit').value;
 
-        let no_hp = $("#no_hp").val();
+        var no_hp = document.getElementById('no_hp').value;
 
 
         if (nik == "") {
+
+            e.preventDefault();
 
             Swal.fire({
 
@@ -935,14 +955,16 @@ $(function () {
 
             });
 
-            $("#nik").focus();
+            document.getElementById('nik').focus();
 
-            return false;
+            return;
 
         }
 
 
         if (nama == "") {
+
+            e.preventDefault();
 
             Swal.fire({
 
@@ -956,14 +978,16 @@ $(function () {
 
             });
 
-            $("#nama_lengkap").focus();
+            document.getElementById('nama_lengkap').focus();
 
-            return false;
+            return;
 
         }
 
 
         if (jabatan == "") {
+
+            e.preventDefault();
 
             Swal.fire({
 
@@ -977,20 +1001,23 @@ $(function () {
 
             });
 
-            $("#jabatan").focus();
+            document.getElementById('jabatan').focus();
 
-            return false;
+            return;
 
         }
 
-        let posisi = $("#posisi_input").val();
+        var posisi = document.getElementById('posisi_input').value;
         if (posisi == "") {
+            e.preventDefault();
             Swal.fire({ icon: "warning", title: "Oops...", text: "Posisi harus diisi.", backdrop: false });
-            $("#posisi_input").focus();
-            return false;
+            document.getElementById('posisi_input').focus();
+            return;
         }
 
         if (unit == "") {
+
+            e.preventDefault();
 
             Swal.fire({
 
@@ -1004,14 +1031,16 @@ $(function () {
 
             });
 
-            $("#unit").focus();
+            document.getElementById('unit').focus();
 
-            return false;
+            return;
 
         }
 
 
         if (no_hp == "") {
+
+            e.preventDefault();
 
             Swal.fire({
 
@@ -1025,9 +1054,33 @@ $(function () {
 
             });
 
-            $("#no_hp").focus();
+            document.getElementById('no_hp').focus();
 
-            return false;
+            return;
+
+        }
+
+        var password = document.getElementById('password_input').value;
+
+        if (password == "") {
+
+            e.preventDefault();
+
+            Swal.fire({
+
+                icon: "warning",
+
+                title: "Oops...",
+
+                text: "Password tidak boleh kosong.",
+
+                backdrop: false
+
+            });
+
+            document.getElementById('password_input').focus();
+
+            return;
 
         }
 

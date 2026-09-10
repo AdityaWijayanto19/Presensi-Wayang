@@ -96,7 +96,7 @@ class LaporanService
             return Redirect::back()->with('warning', 'Data presensi tidak ditemukan');
         }
 
-        $pdf = Pdf::loadView('presensi.cetaklaporan', compact(
+        $pdf = Pdf::loadView('admin.presensi.cetaklaporan', compact(
             'bulan', 'tahun', 'namabulan', 'karyawan', 'presensi',
             'lembur', 'wfh', 'totalLembur', 'totalProrate', 'totalWfh',
             'sisaMenitKerja', 'totalJamKerja'

@@ -37,7 +37,7 @@
                 @csrf
 
                 {{-- Auto Info --}}
-                <div class="bg-white rounded-2xl border border-[#f0ece8] p-4 mb-3">
+                <x-app.card class="p-4 mb-3">
                     <div class="flex items-center gap-3">
                         <div
                             class="w-10 h-10 rounded-xl bg-[#fdf8f4] border border-[#f0ece8] flex items-center justify-center text-coklat">
@@ -48,8 +48,8 @@
                             <div class="text-[14px] font-bold text-[#1c1917]">{{ $karyawan->nama_lengkap }}</div>
                             <div class="text-[12px] text-[#78716c]">{{ $karyawan->posisi }} • {{ $karyawan->unit }}
                                 ({{ $karyawan->unitperusahaan->perusahaan ?? '' }})</div>
-                        </div>
                     </div>
+                </x-app.card>
                 </div>
 
                 <div class="mb-4">
@@ -76,7 +76,7 @@
                         </div>
 
                         <input type="text"
-                            class="w-full pl-10 pr-3 py-2 text-sm bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-black focus:border-black"
+                            class="w-full pl-10 pr-3 py-2 text-sm bg-white border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                             name="tgl_wfh" id="tgl_wfh" placeholder="Pilih Tanggal WFH" autocomplete="off" required>
                     </div>
 
@@ -98,7 +98,7 @@
                 <div class="form-group mt-3">
                     <label class="text-[12px] font-semibold text-[#44403c] mb-1 block">Keterangan WFH / Alasan WFH <span
                             class="text-red-500">*</span></label>
-                    <textarea name="keterangan" id="keterangan" rows="3" class="form-control"
+                    <textarea name="keterangan" id="keterangan" rows="3" class="w-full rounded-md border border-slate-300 px-2.5 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                         placeholder="Jelaskan alasan mengapa harus WFH hari ini..." required>{{ old('keterangan') }}</textarea>
                     <small class="text-[11px] text-[#a8a29e]">Contoh: kondisi kesehatan, jarak tempuh jauh, dll.</small>
                 </div>
@@ -107,7 +107,7 @@
                 <div class="form-group mt-3">
                     <label class="text-[12px] font-semibold text-[#44403c] mb-1 block">Deskripsi Pekerjaan <span
                             class="text-red-500">*</span></label>
-                    <textarea name="deskripsi_pekerjaan" id="deskripsi_pekerjaan" rows="5" class="form-control"
+                    <textarea name="deskripsi_pekerjaan" id="deskripsi_pekerjaan" rows="5" class="w-full rounded-md border border-slate-300 px-2.5 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                         placeholder="1. Menuliskan list pekerjaan&#10;2. List pekerjaan dibuat numerik/berurutan&#10;3. Dokumentasikan hasil kerja untuk laporan" required>{{ old('deskripsi_pekerjaan') }}</textarea>
                     <small class="text-[11px] text-[#a8a29e]"><span id="charCount">0</span>/2000 karakter • Maksimal 10
                         poin</small>
@@ -133,7 +133,7 @@
 
 @push('myscript')
     <script>
-        $(function() {
+        document.addEventListener('DOMContentLoaded', function() {
 
             // ── Flatpickr Initialization ────────────────────────
             var minDateSetting = "{{ $disableToday ? date('Y-m-d', strtotime('+1 day')) : date('Y-m-d') }}";
@@ -148,7 +148,7 @@
                 minDate: minDateSetting
             });
 
-            var $el = $("#deskripsi_pekerjaan");
+            var el = document.getElementById('deskripsi_pekerjaan');
             var MAX = 10;
 
             // ── Helpers ──────────────────────────────────────────
@@ -184,7 +184,7 @@
 
             // ── Focus ────────────────────────────────────────────
 
-            $el.on("focus", function() {
+            el.addEventListener("focus", function() {
                 if (this.value === "") {
                     this.value = "1. ";
                 }
@@ -192,7 +192,7 @@
 
             // ── Keydown: Enter + Backspace ───────────────────────
 
-            $el.on("keydown", function(e) {
+            el.addEventListener("keydown", function(e) {
                 var val = this.value;
                 var pos = this.selectionStart;
 
@@ -255,9 +255,6 @@
                     var lineStart = beforeCursor.lastIndexOf("\n") + 1;
                     var linePrefix = currentLine.match(/^(\d+)\.\s/);
                     if (linePrefix && pos === lineStart + linePrefix[0].length) {
-                        // Cursor tepat setelah prefix, backspace = merge dengan baris sebelumnya
-                        // Biarkan browser handle normal (hapus spasi terakhir prefix)
-                        // Tapi kita bisa skip prefix sekaligus:
                         e.preventDefault();
                         var prevLineIdx = lineIdx - 1;
                         if (prevLineIdx < 0) return;
@@ -282,21 +279,21 @@
 
             // ── Input: HANYA update char count ───────────────────
 
-            $el.on("input", function() {
-                $("#charCount").text(this.value.length);
+            el.addEventListener("input", function() {
+                document.getElementById('charCount').textContent = this.value.length;
             });
 
             // ── Init ─────────────────────────────────────────────
 
-            $("#charCount").text($el.val().length);
+            document.getElementById('charCount').textContent = el.value.length;
 
             // ── Submit validation ────────────────────────────────
 
-            $("#form_wfh").submit(function(e) {
+            document.getElementById('form_wfh').addEventListener('submit', function(e) {
                 e.preventDefault();
-                var tgl = $("#tgl_wfh").val();
-                var keterangan = $("#keterangan").val().trim();
-                var desk = $el.val().trim();
+                var tgl = document.getElementById('tgl_wfh').value;
+                var keterangan = document.getElementById('keterangan').value.trim();
+                var desk = el.value.trim();
                 if (!tgl) {
                     Swal.fire({
                         icon: "warning",
@@ -331,7 +328,7 @@
                     confirmButtonText: "Ya, Ajukan",
                     cancelButtonText: "Batal"
                 }).then(function(r) {
-                    if (r.isConfirmed) $("#form_wfh")[0].submit();
+                    if (r.isConfirmed) document.getElementById('form_wfh').submit();
                 });
             });
         });

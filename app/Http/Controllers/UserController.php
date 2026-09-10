@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redirect;
 use Spatie\Permission\Models\Role;
+use App\Http\Requests\User\StoreUserRequest;
+use App\Http\Requests\User\UpdateUserRequest;
 
 class UserController extends Controller
 {
@@ -28,15 +30,8 @@ class UserController extends Controller
         return view('admin.users.index', compact('users', 'unitperusahaan', 'role'));
     }
 
-    public function store(Request $request)
+    public function store(StoreUserRequest $request)
     {
-        $request->validate([
-            'nama_user' => 'required',
-            'email' => 'required|email|unique:users,email',
-            'unit' => 'required|exists:unitperusahaan,unit',
-            'role' => 'required|exists:roles,id',
-            'password' => 'required|min:6',
-        ]);
 
         DB::beginTransaction();
 
@@ -45,6 +40,7 @@ class UserController extends Controller
                 'name' => $request->nama_user,
                 'email' => $request->email,
                 'unit' => $request->unit,
+                'unit_id' => Unitperusahaan::where('unit', $request->unit)->value('id'),
                 'password' => $request->password,
             ]);
 
@@ -68,13 +64,8 @@ class UserController extends Controller
         return view('admin.users.edit', compact('unitperusahaan', 'role', 'user'));
     }
 
-    public function update(Request $request, int $id)
+    public function update(UpdateUserRequest $request, int $id)
     {
-        $request->validate([
-            'password' => 'nullable|min:6',
-        ], [
-            'password.min' => 'Password minimal 6 karakter',
-        ]);
 
         $user = User::findOrFail($id);
 
@@ -82,6 +73,7 @@ class UserController extends Controller
             'name' => $request->nama_user,
             'email' => $request->email,
             'unit' => $request->unit,
+            'unit_id' => Unitperusahaan::where('unit', $request->unit)->value('id'),
         ];
 
         if (!empty($request->password)) {

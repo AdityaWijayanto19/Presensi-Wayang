@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Http\Requests\LoginAdminRequest;
+use App\Http\Requests\LoginKaryawanRequest;
 
 class AuthController extends Controller
 {
@@ -14,7 +16,7 @@ class AuthController extends Controller
     // =====================================================
 
     // LOGIN ADMIN
-    public function prosesloginadmin(Request $request)
+    public function prosesloginadmin(LoginAdminRequest $request)
     {
         if (
             Auth::guard('user')->attempt([
@@ -49,7 +51,7 @@ class AuthController extends Controller
     // =====================================================
 
     // LOGIN KARYAWAN
-    public function proseslogin(Request $request)
+    public function proseslogin(LoginKaryawanRequest $request)
     {
         if (
             Auth::guard('karyawan')->attempt([

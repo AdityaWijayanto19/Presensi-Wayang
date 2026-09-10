@@ -3,13 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Presensi extends Model
 {
-    use HasFactory;
     protected $table = 'presensis';
     protected $fillable = [
         'nik',
@@ -33,9 +31,9 @@ class Presensi extends Model
         return $this->belongsTo(Karyawan::class, 'nik', 'nik');
     }
 
-    public function lembur(): HasMany
+    public function lembur(): HasOne
     {
-        return $this->hasMany(Lembur::class, 'nik', 'nik')
-            ->whereColumn('lembur.tgl_lembur', 'presensi.tgl_presensi');
+        return $this->hasOne(Lembur::class, 'nik', 'nik');
     }
+
 }

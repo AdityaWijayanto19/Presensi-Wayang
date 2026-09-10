@@ -38,14 +38,14 @@
                 <div class="flex flex-wrap -mx-2 mt-2">
                     <div class="w-full px-2">
                         <div class="form-group">
-                            <input type="text" class="form-control datepicker" placeholder="Tanggal" name="tgl_izin" id="tgl_izin">
+                            <input type="text" class="w-full rounded-md border border-slate-300 px-2.5 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors datepicker" placeholder="Tanggal" name="tgl_izin" id="tgl_izin">
                         </div>
                     </div>
                 </div>
 
                 {{-- Jenis Izin --}}
                 <div class="form-group mt-2">
-                    <select name="jenis_izin" id="jenis_izin" class="form-control">
+                    <select name="jenis_izin" id="jenis_izin" class="w-full rounded-md border border-slate-300 px-2.5 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
                         <option value="">Pilih Jenis Izin</option>
                         <option value="i">Izin</option>
                         <option value="s">Sakit</option>
@@ -56,7 +56,7 @@
                 <div class="form-group mt-2">
                     <label class="text-base text-black font-medium">Dokumen Izin / Sakit</label>
                     <small class="text-red-500 block -mt-1 mb-2">* Format yang didukung: PDF, DOC, DOCX (Maks. 4 MB)</small>
-                    <input type="file" name="file" id="file" class="form-control" accept=".pdf,.doc,.docx">
+                    <input type="file" name="file" id="file" class="w-full rounded-md border border-slate-300 px-2.5 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" accept=".pdf,.doc,.docx">
                 </div>
 
                 {{-- Submit --}}
@@ -72,28 +72,28 @@
 @push('myscript')
 
 <script>
-    $(document).ready(function () {
+    document.addEventListener('DOMContentLoaded', function () {
         flatpickr(".datepicker", { dateFormat: "Y-m-d" });
 
-        $("#form_izin").submit(function (e) {
+        document.getElementById('form_izin').addEventListener('submit', function (e) {
             e.preventDefault();
 
-            var tgl_izin = $("#tgl_izin").val();
-            var jenis_izin = $("#jenis_izin").val();
-            var file = $("#file")[0].files[0];
+            var tgl_izin = document.getElementById('tgl_izin').value;
+            var jenis_izin = document.getElementById('jenis_izin').value;
+            var file = document.getElementById('file').files[0];
 
             if (tgl_izin == "") {
                 Swal.fire({ title: 'Error!', icon: 'warning', text: 'Tanggal harus diisi!', confirmButtonColor: '#7a5234' });
-                return false;
+                return;
             } else if (jenis_izin == "") {
                 Swal.fire({ title: 'Error!', icon: 'warning', text: 'Jenis Izin harus diisi!', confirmButtonColor: '#7a5234' });
-                return false;
+                return;
             } else if (!file) {
                 Swal.fire({ title: 'Error!', icon: 'warning', text: 'File harus diupload!', confirmButtonColor: '#7a5234' });
-                return false;
+                return;
             } else if (file.size > 4 * 1024 * 1024) {
                 Swal.fire({ title: 'Error!', icon: 'warning', text: 'Ukuran file maksimal 4MB!', confirmButtonColor: '#7a5234' });
-                return false;
+                return;
             }
 
             Swal.fire({
@@ -106,7 +106,7 @@
                 confirmButtonText: 'Ya, Kirim!',
                 cancelButtonText: 'Batal'
             }).then((result) => {
-                if (result.isConfirmed) { $("#form_izin")[0].submit(); }
+                if (result.isConfirmed) { document.getElementById('form_izin').submit(); }
             });
         });
     });

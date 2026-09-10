@@ -17,7 +17,7 @@ class ReminderLaporan extends Command
         $hariIni = date('Y-m-d');
 
         // Query WFH yang approved + tanggal hari ini + belum upload laporan
-        $wfhList = DB::table('wfh')
+        $wfhList = DB::table('wfhs')
             ->where('status', WfhStatus::Approved->value)
             ->where('tgl_wfh', $hariIni)
             ->where(function ($q) {

@@ -28,7 +28,7 @@
                 </div>
 
                 {{-- Notification Items --}}
-                <div class="bg-white rounded-2xl border border-[#f0ece8] shadow-sm divide-y divide-[#f5f0eb] overflow-hidden">
+                <x-app.card class="divide-y divide-slate-200 overflow-hidden">
                     @foreach($group['items'] as $n)
                         <div
                             class="p-3.5 hover:bg-[#fdf8f4] transition-colors duration-150 flex items-start justify-between gap-3 {{ is_null($n->read_at) ? 'bg-amber-50/50' : '' }}">
@@ -50,14 +50,13 @@
                             @endif
                         </div>
                     @endforeach
-                </div>
+                </x-app.card>
             @empty
-                <!-- Tampilan Jika Kosong -->
-                <div class="bg-white rounded-2xl border border-[#f0ece8] shadow-sm p-8 mt-6 text-center">
+                <x-app.card class="p-8 mt-6 text-center">
                     <i data-lucide="bell-off" class="text-[#a8a29e] mb-2" style="width:32px;height:32px;"></i>
                     <div class="text-[13px] font-medium text-[#1c1917]">Belum ada notifikasi</div>
                     <p class="text-[11px] text-[#a8a29e] mt-1">Semua pemberitahuan terbaru akan muncul di sini.</p>
-                </div>
+                </x-app.card>
             @endforelse
 
         </div>

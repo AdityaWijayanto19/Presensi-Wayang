@@ -38,14 +38,14 @@
                 <div class="flex flex-wrap -mx-2 mt-2">
                     <div class="w-full px-2">
                         <div class="form-group">
-                            <input type="text" class="form-control datepicker" placeholder="Tanggal Lembur" name="tgl_lembur" id="tgl_lembur">
+                            <input type="text" class="w-full rounded-md border border-slate-300 px-2.5 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors datepicker" placeholder="Tanggal Lembur" name="tgl_lembur" id="tgl_lembur">
                         </div>
                     </div>
                 </div>
 
                 {{-- Durasi --}}
                 <div class="form-group mt-2">
-                    <select name="durasi" id="durasi" class="form-control">
+                    <select name="durasi" id="durasi" class="w-full rounded-md border border-slate-300 px-2.5 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
                         <option value="">Pilih Durasi Lembur</option>
                         <option value="1 Jam">1 Jam</option>
                         <option value="1.5 Jam">1.5 Jam</option>
@@ -64,14 +64,14 @@
                 <div class="form-group mt-2">
                     <label class="text-base text-black font-medium">Form Lembur</label>
                     <small class="text-red-500 block -mt-1 mb-2">* Format yang didukung: PDF, DOC, DOCX, JPG, JPEG, PNG (Maks. 4 MB)</small>
-                    <input type="file" name="file_form" id="file_form" class="form-control" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                    <input type="file" name="file_form" id="file_form" class="w-full rounded-md border border-slate-300 px-2.5 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
                 </div>
 
                 {{-- Upload Laporan --}}
                 <div class="form-group mt-2">
                     <label class="text-base text-black font-medium">Laporan Lembur</label>
                     <small class="text-red-500 block -mt-1 mb-2">* Format yang didukung: PDF, DOC, DOCX, JPG, JPEG, PNG (Maks. 4 MB)</small>
-                    <input type="file" name="file_laporan" id="file_laporan" class="form-control" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                    <input type="file" name="file_laporan" id="file_laporan" class="w-full rounded-md border border-slate-300 px-2.5 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
                 </div>
 
                 {{-- Submit --}}
@@ -87,16 +87,16 @@
 @push('myscript')
 
 <script>
-    $(document).ready(function () {
+    document.addEventListener('DOMContentLoaded', function () {
         flatpickr(".datepicker", { dateFormat: "Y-m-d" });
 
-        $("#form_lembur").submit(function (e) {
+        document.getElementById('form_lembur').addEventListener('submit', function (e) {
             e.preventDefault();
 
-            var tgl_lembur = $("#tgl_lembur").val();
-            var durasi = $("#durasi").val();
-            var file_form = $("#file_form")[0].files[0];
-            var file_laporan = $("#file_laporan")[0].files[0];
+            var tgl_lembur = document.getElementById('tgl_lembur').value;
+            var durasi = document.getElementById('durasi').value;
+            var file_form = document.getElementById('file_form').files[0];
+            var file_laporan = document.getElementById('file_laporan').files[0];
 
             if (tgl_lembur == "") {
                 Swal.fire({ title: 'Error!', icon: 'warning', text: 'Tanggal lembur harus diisi!', confirmButtonColor: '#7a5234' });
@@ -128,7 +128,7 @@
                 confirmButtonText: 'Ya, Kirim!',
                 cancelButtonText: 'Batal'
             }).then((result) => {
-                if (result.isConfirmed) { $("#form_lembur")[0].submit(); }
+                if (result.isConfirmed) { document.getElementById('form_lembur').submit(); }
             });
         });
     });

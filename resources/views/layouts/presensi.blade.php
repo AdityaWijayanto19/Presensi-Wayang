@@ -411,7 +411,10 @@
             background-color: #fff;
             border: 1px solid #ced4da;
             border-radius: 0.25rem;
-            transition: border-color 0.15s ease-in-out;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+        input:focus, textarea:focus, select:focus {
+            outline: none;
         }
         .form-group.boxed {
             margin: 0;

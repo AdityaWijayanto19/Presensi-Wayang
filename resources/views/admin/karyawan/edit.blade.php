@@ -50,7 +50,7 @@
                     readonly
                     name="nik"
                     id="nik"
-                    class="w-full rounded-lg border border-slate-300 pl-10 pr-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-slate-50"
+                    class="w-full rounded-md border border-slate-300 pl-10 pr-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-slate-50"
                     value="{{ $karyawan->nik }}"
                     placeholder="NIK"
                     autocomplete="off">
@@ -93,7 +93,7 @@
                     type="text"
                     name="nama_lengkap"
                     id="nama_lengkap"
-                    class="w-full rounded-lg border border-slate-300 pl-10 pr-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    class="w-full rounded-md border border-slate-300 pl-10 pr-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                     value="{{ $karyawan->nama_lengkap }}"
                     placeholder="Nama Lengkap"
                     autocomplete="off">
@@ -139,7 +139,7 @@
                     type="text"
                     name="posisi"
                     id="posisi"
-                    class="w-full rounded-lg border border-slate-300 pl-10 pr-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    class="w-full rounded-md border border-slate-300 pl-10 pr-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                     value="{{ $karyawan->posisi }}"
                     placeholder="Posisi (contoh: Staff Accounting)"
                     autocomplete="off">
@@ -160,7 +160,7 @@
         <div class="col-span-12">
 
             <label class="block text-sm font-medium text-slate-700 mb-1">Jabatan <span class="text-red-500">*</span></label>
-            <select name="jabatan" id="edit_jabatan" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white" required>
+            <select name="jabatan" id="edit_jabatan" class="w-full rounded-md border border-slate-300 px-2.5 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white" required>
 
                 <option value="">Pilih Jabatan</option>
 
@@ -192,7 +192,7 @@
         <div class="col-span-12">
 
             <label class="block text-sm font-medium text-slate-700 mb-1">Role Approved</label>
-            <select name="role_approved" id="edit_role_approved" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
+            <select name="role_approved" id="edit_role_approved" class="w-full rounded-md border border-slate-300 px-2.5 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
 
                 <option value="">Pilih Role Approved</option>
 
@@ -221,14 +221,14 @@
 
         <div class="col-span-12">
 
-            <select name="atasan_nik" id="edit_atasan_nik" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
+            <select name="atasan_nik" id="edit_atasan_nik" class="w-full rounded-md border border-slate-300 px-2.5 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
 
                 <option value="">Pilih Atasan</option>
 
                 @php
                     $atasanMap = ['Staff'=>'Manager','Manager'=>'GM','GM'=>'Direktur','Direktur'=>null];
                     $targetPosisi = $atasanMap[$karyawan->role_approved ?? ''] ?? null;
-                    $atasanList = $targetPosisi ? DB::table('karyawan')->where('jabatan',$targetPosisi)->where('nik','!=',$karyawan->nik)->get() : collect();
+                    $atasanList = $targetPosisi ? DB::table('karyawans')->where('jabatan',$targetPosisi)->where('nik','!=',$karyawan->nik)->get() : collect();
                 @endphp
 
                 @foreach($atasanList as $a)
@@ -257,7 +257,7 @@
             <select
                 name="unit"
                 id="unit"
-                class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
+                class="w-full rounded-md border border-slate-300 px-2.5 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
 
                 <option value="">Pilih Unit</option>
 
@@ -314,7 +314,7 @@
                     type="text"
                     name="no_hp"
                     id="no_hp"
-                    class="w-full rounded-lg border border-slate-300 pl-10 pr-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    class="w-full rounded-md border border-slate-300 pl-10 pr-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                     value="{{ $karyawan->no_hp }}"
                     placeholder="No. HP"
                     autocomplete="off">
@@ -343,7 +343,7 @@
             <input
                 type="file"
                 name="foto"
-                class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                class="w-full rounded-md border border-slate-300 px-2.5 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
 
             <input
                 type="hidden"
@@ -388,8 +388,29 @@
                 <input
                     type="password"
                     name="password"
-                    class="w-full rounded-lg border border-slate-300 pl-10 pr-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    id="edit_password"
+                    class="w-full rounded-md border border-slate-300 pl-10 pr-10 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                     placeholder="Kosongkan jika password tidak diubah">
+
+                <button type="button"
+                    onclick="togglePassword('edit_password', this)"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                    tabindex="-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-open">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/>
+                        <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6"/>
+                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-closed" style="display:none;">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M21 21l-6 -6l-5 -5"/>
+                        <path d="M3 3l18 18"/>
+                        <path d="M10.5 10.5a2 2 0 1 0 2.936 2.942"/>
+                        <path d="M4.487 4.489c-1.168 .735 -1.988 1.687 -2.487 2.511c2.4 -4 5.4 -6 9 -6c1.036 0 2.032 .18 2.968 .512"/>
+                        <path d="M19.5 15c.847 .543 1.555 1.159 2 1.814"/>
+                        <path d="M3 3l18 18"/>
+                    </svg>
+                </button>
 
             </div>
 
@@ -409,7 +430,7 @@
             <div class="space-y-1">
 
                 <button
-                    class="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium w-full justify-center">
+                    class="inline-flex items-center gap-2 bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700 transition-colors text-sm font-medium w-full justify-center">
 
                     <svg xmlns="http://www.w3.org/2000/svg"
                          width="24"

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Lembur;
+use App\Services\ImageService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -20,13 +21,6 @@ class LemburService
     {
         $nik = Auth::guard('karyawan')->user()->nik;
 
-        $request->validate([
-            'tgl_lembur' => 'required|date',
-            'durasi' => 'required|in:1 Jam,1.5 Jam,2 Jam,2.5 Jam,3 Jam,3.5 Jam,4 Jam,4.5 Jam,5 Jam,Prorate',
-            'file_form' => 'required|mimes:pdf,doc,docx,jpg,jpeg,png|max:4096',
-            'file_laporan' => 'required|mimes:pdf,doc,docx,jpg,jpeg,png|max:4096',
-        ]);
-
         if ($request->tgl_lembur > date('Y-m-d')) {
             return ['success' => false, 'message' => 'Tanggal lembur tidak boleh melebihi hari ini!'];
         }
@@ -43,11 +37,24 @@ class LemburService
             $form = $request->file('file_form');
             $laporan = $request->file('file_laporan');
             $timestamp = date('YmdHis');
-            $namaForm = $timestamp . '-form-' . $form->getClientOriginalName();
-            $namaLaporan = $timestamp . '-laporan-' . $laporan->getClientOriginalName();
 
-            $form->storeAs('public/uploads/lembur', $namaForm);
-            $laporan->storeAs('public/uploads/lembur', $namaLaporan);
+            $imageService = app(ImageService::class);
+
+            if (str_starts_with($form->getMimeType(), 'image/')) {
+                $formPath = $imageService->processUpload($form, 'lembur');
+                $namaForm = $formPath ? basename($formPath) : $timestamp . '-form-' . $form->getClientOriginalName();
+            } else {
+                $namaForm = $timestamp . '-form-' . $form->getClientOriginalName();
+                $form->storeAs('public/uploads/lembur', $namaForm);
+            }
+
+            if (str_starts_with($laporan->getMimeType(), 'image/')) {
+                $laporanPath = $imageService->processUpload($laporan, 'lembur');
+                $namaLaporan = $laporanPath ? basename($laporanPath) : $timestamp . '-laporan-' . $laporan->getClientOriginalName();
+            } else {
+                $namaLaporan = $timestamp . '-laporan-' . $laporan->getClientOriginalName();
+                $laporan->storeAs('public/uploads/lembur', $namaLaporan);
+            }
 
             Lembur::create([
                 'nik' => $nik,

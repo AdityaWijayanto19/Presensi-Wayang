@@ -24,7 +24,7 @@
         @endphp
 
         @foreach ($perms as $key => $perm)
-            <div class="card mb-3 border border-stone-200 rounded-2xl shadow-sm">
+            <x-app.card class="mb-3">
                 <div class="card-body p-4 flex items-center justify-between">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center text-amber-700">
@@ -45,18 +45,18 @@
                         <div class="w-11 h-6 bg-stone-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
                     </label>
                 </div>
-            </div>
+            </x-app.card>
         @endforeach
 
         {{-- Logout --}}
-        <div class="card mt-6 border border-stone-200 rounded-2xl shadow-sm">
+        <x-app.card class="mt-6">
                 <a href="#" id="btnLogout" class="flex items-center gap-3 text-rose-600 no-underline p-4">
                     <div class="w-10 h-10 rounded-xl bg-rose-100 border border-rose-200 flex items-center justify-center">
                         <i data-lucide="log-out" class="text-xl"></i>
                     </div>
                     <div class="text-[14px] font-bold">Keluar</div>
                 </a>
-        </div>
+        </x-app.card>
     </div>
 @endsection
 

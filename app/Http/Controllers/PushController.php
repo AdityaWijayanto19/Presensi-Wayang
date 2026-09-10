@@ -5,17 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\PushSubscription;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Requests\Push\SubscribePushRequest;
 
 class PushController extends Controller
 {
-    public function subscribe(Request $request)
+    public function subscribe(SubscribePushRequest $request)
     {
-        $request->validate([
-            'endpoint' => 'required|url',
-            'public_key' => 'required|string',
-            'auth_token' => 'required|string',
-        ]);
-
         $nik = Auth::guard('karyawan')->user()->nik;
 
         PushSubscription::updateOrCreate(

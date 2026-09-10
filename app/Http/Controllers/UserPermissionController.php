@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\UserPermission;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Requests\TogglePermissionRequest;
 
 class UserPermissionController extends Controller
 {
@@ -28,12 +29,8 @@ class UserPermissionController extends Controller
         return response()->json(UserPermission::getPermissions('karyawan', $user->nik));
     }
 
-    public function togglePermission(Request $request)
+    public function togglePermission(TogglePermissionRequest $request)
     {
-        $request->validate([
-            'permission' => 'required|in:location,camera,notifications',
-        ]);
-
         $user = Auth::guard('karyawan')->user();
         $result = UserPermission::toggle('karyawan', $user->nik, $request->permission);
 
@@ -46,12 +43,8 @@ class UserPermissionController extends Controller
         return response()->json(UserPermission::getPermissions('admin', (string) $user->id));
     }
 
-    public function adminTogglePermission(Request $request)
+    public function adminTogglePermission(TogglePermissionRequest $request)
     {
-        $request->validate([
-            'permission' => 'required|in:location,camera,notifications',
-        ]);
-
         $user = Auth::guard('user')->user();
         $result = UserPermission::toggle('admin', (string) $user->id, $request->permission);
 

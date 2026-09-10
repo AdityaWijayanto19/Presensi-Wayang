@@ -182,8 +182,8 @@
             });
         }
 
-        $("#takeabsen").click(function (e) {
-            var lokasi = $("#lokasi").val();
+        document.getElementById('takeabsen').addEventListener('click', function (e) {
+            var lokasi = document.getElementById('lokasi').value;
 
             if (lokasi == "") {
                 Swal.fire({
@@ -199,47 +199,51 @@
             Webcam.snap(function (uri) {
                 var image = uri;
 
-                $.ajax({
-                    type: 'POST',
-                    url: '/presensi/store',
-                    data: {
+                fetch('/presensi/store', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRF-TOKEN': "{{ csrf_token() }}"
+                    },
+                    body: new URLSearchParams({
                         _token: "{{ csrf_token() }}",
                         image: image,
                         lokasi: lokasi
-                    },
-                    cache: false,
-                    success: function (respond) {
-                        var status = respond.split("|");
+                    }),
+                    cache: 'no-store'
+                })
+                .then(function (response) { return response.text(); })
+                .then(function (respond) {
+                    var status = respond.split("|");
 
-                        if (status[0] == "success") {
-                            if (status[2] == "in") {
-                                notifikasi_in.play();
-                            } else {
-                                notifikasi_out.play();
-                            }
-
-                            Swal.fire({
-                                title: 'Berhasil!',
-                                text: status[1],
-                                icon: 'success',
-                                confirmButtonText: 'Ok',
-                                confirmButtonColor: '#9c6b43'
-                            });
-
-                            setTimeout(function () {
-                                Webcam.reset();
-                                location.href = '/dashboard';
-                            }, 3100);
-
+                    if (status[0] == "success") {
+                        if (status[2] == "in") {
+                            notifikasi_in.play();
                         } else {
-                            Swal.fire({
-                                title: 'Error!',
-                                text: status[1],
-                                icon: 'error',
-                                confirmButtonText: 'Ok',
-                                confirmButtonColor: '#9c6b43'
-                            });
+                            notifikasi_out.play();
                         }
+
+                        Swal.fire({
+                            title: 'Berhasil!',
+                            text: status[1],
+                            icon: 'success',
+                            confirmButtonText: 'Ok',
+                            confirmButtonColor: '#9c6b43'
+                        });
+
+                        setTimeout(function () {
+                            Webcam.reset();
+                            location.href = '/dashboard';
+                        }, 3100);
+
+                    } else {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: status[1],
+                            icon: 'error',
+                            confirmButtonText: 'Ok',
+                            confirmButtonColor: '#9c6b43'
+                        });
                     }
                 });
             });

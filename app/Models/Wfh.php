@@ -3,12 +3,10 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Wfh extends Model
 {
-    use HasFactory;
     protected $table = 'wfhs';
     public $timestamps = false;
     protected $fillable = [
@@ -57,8 +55,4 @@ class Wfh extends Model
         return $this->belongsTo(Karyawan::class, 'atasan_nik', 'nik');
     }
 
-    public function laporanAtasan(): BelongsTo
-    {
-        return $this->belongsTo(Karyawan::class, 'laporan_atasan_nik', 'nik');
-    }
 }

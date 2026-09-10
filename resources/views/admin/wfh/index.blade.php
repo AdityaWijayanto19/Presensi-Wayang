@@ -2,7 +2,7 @@
 
 @section('content')
 
-<x-app.page-header title="Data WFH Karyawan" pretitle="WAG - Presensi Digital" />
+@section('page_title', 'Data WFH Karyawan')
 
 <x-app.page-body>
     <div class="bg-white rounded-md shadow-sm border border-slate-200">
@@ -67,16 +67,16 @@
                 <table class="min-w-full divide-y divide-slate-200 border border-slate-200">
                     <thead class="bg-slate-50">
                         <tr>
-                            <th class="px-2.5 py-1.5 text-left text-xs font-medium text-slate-500 uppercase">No.</th>
-                            <th class="px-2.5 py-1.5 text-left text-xs font-medium text-slate-500 uppercase">Tanggal</th>
-                            <th class="px-2.5 py-1.5 text-left text-xs font-medium text-slate-500 uppercase">NIK / Nama</th>
-                            <th class="px-2.5 py-1.5 text-left text-xs font-medium text-slate-500 uppercase">Jabatan / Posisi</th>
-                            <th class="px-2.5 py-1.5 text-left text-xs font-medium text-slate-500 uppercase">Unit</th>
-                            <th class="px-2.5 py-1.5 text-left text-xs font-medium text-slate-500 uppercase">Atasan</th>
-                            <th class="px-2.5 py-1.5 text-left text-xs font-medium text-slate-500 uppercase">Status</th>
-                            <th class="px-2.5 py-1.5 text-left text-xs font-medium text-slate-500 uppercase">Pengajuan</th>
-                            <th class="px-2.5 py-1.5 text-left text-xs font-medium text-slate-500 uppercase">Laporan</th>
-                            <th class="px-2.5 py-1.5 text-left text-xs font-medium text-slate-500 uppercase" style="min-width:200px">Actions</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase">No.</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase">Tanggal</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase">NIK / Nama</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase">Jabatan / Posisi</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase">Unit</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase">Atasan</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase">Status</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase">Pengajuan</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase">Laporan</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase" style="min-width:200px">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="wfhTableBody" class="divide-y divide-slate-100">
@@ -122,20 +122,20 @@
 
         <div class="mb-3">
             <label class="block text-sm font-medium text-slate-700 mb-1 font-bold">Tanggal WFH</label>
-            <input type="date" name="tgl_wfh" id="edit_tgl_wfh" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required>
+            <input type="date" name="tgl_wfh" id="edit_tgl_wfh" class="w-full rounded-md border border-slate-300 px-2.5 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required>
         </div>
 
         <div class="mb-3">
             <label class="block text-sm font-medium text-slate-700 mb-1 font-bold">Deskripsi Pekerjaan</label>
-            <textarea name="deskripsi_pekerjaan" id="edit_deskripsi" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" rows="3" required></textarea>
+            <textarea name="deskripsi_pekerjaan" id="edit_deskripsi" class="w-full rounded-md border border-slate-300 px-2.5 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" rows="3" required></textarea>
         </div>
 
         <div class="mb-3">
             <label class="block text-sm font-medium text-slate-700 mb-1 font-bold">Keterangan</label>
-            <textarea name="keterangan" id="edit_keterangan" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" rows="2"></textarea>
+            <textarea name="keterangan" id="edit_keterangan" class="w-full rounded-md border border-slate-300 px-2.5 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" rows="2"></textarea>
         </div>
 
-        <button type="submit" class="w-full inline-flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">Simpan Perubahan</button>
+        <button type="submit" class="w-full inline-flex items-center justify-center gap-2 bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700 transition-colors text-sm font-medium">Simpan Perubahan</button>
     </form>
 </x-app.modal>
 
@@ -143,20 +143,23 @@
 
 @push('myscript')
     <script>
-        $(function() {
+        document.addEventListener('DOMContentLoaded', function() {
             flatpickr("#tanggal", {
-                locale: "id", 
+                locale: "id",
                 dateFormat: "Y-m-d",
                 altInput: true,
                 altFormat: "j F Y",
                 allowInput: true,
                 disableMobile: "true"
             });
-            $('input[name="tanggal"]').change(function() {
-                $(this).closest('form').submit();
+            document.querySelector('input[name="tanggal"]').addEventListener('change', function() {
+                this.closest('form').submit();
             });
-            $('select[name="unit"], select[name="status"]').change(function() {
-                $(this).closest('form').submit();
+            document.querySelector('select[name="unit"]').addEventListener('change', function() {
+                this.closest('form').submit();
+            });
+            document.querySelector('select[name="status"]').addEventListener('change', function() {
+                this.closest('form').submit();
             });
 
             // Admin preview
