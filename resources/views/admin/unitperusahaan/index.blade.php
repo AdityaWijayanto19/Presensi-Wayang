@@ -40,12 +40,7 @@
             {{-- ================================================== --}}
             @can('unit-create')
                 <div class="mb-2">
-                    <a href="#"
-                        class="inline-flex items-center gap-2 bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
-                        id="btnTambahUnitperusahaan">
-                        <i data-lucide="building-2" style="width:18px;height:18px;"></i>
-                        Tambah Data Unit Perusahaan
-                    </a>
+                    <x-admin.button variant="primary" icon="building-2" href="#" id="btnTambahUnitperusahaan">Tambah Data Unit Perusahaan</x-admin.button>
                 </div>
             @endcan
 
@@ -76,18 +71,12 @@
                                 <td class="px-2 py-1.5 text-xs">
                                     <div class="flex flex-wrap gap-1">
                                         @can('unit-edit')
-                                            <a href="#"
-                                                class="edit bg-cyan-500 text-white px-1.5 py-1.5 rounded hover:bg-cyan-600 transition-colors text-[10px] font-medium inline-flex items-center"
-                                                data-id="{{ $u->id }}">
-                                                <i data-lucide="square-pen" style="width:12px;height:12px;"></i>
-                                            </a>
+                                            <x-admin.button variant="edit" icon="square-pen" size="sm" href="#" class="edit" data-id="{{ $u->id }}" />
                                         @endcan
                                         @can('unit-delete')
                                             <form action="/unitperusahaan/{{ $u->id }}/delete" method="POST" class="inline">
                                                 @csrf
-                                                <button type="submit" class="delete-confirm bg-red-600 text-white px-1.5 py-1.5 rounded hover:bg-red-700 transition-colors text-[10px] font-medium inline-flex items-center">
-                                                    <i data-lucide="trash-2" style="width:12px;height:12px;"></i>
-                                                </button>
+                                                <x-admin.button variant="danger" icon="trash-2" size="sm" type="submit" class="delete-confirm" />
                                             </form>
                                         @endcan
                                     </div>
@@ -144,6 +133,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('btnTambahUnitperusahaan').addEventListener('click', function() {
         formContainer.innerHTML = '';
         formContainer.appendChild(formTpl.content.cloneNode(true));
+        if (window.lucide) lucide.createIcons();
         openModal();
     });
 

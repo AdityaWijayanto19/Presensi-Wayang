@@ -5,65 +5,54 @@
 @section('page_title', 'Data WFH Karyawan')
 
 <x-admin.page-body>
-    <div class="bg-white rounded-md shadow-sm border border-slate-200">
+    <x-admin.card>
         <div class="p-3">
 
             {{-- Filter --}}
-            <div class="mb-2">
-                <form action="/panel/wfh" method="GET">
-                    <div class="grid grid-cols-12 gap-2">
-                        <div class="col-span-12">
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="2">
-                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                                        <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4"/>
-                                        <path d="M14 18a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/>
-                                        <path d="M15 3v4"/>
-                                        <path d="M7 3v4"/>
-                                        <path d="M3 11h16"/>
-                                        <path d="M18 16.496v1.504l1 1"/>
-                                    </svg>
-                                </div>
-                                <input type="text" class="w-full pl-8 pr-3 py-2 rounded-md border border-slate-300 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                    id="tanggal" name="tanggal" autocomplete="off" placeholder="Cari Tanggal WFH" value="{{ request('tanggal') }}">
-                            </div>
-                        </div>
+            <form action="/panel/wfh" method="GET">
+                <x-admin.input
+                    type="text"
+                    name="tanggal"
+                    id="tanggal"
+                    placeholder="Cari Tanggal WFH"
+                    value="{{ request('tanggal') }}"
+                    autocomplete="off"
+                    icon="calendar"
+                />
+
+                <div class="grid grid-cols-12 gap-2">
+                    <div class="col-span-12 sm:col-span-3">
+                        <x-admin.input
+                            name="nama_karyawan"
+                            placeholder="Cari Nama"
+                            value="{{ Request('nama_karyawan') }}"
+                            autocomplete="off"
+                        />
                     </div>
-                    <div class="grid grid-cols-12 gap-2 mt-2">
-                        <div class="col-span-12 sm:col-span-3">
-                            <input type="text" name="nama_karyawan" class="w-full rounded-md border border-slate-300 px-2.5 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                placeholder="Cari Nama" value="{{ Request('nama_karyawan') }}" autocomplete="off">
-                        </div>
-                        <div class="col-span-12 sm:col-span-2">
-                            <select name="unit" class="w-full rounded-md border border-slate-300 px-2.5 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
-                                <option value="">Semua Unit</option>
-                                @foreach ($unitperusahaan as $u)
-                                    <option {{ Request('unit') == $u->unit ? 'selected' : '' }}
-                                        value="{{ $u->unit }}">{{ $u->perusahaan }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-span-12 sm:col-span-2">
-                            <select name="status" class="w-full rounded-md border border-slate-300 px-2.5 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
-                                <option value="">Semua Status</option>
-                                <option value="pending_atasan" {{ Request('status') == 'pending_atasan' ? 'selected' : '' }}>Menunggu Atasan</option>
-                                <option value="pending_admin" {{ Request('status') == 'pending_admin' ? 'selected' : '' }}>Menunggu Admin</option>
-                                <option value="approved" {{ Request('status') == 'approved' ? 'selected' : '' }}>Disetujui</option>
-                                <option value="rejected" {{ Request('status') == 'rejected' ? 'selected' : '' }}>Ditolak</option>
-                                <option value="unpaid" {{ Request('status') == 'unpaid' ? 'selected' : '' }}>Unpaid</option>
-                            </select>
-                        </div>
-                        <div class="col-span-12 sm:col-span-5">
-                            <button type="submit" class="w-full inline-flex items-center justify-center gap-2 bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700 transition-colors text-sm font-medium">Cari Data</button>
-                        </div>
+                    <div class="col-span-12 sm:col-span-2">
+                        <x-admin.select name="unit" placeholder="Semua Unit">
+                            @foreach ($unitperusahaan as $u)
+                                <option value="{{ $u->unit }}" {{ Request('unit') == $u->unit ? 'selected' : '' }}>{{ $u->perusahaan }}</option>
+                            @endforeach
+                        </x-admin.select>
                     </div>
-                </form>
-            </div>
+                    <div class="col-span-12 sm:col-span-2">
+                        <x-admin.select name="status" placeholder="Semua Status">
+                            <option value="pending_atasan" {{ Request('status') == 'pending_atasan' ? 'selected' : '' }}>Menunggu Atasan</option>
+                            <option value="pending_admin" {{ Request('status') == 'pending_admin' ? 'selected' : '' }}>Menunggu Admin</option>
+                            <option value="approved" {{ Request('status') == 'approved' ? 'selected' : '' }}>Disetujui</option>
+                            <option value="rejected" {{ Request('status') == 'rejected' ? 'selected' : '' }}>Ditolak</option>
+                            <option value="unpaid" {{ Request('status') == 'unpaid' ? 'selected' : '' }}>Unpaid</option>
+                        </x-admin.select>
+                    </div>
+                    <div class="col-span-12 sm:col-span-5">
+                        <x-admin.button variant="primary" icon="search" type="submit" block>Cari Data</x-admin.button>
+                    </div>
+                </div>
+            </form>
 
             {{-- Table --}}
-            <div class="overflow-x-auto">
+            <div class="overflow-x-auto mt-2">
                 <table class="min-w-full divide-y divide-slate-200 border border-slate-200">
                     <thead class="bg-slate-50">
                         <tr>
@@ -89,7 +78,7 @@
                 {{ $datawfh->appends(request()->all())->links() }}
             </div>
         </div>
-    </div>
+    </x-admin.card>
 </x-admin.page-body>
 
 {{-- Preview Modal --}}
@@ -120,22 +109,31 @@
         @csrf
         <input type="hidden" name="wfh_id" id="edit_wfh_id">
 
-        <div class="mb-3">
-            <label class="block text-sm font-medium text-slate-700 mb-1 font-bold">Tanggal WFH</label>
-            <input type="date" name="tgl_wfh" id="edit_tgl_wfh" class="w-full rounded-md border border-slate-300 px-2.5 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required>
+        <x-admin.input
+            type="date"
+            name="tgl_wfh"
+            id="edit_tgl_wfh"
+            label="Tanggal WFH <span class='text-red-500'>*</span>"
+            required
+        />
+
+        <div class="mb-2">
+            <label class="block text-xs font-medium text-slate-600 mb-1">Deskripsi Pekerjaan <span class="text-red-500">*</span></label>
+            <textarea name="deskripsi_pekerjaan" id="edit_deskripsi"
+                class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-colors"
+                rows="3" required></textarea>
         </div>
 
-        <div class="mb-3">
-            <label class="block text-sm font-medium text-slate-700 mb-1 font-bold">Deskripsi Pekerjaan</label>
-            <textarea name="deskripsi_pekerjaan" id="edit_deskripsi" class="w-full rounded-md border border-slate-300 px-2.5 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" rows="3" required></textarea>
+        <div class="mb-2">
+            <label class="block text-xs font-medium text-slate-600 mb-1">Keterangan</label>
+            <textarea name="keterangan" id="edit_keterangan"
+                class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-colors"
+                rows="2"></textarea>
         </div>
 
-        <div class="mb-3">
-            <label class="block text-sm font-medium text-slate-700 mb-1 font-bold">Keterangan</label>
-            <textarea name="keterangan" id="edit_keterangan" class="w-full rounded-md border border-slate-300 px-2.5 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" rows="2"></textarea>
+        <div class="mt-2">
+            <x-admin.button variant="primary" icon="save" type="submit" block>Simpan Perubahan</x-admin.button>
         </div>
-
-        <button type="submit" class="w-full inline-flex items-center justify-center gap-2 bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700 transition-colors text-sm font-medium">Simpan Perubahan</button>
     </form>
 </x-admin.modal>
 
@@ -199,7 +197,7 @@
                     iframe.style.border = '0';
                     body.appendChild(iframe);
                 } else {
-                    body.innerHTML = '<div style="padding:32px; text-align:center;"><p>Preview tidak tersedia for .' + ext + '</p><p><a href="' + url + '" target="_blank" class="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">Buka di Tab Baru</a></p></div>';
+                    body.innerHTML = '<div style="padding:32px; text-align:center;"><p>Preview tidak tersedia untuk .' + ext + '</p><p><a href="' + url + '" target="_blank" class="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">Buka di Tab Baru</a></p></div>';
                 }
             });
             document.getElementById('adminModalClose').addEventListener('click', () => {
@@ -385,6 +383,8 @@
                         }).catch(function() {});
                 });
             })();
+
+            if (window.lucide) lucide.createIcons();
         });
     </script>
 @endpush

@@ -40,12 +40,7 @@
             {{-- ================================================== --}}
             @can('karyawan-create')
                 <div class="mb-2">
-                    <a href="#"
-                        class="inline-flex items-center gap-2 bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
-                        id="btnTambahkaryawan">
-                        <i data-lucide="user-plus" style="width:18px;height:18px;"></i>
-                        Tambah Data Karyawan
-                    </a>
+                    <x-admin.button variant="primary" icon="user-plus" href="#" id="btnTambahkaryawan">Tambah Data Karyawan</x-admin.button>
                 </div>
             @endcan
 
@@ -81,11 +76,7 @@
                         </x-admin.select>
                     </div>
                     <div class="col-span-12 md:col-span-2">
-                        <button type="submit"
-                            class="inline-flex items-center gap-2 bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700 transition-colors text-sm font-medium w-full justify-center">
-                            <i data-lucide="search" style="width:16px;height:16px;"></i>
-                            Cari Data
-                        </button>
+                        <x-admin.button variant="primary" icon="search" type="submit" block>Cari Data</x-admin.button>
                     </div>
                 </div>
             </form>
@@ -165,18 +156,12 @@
                                 <td class="px-2 py-1.5 text-xs">
                                     <div class="flex flex-wrap gap-1">
                                         @can('karyawan-edit')
-                                            <a href="#"
-                                                class="edit bg-cyan-500 text-white px-1.5 py-1.5 rounded hover:bg-cyan-600 transition-colors text-[10px] font-medium inline-flex items-center"
-                                                nik="{{ $k->nik }}" page="{{ request()->get('page', 1) }}">
-                                                <i data-lucide="square-pen" style="width:12px;height:12px;"></i>
-                                            </a>
+                                            <x-admin.button variant="edit" icon="square-pen" size="sm" href="#" class="edit" nik="{{ $k->nik }}" page="{{ request()->get('page', 1) }}" />
                                         @endcan
                                         @can('karyawan-delete')
                                             <form action="/karyawan/{{ $k->nik }}/delete" method="POST" class="inline">
                                                 @csrf
-                                                <button type="submit" class="delete-confirm bg-red-600 text-white px-1.5 py-1.5 rounded hover:bg-red-700 transition-colors text-[10px] font-medium inline-flex items-center">
-                                                    <i data-lucide="trash-2" style="width:12px;height:12px;"></i>
-                                                </button>
+                                                <x-admin.button variant="danger" icon="trash-2" size="sm" type="submit" class="delete-confirm" />
                                             </form>
                                         @endcan
                                     </div>
@@ -262,6 +247,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('btnTambahkaryawan').addEventListener('click', function() {
         formContainer.innerHTML = '';
         formContainer.appendChild(formTpl.content.cloneNode(true));
+        if (window.lucide) lucide.createIcons();
         openModal();
     });
 
@@ -297,12 +283,11 @@ document.addEventListener('DOMContentLoaded', function() {
         if (fotoLama) fotoLama.value = k.foto;
 
         var btn = form.querySelector('button[type="submit"]');
-        btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M13.5 16h-9.5a1 1 0 0 1 -1 -1v-10a1 1 0 0 1 1 -1h16a1 1 0 0 1 1 1v7.5"/><path d="M7 20h5"/><path d="M9 16v4"/><path d="M19 16v6"/><path d="M22 19l-3 3l-3 -3"/></svg> Perbarui Data';
+        btn.innerHTML = '<i data-lucide="save" style="width:16px;height:16px;"></i> Perbarui Data';
 
         formContainer.innerHTML = '';
         formContainer.appendChild(clone);
-
-        // Trigger cascading: jabatan change
+        if (window.lucide) lucide.createIcons();
         var jabatanSelect = form.querySelector('[name="jabatan"]');
         if (jabatanSelect) jabatanSelect.dispatchEvent(new Event('change'));
 

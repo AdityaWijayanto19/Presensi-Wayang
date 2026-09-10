@@ -60,13 +60,8 @@
                                 placeholder="Masukkan Password" autocomplete="off">
                             <button type="button" id="togglePassword"
                                 class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round">
-                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                    <path d="M12 12m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
-                                    <path d="M22 12c-2.667 4.667 -6 7 -10 7s-7.333 -2.333 -10 -7c2.667 -4.667 6 -7 10 -7s7.333 2.333 10 7" />
-                                </svg>
+                                <span class="eye-open"><i data-lucide="eye" style="width:20px;height:20px;"></i></span>
+                                <span class="eye-closed" style="display:none;"><i data-lucide="eye-off" style="width:20px;height:20px;"></i></span>
                             </button>
                         </div>
                     </div>
@@ -89,6 +84,12 @@
             e.preventDefault();
             const password = document.getElementById('password');
             password.type = password.type === 'password' ? 'text' : 'password';
+            const eyeOpen = this.querySelector('.eye-open');
+            const eyeClosed = this.querySelector('.eye-closed');
+            if (eyeOpen && eyeClosed) {
+                eyeOpen.style.display = password.type === 'password' ? '' : 'none';
+                eyeClosed.style.display = password.type === 'password' ? 'none' : '';
+            }
         });
     </script>
 

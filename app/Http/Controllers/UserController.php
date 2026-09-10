@@ -47,10 +47,10 @@ class UserController extends Controller
 
             DB::commit();
 
-            return Redirect::back()->with('success', 'Data User / Admin Berhasil Disimpan');
+            return Redirect::back()->with('success', 'Data Pengguna Administrator Berhasil Disimpan');
         } catch (\Exception $e) {
             DB::rollBack();
-            return Redirect::back()->with('error', 'Data User / Admin Gagal Disimpan');
+            return Redirect::back()->with('error', 'Data Pengguna Administrator Gagal Disimpan');
         }
     }
 
@@ -78,10 +78,10 @@ class UserController extends Controller
 
             DB::commit();
 
-            return Redirect::back()->with('success', 'Data User / Admin Berhasil Diperbarui');
+            return Redirect::back()->with('success', 'Data Pengguna Administrator Berhasil Diperbarui');
         } catch (\Exception $e) {
             DB::rollBack();
-            return Redirect::back()->with('error', 'Data User / Admin Gagal Diperbarui');
+            return Redirect::back()->with('error', 'Data Pengguna Administrator Gagal Diperbarui');
         }
     }
 
@@ -99,6 +99,6 @@ class UserController extends Controller
         $user->roles()->detach();
         $user->delete();
 
-        return Redirect::back()->with('success', 'Data User / Admin Berhasil Dihapus');
+        return Redirect::back()->with('success', 'Data Pengguna Administrator Berhasil Dihapus');
     }
 }

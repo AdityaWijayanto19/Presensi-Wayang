@@ -35,11 +35,7 @@ $sizes = [
 
             <div class="flex items-center justify-between px-4 py-2.5 border-b border-slate-200">
                 <h3 class="text-sm font-semibold text-slate-800">{{ $title }}</h3>
-                <button @click="open = false" class="text-slate-400 hover:text-slate-600 transition-colors">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
-                </button>
+                <x-admin.button variant="ghost" icon="x" @click="open = false" :iconSize="16" />
             </div>
 
             <div class="p-4">

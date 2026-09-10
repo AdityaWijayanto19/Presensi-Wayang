@@ -61,18 +61,18 @@
         </td>
         <td class="px-2 py-1.5 text-xs">
             @if ($pdfUrl)
-                <button type="button" class="px-2 py-1 text-xs font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors js-preview-admin"
+                <x-admin.button variant="primary" size="sm" class="js-preview-admin"
                     data-url="{{ $pdfUrl }}" data-filename="{{ basename($pdfUrl) }}"
-                    data-label="Form WFH — {{ $d->nama_lengkap }} {{ date('d-m-Y', strtotime($d->tgl_wfh)) }}">Preview</button>
+                    data-label="Form WFH — {{ $d->nama_lengkap }} {{ date('d-m-Y', strtotime($d->tgl_wfh)) }}">Preview</x-admin.button>
             @else
                 <span class="text-slate-400">—</span>
             @endif
         </td>
         <td class="px-2 py-1.5 text-xs">
             @if (!empty($d->laporan_file))
-                <button type="button" class="px-2 py-1 text-xs font-medium text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors js-preview-admin"
+                <x-admin.button variant="success" size="sm" class="js-preview-admin"
                     data-url="{{ Storage::url($d->laporan_file) }}" data-filename="{{ basename($d->laporan_file) }}"
-                    data-label="Laporan — {{ $d->nama_lengkap }}">Preview</button>
+                    data-label="Laporan — {{ $d->nama_lengkap }}">Preview</x-admin.button>
             @elseif(!empty($d->laporan_deskripsi))
                 <span class="text-xs text-slate-500">{{ Str::limit($d->laporan_deskripsi, 30) }}</span>
             @else
@@ -86,9 +86,9 @@
                     <div class="flex gap-1.5">
                         <form action="/presensi/datawfh/{{ $d->id }}/approve" method="POST">
                             @csrf
-                            <button type="submit" class="px-2 py-1 text-xs font-medium text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors" title="Setujui">✓ Setujui</button>
+                            <x-admin.button variant="success" size="sm" type="submit" title="Setujui">✓ Setujui</x-admin.button>
                         </form>
-                        <button type="button" class="px-2 py-1 text-xs font-medium text-white bg-yellow-500 rounded-md hover:bg-yellow-600 transition-colors btn-reject-admin" data-id="{{ $d->id }}">Tolak</button>
+                        <x-admin.button variant="warning" size="sm" class="btn-reject-admin" data-id="{{ $d->id }}">Tolak</x-admin.button>
                     </div>
                     @endcan
                 @elseif($status === 'approved')
@@ -124,9 +124,9 @@
                         <div class="flex gap-1.5">
                             <form action="/presensi/datawfh/{{ $d->id }}/approve-laporan-admin" method="POST">
                                 @csrf
-                                <button type="submit" class="px-2 py-1 text-xs font-medium text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors">✓ Setujui Laporan</button>
+                                <x-admin.button variant="success" size="sm" type="submit">✓ Setujui Laporan</x-admin.button>
                             </form>
-                            <button type="button" class="px-2 py-1 text-xs font-medium text-white bg-yellow-500 rounded-md hover:bg-yellow-600 transition-colors btn-reject-laporan-admin" data-id="{{ $d->id }}">Tolak Laporan</button>
+                            <x-admin.button variant="warning" size="sm" class="btn-reject-laporan-admin" data-id="{{ $d->id }}">Tolak Laporan</x-admin.button>
                         </div>
                         @endcan
                     @endif
@@ -135,14 +135,14 @@
                     @endif
                 @endif
                 @can('presensi-edit')
-                <button type="button" class="px-2 py-1 text-xs font-medium text-white bg-cyan-500 rounded-md hover:bg-cyan-600 transition-colors edit-wfh"
+                <x-admin.button variant="edit" size="sm" class="edit-wfh"
                     data-id="{{ $d->id }}" data-tgl_wfh="{{ $d->tgl_wfh }}"
-                    data-deskripsi="{{ $d->deskripsi_pekerjaan }}" data-keterangan="{{ $d->keterangan }}">Edit</button>
+                    data-deskripsi="{{ $d->deskripsi_pekerjaan }}" data-keterangan="{{ $d->keterangan }}">Edit</x-admin.button>
                 @endcan
                 @can('wfh-delete')
                 <form action="/presensi/datawfh/{{ $d->id }}/delete" method="POST">
                     @csrf
-                    <button type="submit" class="px-2 py-1 text-xs font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors delete-confirm">Hapus</button>
+                    <x-admin.button variant="danger" size="sm" type="submit" class="delete-confirm">Hapus</x-admin.button>
                 </form>
                 @endcan
             </div>

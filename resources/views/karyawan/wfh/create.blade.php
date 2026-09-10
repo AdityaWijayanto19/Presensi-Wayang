@@ -62,17 +62,7 @@
                         <!-- Ikon di-position absolute di dalam input -->
                         <div
                             class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500 z-10">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round" class="icon icon-tabler icon-tabler-calendar-time">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
-                                <path d="M14 18a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" />
-                                <path d="M15 3v4" />
-                                <path d="M7 3v4" />
-                                <path d="M3 11h16" />
-                                <path d="M18 16.496v1.504l1 1" />
-                            </svg>
+                            <i data-lucide="calendar-clock" style="width:20px;height:20px;"></i>
                         </div>
 
                         <input type="text"

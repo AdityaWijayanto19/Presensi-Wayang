@@ -46,12 +46,7 @@
             @can('user-manage')
                 <div class="grid grid-cols-12 gap-2">
                     <div class="col-span-12">
-                        <a href="#"
-                            class="inline-flex items-center gap-2 bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
-                            id="btnTambahuser">
-                            <i data-lucide="user-plus" style="width:18px;height:18px;"></i>
-                            Tambah Data Administrator
-                        </a>
+                        <x-admin.button variant="primary" icon="user-plus" href="#" id="btnTambahuser">Tambah Data Administrator</x-admin.button>
                     </div>
                 </div>
             @endcan
@@ -121,13 +116,7 @@
                                             {{-- Edit --}}
                                             {{-- ================================================== --}}
                                             @can('user-manage')
-                                                <a href="#"
-                                                    class="edit bg-blue-600 text-white px-1.5 py-1.5 rounded hover:bg-blue-700 transition-colors text-[10px] font-medium inline-flex items-center"
-                                                    id_user="{{ $d->id }}">
-
-                                                    <i data-lucide="square-pen" style="width:12px;height:12px;"></i>
-
-                                                </a>
+                                                <x-admin.button variant="edit" icon="square-pen" size="sm" href="#" class="edit" id_user="{{ $d->id }}" />
 
                                                 {{-- ================================================== --}}
                                                 {{-- Reset Password --}}
@@ -137,12 +126,7 @@
 
                                                     @csrf
 
-                                                    <button type="submit"
-                                                        class="reset-password-confirm bg-amber-500 text-white px-1.5 py-1.5 rounded hover:bg-amber-600 transition-colors text-[10px] font-medium inline-flex items-center">
-
-                                                        <i data-lucide="key-round" style="width:12px;height:12px;"></i>
-
-                                                    </button>
+                                                    <x-admin.button variant="warning" icon="key-round" size="sm" type="submit" class="reset-password-confirm" />
 
                                                 </form>
 
@@ -155,12 +139,7 @@
 
                                                         @csrf
 
-                                                        <button type="submit"
-                                                            class="delete-confirm bg-red-600 text-white px-1.5 py-1.5 rounded hover:bg-red-700 transition-colors text-[10px] font-medium inline-flex items-center">
-
-                                                            <i data-lucide="trash-2" style="width:12px;height:12px;"></i>
-
-                                                        </button>
+                                                        <x-admin.button variant="danger" icon="trash-2" size="sm" type="submit" class="delete-confirm" />
 
                                                     </form>
                                                 @endif
@@ -225,6 +204,7 @@
         document.getElementById('btnTambahuser').addEventListener('click', function() {
             formContainer.innerHTML = '';
             formContainer.appendChild(formTpl.content.cloneNode(true));
+            if (window.lucide) lucide.createIcons();
             openModal();
         });
 
@@ -248,10 +228,11 @@
                 form.querySelector('[name="password"]').placeholder = 'Kosongkan jika tidak diubah';
 
                 var btn = form.querySelector('button');
-                btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M18 4a3 3 0 0 1 3 3v8a3 3 0 0 1 -3 3h-5l-5 3v-3h-2a3 3 0 0 1 -3 -3v-8a3 3 0 0 1 3 -3h12" /><path d="M13 8l3 3l-3 3" /><path d="M16 11h-8" /></svg> Perbarui Data!';
+                btn.innerHTML = '<i data-lucide="save" style="width:16px;height:16px;"></i> Perbarui Data!';
 
                 formContainer.innerHTML = '';
                 formContainer.appendChild(clone);
+                if (window.lucide) lucide.createIcons();
                 openModal();
             });
         });

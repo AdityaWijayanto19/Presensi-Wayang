@@ -8,7 +8,7 @@
     <div class="relative flex items-center">
         @if($icon)
             <span class="absolute left-3 flex items-center justify-center text-slate-400 pointer-events-none">
-                {!! $icon !!}
+                <i data-lucide="{{ $icon }}" style="width:18px;height:18px;"></i>
             </span>
         @endif
 
