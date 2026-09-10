@@ -3,7 +3,7 @@
 @section('content')
 @section('page_title', 'Data Izin Karyawan')
 
-    <x-app.page-body>
+    <x-admin.page-body>
 
         <div class="bg-white rounded-md shadow-sm border border-slate-200 p-4">
 
@@ -262,12 +262,12 @@
 
         </div>
 
-    </x-app.page-body>
+    </x-admin.page-body>
 
     {{-- ================================================== --}}
     {{-- Modal Edit Izin --}}
     {{-- ================================================== --}}
-    <x-app.modal id="modal-editizin" title="Edit Data Izin">
+    <x-admin.modal id="modal-editizin" title="Edit Data Izin">
         <form id="formEditIzin" method="POST">
             @csrf
             <input type="hidden" name="izin_id" id="edit_izin_id">
@@ -287,7 +287,7 @@
 
             <button type="submit" class="w-full inline-flex items-center justify-center gap-2 bg-blue-600 text-white px-2 py-1 rounded-md hover:bg-blue-700 transition-colors text-sm font-medium">Simpan Perubahan</button>
         </form>
-    </x-app.modal>
+    </x-admin.modal>
 @endsection
 
 @push('myscript')

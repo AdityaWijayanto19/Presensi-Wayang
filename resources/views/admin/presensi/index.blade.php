@@ -4,7 +4,7 @@
 
     @section('page_title', 'Monitoring Presensi')
 
-    <x-app.page-body>
+    <x-admin.page-body>
 
         <div class="bg-white rounded-md shadow-sm border border-slate-200 p-4">
 
@@ -156,23 +156,23 @@
 
         </div>
 
-    </x-app.page-body>
+    </x-admin.page-body>
 
     {{-- ================================================== --}}
     {{-- Modal Peta --}}
     {{-- ================================================== --}}
-    <x-app.modal id="modal-tampilkanpeta" title="Lokasi Presensi Karyawan">
+    <x-admin.modal id="modal-tampilkanpeta" title="Lokasi Presensi Karyawan">
         <div id="loadmap">
 
             {{-- Map akan dimuat menggunakan AJAX --}}
 
         </div>
-    </x-app.modal>
+    </x-admin.modal>
 
     {{-- ================================================== --}}
     {{-- Modal Edit Presensi --}}
     {{-- ================================================== --}}
-    <x-app.modal id="modal-editpresensi" title="Edit Data Presensi">
+    <x-admin.modal id="modal-editpresensi" title="Edit Data Presensi">
         <form id="formEditPresensi" method="POST">
             @csrf
             <input type="hidden" name="presensi_id" id="edit_presensi_id">
@@ -190,7 +190,7 @@
 
             <button type="submit" class="w-full inline-flex items-center justify-center gap-2 bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700 transition-colors text-sm font-medium">Simpan Perubahan</button>
         </form>
-    </x-app.modal>
+    </x-admin.modal>
 
 @endsection
 

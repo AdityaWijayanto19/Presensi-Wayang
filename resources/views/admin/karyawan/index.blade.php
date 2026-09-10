@@ -4,9 +4,9 @@
 
     @section('page_title', 'Data Karyawan')
 
-    <x-app.page-body>
+    <x-admin.page-body>
 
-        <x-app.card>
+        <x-admin.card>
 
             <div class="p-3">
 
@@ -388,14 +388,14 @@
 
             </div>
 
-        </x-app.card>
+        </x-admin.card>
 
-    </x-app.page-body>
+    </x-admin.page-body>
 
     {{-- ================================================== --}}
     {{-- Modal Tambah Karyawan --}}
     {{-- ================================================== --}}
-    <x-app.modal id="modal-inputkaryawan" title="Tambah Data Karyawan">
+    <x-admin.modal id="modal-inputkaryawan" title="Tambah Data Karyawan">
 
         <form
             action="/karyawan/store"
@@ -678,12 +678,12 @@
 
         </form>
 
-    </x-app.modal>
+    </x-admin.modal>
 
     {{-- ================================================== --}}
     {{-- Modal Edit --}}
     {{-- ================================================== --}}
-    <x-app.modal id="modal-editkaryawan" title="Edit Data Karyawan">
+    <x-admin.modal id="modal-editkaryawan" title="Edit Data Karyawan">
 
         <div id="loadeditform">
 
@@ -691,7 +691,7 @@
 
         </div>
 
-    </x-app.modal>
+    </x-admin.modal>
 
 @endsection
 

@@ -4,7 +4,7 @@
 
 @section('page_title', 'Data Unit Perusahaan')
 
-<x-app.page-body>
+<x-admin.page-body>
 
     <div class="bg-white rounded-md shadow-sm border border-slate-200 p-4">
         <div class="p-3">
@@ -226,7 +226,7 @@
          MODAL TAMBAH DATA UNIT PERUSAHAAN
     ===================================================== --}}
 
-    <x-app.modal id="modal-inputunitperusahaan" title="Tambah Data Unit Perusahaan">
+    <x-admin.modal id="modal-inputunitperusahaan" title="Tambah Data Unit Perusahaan">
 
         <form action="/unitperusahaan/store"
               method="POST"
@@ -456,13 +456,13 @@
 
         </form>
 
-    </x-app.modal>
+    </x-admin.modal>
 
     {{-- =====================================================
          MODAL EDIT DATA UNIT PERUSAHAAN
     ===================================================== --}}
 
-    <x-app.modal id="modal-editunitperusahaan" title="Edit Data Unit Perusahaan">
+    <x-admin.modal id="modal-editunitperusahaan" title="Edit Data Unit Perusahaan">
 
         <div id="loadeditform">
 
@@ -470,9 +470,9 @@
 
         </div>
 
-    </x-app.modal>
+    </x-admin.modal>
 
-</x-app.page-body>
+</x-admin.page-body>
 
 @endsection
 

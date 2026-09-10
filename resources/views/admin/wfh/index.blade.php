@@ -4,7 +4,7 @@
 
 @section('page_title', 'Data WFH Karyawan')
 
-<x-app.page-body>
+<x-admin.page-body>
     <div class="bg-white rounded-md shadow-sm border border-slate-200">
         <div class="p-3">
 
@@ -90,7 +90,7 @@
             </div>
         </div>
     </div>
-</x-app.page-body>
+</x-admin.page-body>
 
 {{-- Preview Modal --}}
 <div id="adminPreviewBackdrop"
@@ -115,7 +115,7 @@
 </div>
 
 {{-- Modal Edit WFH --}}
-<x-app.modal id="modal-editwfh" title="Edit Data WFH">
+<x-admin.modal id="modal-editwfh" title="Edit Data WFH">
     <form id="formEditWfh" method="POST">
         @csrf
         <input type="hidden" name="wfh_id" id="edit_wfh_id">
@@ -137,7 +137,7 @@
 
         <button type="submit" class="w-full inline-flex items-center justify-center gap-2 bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700 transition-colors text-sm font-medium">Simpan Perubahan</button>
     </form>
-</x-app.modal>
+</x-admin.modal>
 
 @endsection
 

@@ -14,7 +14,7 @@
     </div>
 
     <div class="lg:hidden border-b border-slate-800 px-3 py-2">
-        <x-app.dropdown align="left" class="w-full">
+        <x-admin.dropdown align="left" class="w-full">
             <x-slot:trigger>
                 <button class="flex items-center gap-2 w-full text-left">
                     <span class="w-7 h-7 rounded bg-slate-700 flex items-center justify-center text-white">
@@ -41,7 +41,7 @@
             <a href="/panel/settings" class="block px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-100">Pengaturan</a>
             <div class="border-t border-slate-100 my-0.5"></div>
             <a href="/proseslogoutadmin" class="block px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-100">Logout</a>
-        </x-app.dropdown>
+        </x-admin.dropdown>
     </div>
 
     <nav class="flex-1 overflow-y-auto py-2 px-2 space-y-0.5">

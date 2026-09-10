@@ -4,7 +4,7 @@
 
 @section('page_title', 'Izin Browser')
 
-<x-app.page-body>
+<x-admin.page-body>
 
     <div class="max-w-2xl mx-auto space-y-2">
         @php
@@ -28,7 +28,7 @@
         @endphp
 
         @foreach ($perms as $key => $perm)
-            <x-app.card>
+            <x-admin.card>
                 <div class="p-3">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-2">
@@ -47,11 +47,11 @@
                         </label>
                     </div>
                 </div>
-            </x-app.card>
+            </x-admin.card>
         @endforeach
     </div>
 
-</x-app.page-body>
+</x-admin.page-body>
 
 @endsection
 

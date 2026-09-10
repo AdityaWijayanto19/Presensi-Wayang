@@ -3,7 +3,7 @@
 @section('content')
 @section('page_title', 'Data Lembur Karyawan')
 
-    <x-app.page-body>
+    <x-admin.page-body>
 
         <div class="bg-white rounded-md shadow-sm border border-slate-200 p-4">
 
@@ -249,12 +249,12 @@
 
         </div>
 
-    </x-app.page-body>
+    </x-admin.page-body>
 
     {{-- ================================================== --}}
     {{-- Modal Edit Lembur --}}
     {{-- ================================================== --}}
-    <x-app.modal id="modal-editlembur" title="Edit Data Lembur">
+    <x-admin.modal id="modal-editlembur" title="Edit Data Lembur">
         <form id="formEditLembur" method="POST">
             @csrf
             <input type="hidden" name="lembur_id" id="edit_lembur_id">
@@ -277,7 +277,7 @@
 
             <button type="submit" class="w-full inline-flex items-center justify-center gap-2 bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700 transition-colors text-sm font-medium">Simpan Perubahan</button>
         </form>
-    </x-app.modal>
+    </x-admin.modal>
 @endsection
 
 @push('myscript')

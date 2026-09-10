@@ -37,7 +37,7 @@
                 @csrf
 
                 {{-- Auto Info --}}
-                <x-app.card class="p-4 mb-3">
+                <x-admin.card class="p-4 mb-3">
                     <div class="flex items-center gap-3">
                         <div
                             class="w-10 h-10 rounded-xl bg-[#fdf8f4] border border-[#f0ece8] flex items-center justify-center text-coklat">
@@ -49,7 +49,7 @@
                             <div class="text-[12px] text-[#78716c]">{{ $karyawan->posisi }} • {{ $karyawan->unit }}
                                 ({{ $karyawan->unitperusahaan->perusahaan ?? '' }})</div>
                     </div>
-                </x-app.card>
+                </x-admin.card>
                 </div>
 
                 <div class="mb-4">

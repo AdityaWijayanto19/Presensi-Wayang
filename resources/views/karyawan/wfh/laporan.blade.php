@@ -36,7 +36,7 @@
                 @csrf
 
                 {{-- Info Compact: Pengaju + Tanggal + Lokasi --}}
-                <x-app.card class="p-4 mb-3">
+                <x-admin.card class="p-4 mb-3">
                     <div class="flex items-center gap-3 mb-3">
                         <div class="w-10 h-10 rounded-xl bg-[#fdf8f4] border border-[#f0ece8] flex items-center justify-center text-coklat">
                             <i data-lucide="user" style="width:18px;height:18px;"></i>
@@ -65,7 +65,7 @@
                             <div class="text-[13px] font-bold text-[#1c1917]">{{ $liveLocation }}</div>
                         </div>
                     </div>
-                </x-app.card>
+                </x-admin.card>
 
                 {{-- Detail Hasil Pekerjaan (Deskripsi) --}}
                 <div class="form-group mb-3">

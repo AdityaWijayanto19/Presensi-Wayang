@@ -118,7 +118,7 @@
                     </div>
                 </div>
             @empty
-                <x-app.card class="p-8 mt-6 text-center">
+                <x-admin.card class="p-8 mt-6 text-center">
                     <div class="w-20 h-20 rounded-2xl bg-[#fdf8f4] border border-[#f0ece8] flex items-center justify-center mx-auto">
                         <i data-lucide="file-text" class="text-[#d6c7b8]" style="width:40px;height:40px;"></i>
                     </div>
@@ -127,7 +127,7 @@
                     <a href="/izin/create" class="inline-flex items-center gap-2 mt-5 px-5 py-2.5 rounded-full bg-coklat text-white text-[13px] font-semibold shadow-sm hover:bg-coklat-dark transition">
                         <i data-lucide="plus" style="width:16px;height:16px;"></i> Ajukan Izin / Sakit
                     </a>
-                </x-app.card>
+                </x-admin.card>
             @endforelse
         </div>
     </div>

@@ -4,14 +4,14 @@
 
 @section('page_title', 'Dashboard Administrator')
 
-<x-app.page-body>
+<x-admin.page-body>
 
     {{-- STAT CARDS --}}
     <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-1.5">
 
         {{-- JUMLAH KARYAWAN --}}
         <a href="/panel/karyawan" class="no-underline">
-            <x-app.card hover>
+            <x-admin.card hover>
                 <div class="p-2.5">
                     <div class="flex items-center gap-2">
                         <div class="flex-shrink-0 w-8 h-8 rounded bg-cyan-500 text-white flex items-center justify-center">
@@ -23,12 +23,12 @@
                         </div>
                     </div>
                 </div>
-            </x-app.card>
+            </x-admin.card>
         </a>
 
         {{-- HADIR HARI INI --}}
         <a href="/panel/monitoring" class="no-underline">
-            <x-app.card hover>
+            <x-admin.card hover>
                 <div class="p-2.5">
                     <div class="flex items-center gap-2">
                         <div class="flex-shrink-0 w-8 h-8 rounded bg-green-500 text-white flex items-center justify-center">
@@ -40,12 +40,12 @@
                         </div>
                     </div>
                 </div>
-            </x-app.card>
+            </x-admin.card>
         </a>
 
         {{-- WFH HARI INI --}}
         <a href="/panel/wfh" class="no-underline">
-            <x-app.card hover>
+            <x-admin.card hover>
                 <div class="p-2.5">
                     <div class="flex items-center gap-2">
                         <div class="flex-shrink-0 w-8 h-8 rounded bg-blue-600 text-white flex items-center justify-center">
@@ -57,12 +57,12 @@
                         </div>
                     </div>
                 </div>
-            </x-app.card>
+            </x-admin.card>
         </a>
 
         {{-- IZIN / SAKIT --}}
         <a href="/panel/izin?tanggal={{ date('Y-m-d') }}" class="no-underline">
-            <x-app.card hover>
+            <x-admin.card hover>
                 <div class="p-2.5">
                     <div class="flex items-center gap-2">
                         <div class="flex-shrink-0 w-8 h-8 rounded bg-yellow-500 text-white flex items-center justify-center">
@@ -74,12 +74,12 @@
                         </div>
                     </div>
                 </div>
-            </x-app.card>
+            </x-admin.card>
         </a>
 
         {{-- TERLAMBAT --}}
         <a href="/panel/monitoring" class="no-underline">
-            <x-app.card hover>
+            <x-admin.card hover>
                 <div class="p-2.5">
                     <div class="flex items-center gap-2">
                         <div class="flex-shrink-0 w-8 h-8 rounded bg-red-500 text-white flex items-center justify-center">
@@ -91,12 +91,12 @@
                         </div>
                     </div>
                 </div>
-            </x-app.card>
+            </x-admin.card>
         </a>
 
         {{-- LEMBUR --}}
         <a href="/panel/lembur" class="no-underline">
-            <x-app.card hover>
+            <x-admin.card hover>
                 <div class="p-2.5">
                     <div class="flex items-center gap-2">
                         <div class="flex-shrink-0 w-8 h-8 rounded bg-orange-500 text-white flex items-center justify-center">
@@ -108,7 +108,7 @@
                         </div>
                     </div>
                 </div>
-            </x-app.card>
+            </x-admin.card>
         </a>
 
     </div>
@@ -120,7 +120,7 @@
     @if ($totalPending > 0)
         <div class="mt-3">
             <a href="/panel/wfh" class="no-underline block">
-                <x-app.card>
+                <x-admin.card>
                     <div class="p-2.5">
                         <div class="flex items-center gap-3">
                             <div class="flex-shrink-0 w-9 h-9 rounded bg-amber-100 border border-amber-200 flex items-center justify-center">
@@ -145,7 +145,7 @@
                             </div>
                         </div>
                     </div>
-                </x-app.card>
+                </x-admin.card>
             </a>
         </div>
     @endif
@@ -166,19 +166,19 @@
         <div class="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
             @foreach ($quickLinks as $link)
                 <a href="{{ $link['url'] }}" class="no-underline">
-                    <x-app.card hover>
+                    <x-admin.card hover>
                         <div class="p-2.5 text-center">
                             <div class="w-9 h-9 rounded {{ $link['color'] }} flex items-center justify-center mx-auto mb-1.5">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">{!! $link['icon'] !!}</svg>
                             </div>
                             <div class="text-[11px] font-medium text-slate-700 leading-tight">{{ $link['label'] }}</div>
                         </div>
-                    </x-app.card>
+                    </x-admin.card>
                 </a>
             @endforeach
         </div>
     </div>
 
-</x-app.page-body>
+</x-admin.page-body>
 
 @endsection

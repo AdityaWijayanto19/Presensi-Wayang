@@ -9,7 +9,7 @@
             <div></div>
         @endif
 
-        <x-app.dropdown align="right" class="ml-3 shrink-0">
+        <x-admin.dropdown align="right" class="ml-3 shrink-0">
             <x-slot:trigger>
                 <button class="flex items-center gap-2 text-left">
                     <span class="w-7 h-7 rounded bg-slate-200 flex items-center justify-center text-slate-600">
@@ -28,7 +28,7 @@
             <a href="/panel/settings" class="block px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-100 transition-colors">Pengaturan</a>
             <div class="border-t border-slate-100 my-0.5"></div>
             <a href="/proseslogoutadmin" id="logout-admin" class="block px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-100 transition-colors">Logout</a>
-        </x-app.dropdown>
+        </x-admin.dropdown>
 
     </div>
 </header>

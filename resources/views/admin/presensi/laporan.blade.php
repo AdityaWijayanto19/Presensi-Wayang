@@ -4,7 +4,7 @@
 
     @section('page_title', 'Laporan Presensi')
 
-    <x-app.page-body>
+    <x-admin.page-body>
 
         <div class="max-w-xl mx-auto">
             <div class="bg-white rounded-md shadow-sm border border-slate-200 p-4">
@@ -74,7 +74,7 @@
             </div>
         </div>
 
-    </x-app.page-body>
+    </x-admin.page-body>
 
 @endsection
 
