@@ -2,245 +2,130 @@
 
 @section('content')
 
-    @section('page_title', 'Data Karyawan')
+@section('page_title', 'Data Karyawan')
 
-    <x-admin.page-body>
+<x-admin.page-body>
 
-        <x-admin.card>
+    <x-admin.card>
 
-            <div class="p-3">
+        <div class="p-3">
 
-                {{-- ================================================== --}}
-                {{-- Alert --}}
-                {{-- ================================================== --}}
-                @if ($errors->any())
+            {{-- ================================================== --}}
+            {{-- Alert --}}
+            {{-- ================================================== --}}
+            @if ($errors->any())
+                <div class="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-md text-sm">
+                    <ul class="mb-0">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
 
-                    <div class="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-md text-sm">
+            @if (Session::get('error'))
+                <div class="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-md text-sm">
+                    {{ Session::get('error') }}
+                </div>
+            @endif
 
-                        <ul class="mb-0">
+            @if (Session::get('success'))
+                <div class="bg-green-50 border border-green-200 text-green-700 px-3 py-2 rounded-md text-sm">
+                    {{ Session::get('success') }}
+                </div>
+            @endif
 
-                            @foreach ($errors->all() as $error)
-
-                                <li>{{ $error }}</li>
-
-                            @endforeach
-
-                        </ul>
-
-                    </div>
-
-                @endif
-
-                @if (Session::get('error'))
-
-                    <div class="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-md text-sm">
-
-                        {{ Session::get('error') }}
-
-                    </div>
-
-                @endif
-
-                {{-- ================================================== --}}
-                {{-- Button Tambah --}}
-                {{-- ================================================== --}}
-                @can('karyawan-create')
+            {{-- ================================================== --}}
+            {{-- Button Tambah --}}
+            {{-- ================================================== --}}
+            @can('karyawan-create')
                 <div class="mb-2">
-
                     <a href="#"
                         class="inline-flex items-center gap-2 bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
                         id="btnTambahkaryawan">
-
-                        <svg xmlns="http://www.w3.org/2000/svg"
-                            width="18"
-                            height="18"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            stroke-linecap="round"
-                            stroke-linejoin="round">
-
-                            <path stroke="none"
-                                d="M0 0h24v24H0z"
-                                fill="none" />
-
-                            <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0" />
-
-                            <path d="M16 19h6" />
-
-                            <path d="M19 16v6" />
-
-                            <path d="M6 21v-2a4 4 0 0 1 4 -4h4" />
-
-                        </svg>
-
+                        <i data-lucide="user-plus" style="width:18px;height:18px;"></i>
                         Tambah Data Karyawan
-
                     </a>
-
                 </div>
-                @endcan
+            @endcan
 
-                {{-- ================================================== --}}
-                {{-- Filter --}}
-                {{-- ================================================== --}}
-                <form
-                    action="/panel/karyawan"
-                    method="GET">
-
-                    <div class="grid grid-cols-12 gap-2 mb-2">
-
-                        <div class="col-span-12 md:col-span-4">
-
-                            <input
-                                type="text"
-                                name="nama_karyawan"
-                                id="nama_karyawan"
-                                class="w-full rounded-md border border-slate-300 px-2 py-1.5 text-xs focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                placeholder="Cari Karyawan"
-                                value="{{ Request('nama_karyawan') }}"
-                                autocomplete="off">
-
-                        </div>
-
-                        <div class="col-span-12 md:col-span-2">
-                            <select name="jabatan_filter" class="w-full rounded-md border border-slate-300 px-2 py-1.5 text-xs focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
-                                <option value="">Semua Jabatan</option>
-                                <option value="Intern" {{ Request('jabatan_filter')=='Intern'?'selected':'' }}>Intern</option>
-                                <option value="Staff" {{ Request('jabatan_filter')=='Staff'?'selected':'' }}>Staff</option>
-                                <option value="SPV" {{ Request('jabatan_filter')=='SPV'?'selected':'' }}>SPV (Supervisor)</option>
-                                <option value="Manager" {{ Request('jabatan_filter')=='Manager'?'selected':'' }}>Manager</option>
-                                <option value="GM" {{ Request('jabatan_filter')=='GM'?'selected':'' }}>GM</option>
-                                <option value="Direktur" {{ Request('jabatan_filter')=='Direktur'?'selected':'' }}>Direktur</option>
-                            </select>
-                        </div>
-
-                        <div class="col-span-12 md:col-span-2">
-
-                            <select
-                                name="unit"
-                                id="unit_search"
-                                class="w-full rounded-md border border-slate-300 px-2 py-1.5 text-xs focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
-
-                                <option value="">
-                                    Semua Unit
-                                </option>
-
-                                @foreach ($unitperusahaan as $u)
-
-                                    <option
-                                        value="{{ $u->unit }}"
-                                        {{ Request('unit') == $u->unit ? 'selected' : '' }}>
-
-                                        {{ $u->unit }}
-
-                                    </option>
-
-                                @endforeach
-
-                            </select>
-
-                        </div>
-
-                        <div class="col-span-12 md:col-span-2">
-
-                            <button
-                                type="submit"
-                                class="inline-flex items-center gap-2 bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700 transition-colors text-sm font-medium w-full justify-center">
-
-                                <svg xmlns="http://www.w3.org/2000/svg"
-                                    width="18"
-                                    height="18"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round">
-
-                                    <circle
-                                        cx="10.5"
-                                        cy="10.5"
-                                        r="7.5" />
-
-                                    <line
-                                        x1="21"
-                                        y1="21"
-                                        x2="15.8"
-                                        y2="15.8" />
-
-                                </svg>
-
-                                Cari Data
-
-                            </button>
-
-                        </div>
-
+            {{-- ================================================== --}}
+            {{-- Filter --}}
+            {{-- ================================================== --}}
+            <form action="/panel/karyawan" method="GET">
+                <div class="grid grid-cols-12 gap-2 mb-2">
+                    <div class="col-span-12 md:col-span-4">
+                        <x-admin.input
+                            name="nama_karyawan"
+                            id="nama_karyawan"
+                            placeholder="Cari Karyawan"
+                            value="{{ Request('nama_karyawan') }}"
+                            autocomplete="off"
+                        />
                     </div>
+                    <div class="col-span-12 md:col-span-2">
+                        <x-admin.select name="jabatan_filter" placeholder="Semua Jabatan">
+                            <option value="Intern" {{ Request('jabatan_filter')=='Intern'?'selected':'' }}>Intern</option>
+                            <option value="Staff" {{ Request('jabatan_filter')=='Staff'?'selected':'' }}>Staff</option>
+                            <option value="SPV" {{ Request('jabatan_filter')=='SPV'?'selected':'' }}>SPV (Supervisor)</option>
+                            <option value="Manager" {{ Request('jabatan_filter')=='Manager'?'selected':'' }}>Manager</option>
+                            <option value="GM" {{ Request('jabatan_filter')=='GM'?'selected':'' }}>GM</option>
+                            <option value="Direktur" {{ Request('jabatan_filter')=='Direktur'?'selected':'' }}>Direktur</option>
+                        </x-admin.select>
+                    </div>
+                    <div class="col-span-12 md:col-span-2">
+                        <x-admin.select name="unit" placeholder="Semua Unit">
+                            @foreach ($unitperusahaan as $u)
+                                <option value="{{ $u->unit }}" {{ Request('unit')==$u->unit?'selected':'' }}>{{ $u->unit }}</option>
+                            @endforeach
+                        </x-admin.select>
+                    </div>
+                    <div class="col-span-12 md:col-span-2">
+                        <button type="submit"
+                            class="inline-flex items-center gap-2 bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700 transition-colors text-sm font-medium w-full justify-center">
+                            <i data-lucide="search" style="width:16px;height:16px;"></i>
+                            Cari Data
+                        </button>
+                    </div>
+                </div>
+            </form>
 
-                </form>
+            {{-- ================================================== --}}
+            {{-- Table --}}
+            {{-- ================================================== --}}
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-slate-200">
+                    <thead>
+                        <tr>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">No</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">NIK</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Nama</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Jabatan</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Posisi</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Atasan</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">No. HP</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Foto</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Unit Perusahaan</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider" width="170">Actions</th>
+                        </tr>
+                    </thead>
 
-                {{-- ================================================== --}}
-                {{-- Table --}}
-                {{-- ================================================== --}}
-                <div class="overflow-x-auto">
-
-                    <table class="min-w-full divide-y divide-slate-200">
-
-                        <thead>
-
-                            <tr>
-
-                                <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">No</th>
-
-                                <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">NIK</th>
-
-                                <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Nama</th>
-
-                                <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Jabatan</th>
-
-                                <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Posisi</th>
-
-                                <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Atasan</th>
-
-                                <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">No. HP</th>
-
-                                <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Foto</th>
-
-                                <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Unit Perusahaan</th>
-
-                                <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider" width="170">
-                                    Actions
-                                </th>
-
-                            </tr>
-
-                        </thead>
-
-                        <tbody>
-
+                    <tbody>
                         @foreach ($karyawan as $k)
-
                             @php
                                 $path = asset('storage/uploads/karyawan/' . $k->foto);
                             @endphp
 
                             <tr class="hover:bg-slate-50">
-
                                 <td class="px-2 py-1.5 text-xs">
                                     {{ $loop->iteration + $karyawan->firstItem() - 1 }}
                                 </td>
-
                                 <td class="px-2 py-1.5 text-xs">
                                     {{ $k->nik }}
                                 </td>
-
                                 <td class="px-2 py-1.5 text-xs truncate-cell">
                                     {{ $k->nama_lengkap }}
                                 </td>
-
                                 <td class="px-2 py-1.5 text-xs">
                                     @if($k->jabatan)
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
@@ -249,463 +134,115 @@
                                         <span class="text-slate-500">—</span>
                                     @endif
                                 </td>
-
                                 <td class="px-2 py-1.5 text-xs truncate-cell">
                                     {{ $k->posisi }}
                                 </td>
-
                                 <td class="px-2 py-1.5 text-xs truncate-cell">
                                     @if($k->jabatan=='Direktur')
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">Langsung Admin</span><br><small class="text-slate-500">Tidak ada atasan</small>
                                     @else
-                                        {{ $k->atasan_nama ?? '—' }}
-                                        @if(!empty($k->atasan_jabatan))<br><small class="text-slate-500">{{ $k->atasan_jabatan }}</small>@endif
+                                        {{ $k->atasan->nama_lengkap ?? '—' }}
+                                        @if(!empty($k->atasan->jabatan))
+                                            <br><small class="text-slate-500">{{ $k->atasan->jabatan }}</small>
+                                        @endif
                                     @endif
                                 </td>
-
                                 <td class="px-2 py-1.5 text-xs">
                                     {{ $k->no_hp }}
                                 </td>
-
-                                {{-- ================================================== --}}
-                                {{-- Foto --}}
-                                {{-- ================================================== --}}
                                 <td class="px-2 py-1.5 text-xs">
-
                                     @if ($k->foto == 'nophoto.png')
-
                                         <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center foto-karyawan" style="cursor:pointer;">
                                             <i data-lucide="user" style="width:16px;height:16px;"></i>
                                         </div>
-
                                     @else
-
-                                        <img
-                                            src="{{ $path }}?v={{ time() }}"
-                                            class="w-8 h-8 rounded-full foto-karyawan"
-                                            style="cursor:pointer;"
-                                            alt="{{ $k->nama_lengkap }}">
-
+                                        <img src="{{ $path }}?v={{ time() }}" class="w-8 h-8 rounded-full foto-karyawan" style="cursor:pointer;" alt="{{ $k->nama_lengkap }}">
                                     @endif
-
                                 </td>
-
                                 <td class="px-2 py-1.5 text-xs truncate-cell">
                                     {{ $k->unitperusahaan->perusahaan ?? '' }}
                                 </td>
-
-                                {{-- ================================================== --}}
-                                {{-- Actions --}}
-                                {{-- ================================================== --}}
                                 <td class="px-2 py-1.5 text-xs">
-
                                     <div class="flex flex-wrap gap-1">
-
-                                        {{-- ================= Edit ================= --}}
                                         @can('karyawan-edit')
-                                        <a href="#"
-                                            class="inline-flex items-center gap-2 bg-cyan-500 text-white px-2 py-1 rounded-md hover:bg-cyan-600 transition-colors text-xs font-medium edit"
-                                            nik="{{ $k->nik }}"
-                                            page="{{ request()->get('page',1) }}">
-
-                                            <svg xmlns="http://www.w3.org/2000/svg"
-                                                width="18"
-                                                height="18"
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                stroke-width="2"
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round">
-
-                                                <path stroke="none"
-                                                    d="M0 0h24v24H0z"
-                                                    fill="none"/>
-
-                                                <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1"/>
-
-                                                <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415"/>
-
-                                                <path d="M16 5l3 3"/>
-
-                                            </svg>
-
-                                        </a>
+                                            <a href="#"
+                                                class="edit bg-cyan-500 text-white px-1.5 py-1.5 rounded hover:bg-cyan-600 transition-colors text-[10px] font-medium inline-flex items-center"
+                                                nik="{{ $k->nik }}" page="{{ request()->get('page', 1) }}">
+                                                <i data-lucide="square-pen" style="width:12px;height:12px;"></i>
+                                            </a>
                                         @endcan
-
-                                        {{-- ================= Delete ================= --}}
                                         @can('karyawan-delete')
-                                        <form action="/karyawan/{{ $k->nik }}/delete"
-                                            method="POST"
-                                            class="inline">
-
-                                            @csrf
-
-                                            <button
-                                                type="submit"
-                                                class="inline-flex items-center gap-2 bg-red-600 text-white px-2 py-1 rounded-md hover:bg-red-700 transition-colors text-xs font-medium delete-confirm">
-
-                                                <svg xmlns="http://www.w3.org/2000/svg"
-                                                    width="18"
-                                                    height="18"
-                                                    viewBox="0 0 24 24"
-                                                    fill="currentColor">
-
-                                                    <path stroke="none"
-                                                        d="M0 0h24v24H0z"
-                                                        fill="none"/>
-
-                                                    <path d="M20 6a1 1 0 0 1 .117 1.993l-.117 .007h-.081l-.919 11a3 3 0 0 1 -2.824 2.995l-.176 .005h-8c-1.598 0 -2.904 -1.249 -2.992 -2.75l-.005 -.167l-.923 -11.083h-.08a1 1 0 0 1 -.117 -1.993l.117 -.007zm-10 4a1 1 0 0 0 -1 1v6a1 1 0 0 0 2 0v-6a1 1 0 0 0 -1 -1m4 0a1 1 0 0 0 -1 1v6a1 1 0 0 0 2 0v-6a1 1 0 0 0 -1 -1"/>
-
-                                                    <path d="M14 2a2 2 0 0 1 2 2a1 1 0 0 1 -1.993 .117l-.007 -.117h-4l-.007 .117a1 1 0 0 1 -1.993 -.117a2 2 0 0 1 1.85 -1.995l.15 -.005z"/>
-
-                                                </svg>
-
-                                            </button>
-
-                                        </form>
+                                            <form action="/karyawan/{{ $k->nik }}/delete" method="POST" class="inline">
+                                                @csrf
+                                                <button type="submit" class="delete-confirm bg-red-600 text-white px-1.5 py-1.5 rounded hover:bg-red-700 transition-colors text-[10px] font-medium inline-flex items-center">
+                                                    <i data-lucide="trash-2" style="width:12px;height:12px;"></i>
+                                                </button>
+                                            </form>
                                         @endcan
-
                                     </div>
-
                                 </td>
-
                             </tr>
-
                         @endforeach
-
-                        </tbody>
-
-                    </table>
-
-                </div>
-
-                <div class="mt-2">
-
-                    {{ $karyawan->links() }}
-
-                </div>
-
+                    </tbody>
+                </table>
             </div>
 
-        </x-admin.card>
-
-    </x-admin.page-body>
-
-    {{-- ================================================== --}}
-    {{-- Modal Tambah Karyawan --}}
-    {{-- ================================================== --}}
-    <x-admin.modal id="modal-inputkaryawan" title="Tambah Data Karyawan">
-
-        <form
-            action="/karyawan/store"
-            method="POST"
-            id="formKaryawan"
-            enctype="multipart/form-data">
-
-            @csrf
-
-            {{-- NIK --}}
-            <div class="relative mb-2">
-
-                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                    <svg xmlns="http://www.w3.org/2000/svg"
-                        width="18"
-                        height="18"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2">
-
-                        <path stroke="none"
-                            d="M0 0h24v24H0z"
-                            fill="none"/>
-
-                        <path d="M14 3v4a1 1 0 0 0 1 1h4"/>
-                        <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2"/>
-                        <path d="M8 13h1v3h-1"/>
-                        <path d="M12 13v3"/>
-                        <path d="M15 13h1v3h-1"/>
-
-                    </svg>
-                </span>
-
-                <input
-                    type="text"
-                    class="w-full rounded-md border border-slate-300 pl-8 pr-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                    name="nik"
-                    id="nik"
-                    placeholder="NIK"
-                    autocomplete="off">
-
+            <div class="mt-2">
+                {{ $karyawan->links() }}
             </div>
-
-            {{-- Nama --}}
-            <div class="relative mb-2">
-
-                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-
-                        <svg xmlns="http://www.w3.org/2000/svg"
-                            width="18"
-                            height="18"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            stroke-linecap="round"
-                            stroke-linejoin="round">
-
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                            <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0"/>
-                            <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"/>
-
-                        </svg>
-
-                </span>
-
-                <input
-                    type="text"
-                    class="w-full rounded-md border border-slate-300 pl-8 pr-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                    name="nama_lengkap"
-                    id="nama_lengkap"
-                    placeholder="Nama Lengkap"
-                    autocomplete="off">
-
-            </div>
-
-            {{-- Jabatan --}}
-            <div class="relative mb-2">
-
-                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-
-                        <svg xmlns="http://www.w3.org/2000/svg"
-                            width="18"
-                            height="18"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            stroke-linecap="round"
-                            stroke-linejoin="round">
-
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                            <path d="M3 5a1 1 0 0 1 1 -1h16a1 1 0 0 1 1 1v10a1 1 0 0 1 -1 1h-16a1 1 0 0 1 -1 -1l0 -10"/>
-                            <path d="M7 20l10 0"/>
-                            <path d="M9 16l0 4"/>
-                            <path d="M15 16l0 4"/>
-                            <path d="M8 12l3 -3l2 2l3 -3"/>
-
-                        </svg>
-
-                </span>
-
-                <input
-                    type="text"
-                    name="posisi"
-                    id="posisi_input"
-                    class="w-full rounded-md border border-slate-300 pl-8 pr-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                    placeholder="Posisi (contoh: Staff Accounting)">
-
-            </div>
-
-            {{-- Jabatan (Dropdown) --}}
-            <div class="space-y-1 mb-2">
-                <label class="block text-sm font-medium text-slate-700 mb-1">Jabatan <span class="text-red-500">*</span></label>
-                <select name="jabatan" id="jabatan" class="w-full rounded-md border border-slate-300 px-2 py-1.5 text-xs focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white" required>
-                    <option value="">Pilih Jabatan</option>
-                    <option value="Intern">Intern</option>
-                    <option value="Staff">Staff</option>
-                    <option value="SPV">SPV (Supervisor)</option>
-                    <option value="Manager">Manager</option>
-                    <option value="GM">GM (General Manager)</option>
-                    <option value="Direktur">Direktur</option>
-                </select>
-            </div>
-
-            {{-- Role Approved (Dropdown) --}}
-            <div class="space-y-1 mb-2" id="role-approved-wrapper" style="display:none;">
-                <label class="block text-sm font-medium text-slate-700 mb-1">Role Approved</label>
-                <select name="role_approved" id="role_approved" class="w-full rounded-md border border-slate-300 px-2 py-1.5 text-xs focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
-                    <option value="">Pilih Role Approved</option>
-                    <option value="Staff">Staff</option>
-                    <option value="Manager">Manager</option>
-                    <option value="GM">GM (General Manager)</option>
-                    <option value="Direktur">Direktur</option>
-                </select>
-                <small class="text-slate-500">Role yang berwenang menyetujui WFH/Lembur karyawan ini.</small>
-            </div>
-
-            {{-- Atasan (dinamis berdasarkan Role Approved) --}}
-            <div class="space-y-1 mb-2" id="atasan-wrapper" style="display:none;">
-                <select name="atasan_nik" id="atasan_nik" class="w-full rounded-md border border-slate-300 px-2 py-1.5 text-xs focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
-                    <option value="">Pilih Atasan</option>
-                </select>
-                <small class="text-slate-500">Atasan muncul sesuai Role Approved yang dipilih.</small>
-            </div>
-
-            {{-- Unit --}}
-            <div class="space-y-1 mb-2">
-
-                <select
-                    name="unit"
-                    id="unit"
-                    class="w-full rounded-md border border-slate-300 px-2 py-1.5 text-xs focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
-
-                    <option value="">
-                        Pilih Unit
-                    </option>
-
-                    @foreach ($unitperusahaan as $u)
-
-                        <option value="{{ $u->unit }}">
-
-                            {{ $u->unit }}
-
-                        </option>
-
-                    @endforeach
-
-                </select>
-
-            </div>
-
-            {{-- Nomor HP --}}
-            <div class="relative mb-2">
-
-                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-
-                        <svg xmlns="http://www.w3.org/2000/svg"
-                            width="18"
-                            height="18"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            stroke-linecap="round"
-                            stroke-linejoin="round">
-
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                            <path d="M5 4h4l2 5l-2.5 1.5a11 11 0 0 0 5 5l1.5 -2.5l5 2v4a2 2 0 0 1 -2 2a16 16 0 0 1 -15 -15a2 2 0 0 1 2 -2"/>
-                            <path d="M15 6h6m-3 -3v6"/>
-
-                        </svg>
-
-                </span>
-
-                <input
-                    type="text"
-                    class="w-full rounded-md border border-slate-300 pl-8 pr-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                    name="no_hp"
-                    id="no_hp"
-                    placeholder="No. HP"
-                    autocomplete="off">
-
-            </div>
-
-            {{-- Password --}}
-            <div class="relative mb-2">
-
-                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                    <svg xmlns="http://www.w3.org/2000/svg"
-                        width="18"
-                        height="18"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round">
-
-                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                        <path d="M12 3a2 2 0 0 0 -2 2v1a2 2 0 0 0 2 2v1a2 2 0 0 0 2 2v1a2 2 0 0 0 2 2v1a2 2 0 0 0 2 2h-14a2 2 0 0 0 -2 -2v-1a2 2 0 0 0 -2 -2v-1a2 2 0 0 0 -2 -2h-1"/>
-                        <path d="M12 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"/>
-
-                    </svg>
-                </span>
-
-                <input
-                    type="password"
-                    name="password"
-                    id="password_input"
-                    class="w-full rounded-md border border-slate-300 pl-8 pr-10 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                    placeholder="Password"
-                    required>
-
-                <button type="button"
-                    onclick="togglePassword('password_input', this)"
-                    class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
-                    tabindex="-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-open">
-                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                        <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/>
-                        <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6"/>
-                    </svg>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-closed" style="display:none;">
-                        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                        <path d="M21 21l-6 -6l-5 -5"/>
-                        <path d="M3 3l18 18"/>
-                        <path d="M10.5 10.5a2 2 0 1 0 2.936 2.942"/>
-                        <path d="M4.487 4.489c-1.168 .735 -1.988 1.687 -2.487 2.511c2.4 -4 5.4 -6 9 -6c1.036 0 2.032 .18 2.968 .512"/>
-                        <path d="M19.5 15c.847 .543 1.555 1.159 2 1.814"/>
-                        <path d="M3 3l18 18"/>
-                    </svg>
-                </button>
-
-            </div>
-
-            {{-- Upload Foto --}}
-            <div class="space-y-1 mb-2">
-
-                <label class="block text-sm font-medium text-slate-700 mb-1">
-                    Upload Foto
-                </label>
-
-                <input
-                    type="file"
-                    name="foto"
-                    class="w-full rounded-md border border-slate-300 px-2 py-1.5 text-xs focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
-
-            </div>
-
-            {{-- Submit --}}
-            <button
-                type="submit"
-                class="inline-flex items-center gap-2 bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700 transition-colors text-sm font-medium w-full justify-center">
-
-                Simpan Data
-
-            </button>
-
-        </form>
-
-    </x-admin.modal>
-
-    {{-- ================================================== --}}
-    {{-- Modal Edit --}}
-    {{-- ================================================== --}}
-    <x-admin.modal id="modal-editkaryawan" title="Edit Data Karyawan">
-
-        <div id="loadeditform">
-
-            {{-- Form edit akan dimuat melalui AJAX --}}
 
         </div>
 
-    </x-admin.modal>
+    </x-admin.card>
+
+</x-admin.page-body>
+
+{{-- ================================================== --}}
+{{-- Modal Form Karyawan (Create / Edit) --}}
+{{-- ================================================== --}}
+<template id="formTemplate">
+    @include('admin.karyawan._form', ['unitperusahaan' => $unitperusahaan, 'karyawan' => null])
+</template>
+
+<x-admin.modal id="modal-karyawanform" title="Form Karyawan">
+    <div id="formContainer"></div>
+</x-admin.modal>
 
 @endsection
 
+@php
+    $karyawanJson = $karyawan->map(fn($k) => [
+        'nik' => $k->nik,
+        'nama_lengkap' => $k->nama_lengkap,
+        'posisi' => $k->posisi,
+        'jabatan' => $k->jabatan,
+        'role_approved' => $k->role_approved,
+        'atasan_nik' => $k->atasan_nik,
+        'unit' => $k->unit,
+        'no_hp' => $k->no_hp,
+        'foto' => $k->foto,
+        'page' => request()->get('page', 1),
+    ])->toJson();
+@endphp
+
 @push('myscript')
-
 <script>
+document.addEventListener('DOMContentLoaded', function() {
 
-document.addEventListener('DOMContentLoaded', function () {
+    var karyawanData = {!! $karyawanJson !!};
+    var formTpl = document.getElementById('formTemplate');
+    var formContainer = document.getElementById('formContainer');
+
+    function openModal() {
+        window.dispatchEvent(new CustomEvent('open-modal-modal-karyawanform'));
+    }
 
     // =====================================================
     // Toggle Password Visibility
     // =====================================================
-    window.togglePassword = function (inputId, btn) {
+    window.togglePassword = function(inputId, btn) {
         var input = document.getElementById(inputId);
+        if (!input) return;
         var eyeOpen = btn.querySelector('.eye-open');
         var eyeClosed = btn.querySelector('.eye-closed');
         if (input.type === 'password') {
@@ -720,126 +257,145 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     // =====================================================
-    // Modal Tambah Karyawan
+    // Tambah Karyawan — clone form kosong
     // =====================================================
-
-    document.getElementById('btnTambahkaryawan').addEventListener('click', function () {
-
-        window.dispatchEvent(new CustomEvent('open-modal-modal-inputkaryawan'));
-
+    document.getElementById('btnTambahkaryawan').addEventListener('click', function() {
+        formContainer.innerHTML = '';
+        formContainer.appendChild(formTpl.content.cloneNode(true));
+        openModal();
     });
 
-
     // =====================================================
-    // Modal Edit Karyawan
+    // Edit Karyawan — clone + populate dari JSON
     // =====================================================
-
-    document.querySelector('tbody').addEventListener('click', function (e) {
-
+    document.querySelector('tbody').addEventListener('click', function(e) {
         var editBtn = e.target.closest('.edit');
-
         if (!editBtn) return;
-
         e.preventDefault();
 
         var nik = editBtn.getAttribute('nik');
-        var page = editBtn.getAttribute('page');
+        var k = karyawanData.find(function(item) { return item.nik == nik; });
+        if (!k) return;
 
-        fetch('/karyawan/edit', {
+        var clone = formTpl.content.cloneNode(true);
+        var form = clone.querySelector('form');
 
-            method: 'POST',
+        form.action = '/karyawan/' + k.nik + '/update';
+        var nikInput = form.querySelector('[name="nik"]');
+        nikInput.value = k.nik;
+        nikInput.readOnly = true;
+        nikInput.classList.add('bg-slate-50');
+        form.querySelector('[name="nama_lengkap"]').value = k.nama_lengkap;
+        form.querySelector('[name="posisi"]').value = k.posisi;
+        form.querySelector('[name="jabatan"]').value = k.jabatan || '';
+        form.querySelector('[name="unit"]').value = k.unit || '';
+        form.querySelector('[name="no_hp"]').value = k.no_hp;
+        form.querySelector('[name="password"]').placeholder = 'Kosongkan jika tidak diubah';
+        form.querySelector('[name="password"]').removeAttribute('required');
 
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
+        var fotoLama = form.querySelector('[name="foto_lama"]');
+        if (fotoLama) fotoLama.value = k.foto;
 
-            body: new URLSearchParams({
-                nik: nik,
-                page: page
-            })
+        var btn = form.querySelector('button[type="submit"]');
+        btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M13.5 16h-9.5a1 1 0 0 1 -1 -1v-10a1 1 0 0 1 1 -1h16a1 1 0 0 1 1 1v7.5"/><path d="M7 20h5"/><path d="M9 16v4"/><path d="M19 16v6"/><path d="M22 19l-3 3l-3 -3"/></svg> Perbarui Data';
 
-        }).then(function (r) { return r.text(); }).then(function (html) {
+        formContainer.innerHTML = '';
+        formContainer.appendChild(clone);
 
-            document.getElementById('loadeditform').innerHTML = html;
+        // Trigger cascading: jabatan change
+        var jabatanSelect = form.querySelector('[name="jabatan"]');
+        if (jabatanSelect) jabatanSelect.dispatchEvent(new Event('change'));
 
-            window.dispatchEvent(new CustomEvent('open-modal-modal-editkaryawan'));
+        // Set role_approved & trigger cascading
+        if (k.role_approved) {
+            var roleApprovedSelect = form.querySelector('[name="role_approved"]');
+            if (roleApprovedSelect) {
+                roleApprovedSelect.value = k.role_approved;
+                roleApprovedSelect.dispatchEvent(new Event('change'));
+                // Fetch atasan then set value
+                fetchAtasanForEdit(k.role_approved, k.atasan_nik, k.nik);
+            }
+        }
 
-        });
-
+        openModal();
     });
 
-
     // =====================================================
-    // Jabatan change -> show Role Approved
+    // Fetch Atasan untuk Edit Mode
     // =====================================================
-    document.getElementById('jabatan').addEventListener('change', function () {
-        var jabatan = this.value;
-        var roleWrapper = document.getElementById('role-approved-wrapper');
-        var atasanWrapper = document.getElementById('atasan-wrapper');
-        if (jabatan === "Direktur" || jabatan === "") {
-            roleWrapper.style.display = 'none';
-            atasanWrapper.style.display = 'none';
-            document.getElementById('atasan_nik').innerHTML = '<option value="">Pilih Atasan</option>';
-            return;
-        }
-        roleWrapper.style.display = '';
-        // Reset atasan when jabatan changes
-        atasanWrapper.style.display = 'none';
-        document.getElementById('role_approved').value = '';
-        document.getElementById('atasan_nik').innerHTML = '<option value="">Pilih Atasan</option>';
-    });
-
-    // =====================================================
-    // Role Approved change -> fetch Atasan
-    // =====================================================
-    document.getElementById('role_approved').addEventListener('change', function () {
-        var roleApproved = this.value;
-        var wrapper = document.getElementById('atasan-wrapper');
-        var select = document.getElementById('atasan_nik');
-        if (!roleApproved || roleApproved === "") {
-            wrapper.style.display = 'none';
-            select.innerHTML = '<option value="">Pilih Atasan</option>';
-            return;
-        }
-        fetch('/karyawan/get-atasan?role_approved=' + encodeURIComponent(roleApproved), {
+    function fetchAtasanForEdit(roleApproved, targetAtasanNik, excludeNik) {
+        if (!roleApproved) return;
+        fetch('/karyawan/get-atasan?role_approved=' + encodeURIComponent(roleApproved) +
+            '&exclude_nik=' + encodeURIComponent(excludeNik), {
             credentials: 'same-origin'
-        }).then(function (r) { return r.json(); }).then(function (res) {
+        }).then(function(r) { return r.json(); }).then(function(res) {
             var atasanMap = {"Staff":"Manager","Manager":"GM","GM":"Direktur","Direktur":""};
             var target = atasanMap[roleApproved] || '';
             var html = '<option value="">Pilih Atasan (' + target + ')</option>';
-            res.forEach(function (k) {
-                html += '<option value="' + k.nik + '">' + k.nama_lengkap + ' (' + k.jabatan + ' - ' + k.posisi + ')</option>';
+            res.forEach(function(item) {
+                var selected = item.nik === targetAtasanNik ? ' selected' : '';
+                html += '<option value="' + item.nik + '"' + selected + '>' + item.nama_lengkap + ' (' + item.jabatan + ' - ' + item.posisi + ')</option>';
             });
-            select.innerHTML = html;
-            wrapper.style.display = '';
+            var select = formContainer.querySelector('[name="atasan_nik"]');
+            if (select) {
+                select.innerHTML = html;
+                var wrapper = document.getElementById('atasan-wrapper');
+                if (wrapper) wrapper.style.display = '';
+            }
         });
+    }
+
+    // =====================================================
+    // Cascading: Jabatan → Role Approved
+    // =====================================================
+    formContainer.addEventListener('change', function(e) {
+        if (e.target && e.target.name === 'jabatan') {
+            var jabatan = e.target.value;
+            var form = e.target.closest('form');
+            var roleWrapper = form.querySelector('#role-approved-wrapper');
+            var atasanWrapper = form.querySelector('#atasan-wrapper');
+            var roleSelect = form.querySelector('[name="role_approved"]');
+            var atasanSelect = form.querySelector('[name="atasan_nik"]');
+
+            if (jabatan === 'Direktur' || jabatan === '') {
+                roleWrapper.style.display = 'none';
+                atasanWrapper.style.display = 'none';
+                if (roleSelect) roleSelect.value = '';
+                if (atasanSelect) atasanSelect.innerHTML = '<option value="">Pilih Atasan</option>';
+                return;
+            }
+            roleWrapper.style.display = '';
+            atasanWrapper.style.display = 'none';
+            if (roleSelect) roleSelect.value = '';
+            if (atasanSelect) atasanSelect.innerHTML = '<option value="">Pilih Atasan</option>';
+        }
     });
 
     // =====================================================
-    // Edit: Role Approved change -> fetch Atasan
+    // Cascading: Role Approved → Atasan (via AJAX)
     // =====================================================
-    document.addEventListener('change', function (e) {
-        if (e.target && e.target.id === 'edit_role_approved') {
+    formContainer.addEventListener('change', function(e) {
+        if (e.target && e.target.name === 'role_approved') {
             var roleApproved = e.target.value;
-            var wrapper = document.getElementById('edit_atasan_wrapper');
-            var select = document.getElementById('edit_atasan_nik');
-            var editWrapper = document.getElementById('edit_atasan_wrapper');
-            var editForm = editWrapper ? editWrapper.closest('form') : null;
-            var nikInput = editForm ? editForm.querySelector('input[name="nik"]') : null;
-            var nik = nikInput ? nikInput.value : '';
-            if (!roleApproved || roleApproved === "") {
+            var form = e.target.closest('form');
+            var wrapper = form.querySelector('#atasan-wrapper');
+            var select = form.querySelector('[name="atasan_nik"]');
+            var nikInput = form.querySelector('[name="nik"]');
+            var excludeNik = nikInput ? nikInput.value : '';
+
+            if (!roleApproved || roleApproved === '') {
                 wrapper.style.display = 'none';
                 select.innerHTML = '<option value="">Pilih Atasan</option>';
                 return;
             }
-            fetch('/karyawan/get-atasan?role_approved=' + encodeURIComponent(roleApproved) + '&exclude_nik=' + encodeURIComponent(nik), {
+            fetch('/karyawan/get-atasan?role_approved=' + encodeURIComponent(roleApproved) +
+                '&exclude_nik=' + encodeURIComponent(excludeNik), {
                 credentials: 'same-origin'
-            }).then(function (r) { return r.json(); }).then(function (res) {
+            }).then(function(r) { return r.json(); }).then(function(res) {
                 var atasanMap = {"Staff":"Manager","Manager":"GM","GM":"Direktur","Direktur":""};
                 var target = atasanMap[roleApproved] || '';
                 var html = '<option value="">Pilih Atasan (' + target + ')</option>';
-                res.forEach(function (k) {
+                res.forEach(function(k) {
                     html += '<option value="' + k.nik + '">' + k.nama_lengkap + ' (' + k.jabatan + ' - ' + k.posisi + ')</option>';
                 });
                 select.innerHTML = html;
@@ -851,243 +407,106 @@ document.addEventListener('DOMContentLoaded', function () {
     // =====================================================
     // Preview Foto
     // =====================================================
-
-    document.addEventListener('click', function (e) {
+    document.addEventListener('click', function(e) {
         var fotoEl = e.target.closest('.foto-karyawan');
         if (!fotoEl) return;
 
         Swal.fire({
-
             imageUrl: fotoEl.getAttribute('src'),
-
             imageAlt: "Foto Karyawan",
-
             showConfirmButton: false,
-
             showCloseButton: true,
-
             width: "520px",
-
             backdrop: false
-
         });
-
     });
-
 
     // =====================================================
     // Delete Karyawan
     // =====================================================
-
-    document.addEventListener('click', function (e) {
-
+    document.addEventListener('click', function(e) {
         var deleteBtn = e.target.closest('.delete-confirm');
-
         if (!deleteBtn) return;
-
         e.preventDefault();
 
         var form = deleteBtn.closest('form');
 
         Swal.fire({
-
             title: "Yakin data ini akan dihapus?",
-
             text: "Data karyawan beserta riwayat presensinya akan dihapus permanen.",
-
             icon: "warning",
-
             showCancelButton: true,
-
             confirmButtonColor: "#3085d6",
-
             cancelButtonColor: "#d33",
-
             confirmButtonText: "Hapus Data",
-
             cancelButtonText: "Batal",
-
             backdrop: false
-
-        }).then(function (result) {
-
+        }).then(function(result) {
             if (result.isConfirmed) {
-
                 form.submit();
-
             }
-
         });
-
     });
 
-
     // =====================================================
-    // Validasi Form Tambah
+    // Validasi Form Submit (delegation)
     // =====================================================
+    formContainer.addEventListener('submit', function(e) {
+        var form = e.target;
+        var nik = form.querySelector('[name="nik"]').value;
+        var nama = form.querySelector('[name="nama_lengkap"]').value;
+        var jabatan = form.querySelector('[name="jabatan"]').value;
+        var posisi = form.querySelector('[name="posisi"]').value;
+        var unit = form.querySelector('[name="unit"]').value;
+        var no_hp = form.querySelector('[name="no_hp"]').value;
 
-    document.getElementById('formKaryawan').addEventListener('submit', function (e) {
-
-        var nik = document.getElementById('nik').value;
-
-        var nama = document.getElementById('nama_lengkap').value;
-
-        var jabatan = document.getElementById('jabatan').value;
-
-        var unit = document.getElementById('unit').value;
-
-        var no_hp = document.getElementById('no_hp').value;
-
-
-        if (nik == "") {
-
+        if (!nik) {
             e.preventDefault();
-
-            Swal.fire({
-
-                icon: "warning",
-
-                title: "Oops...",
-
-                text: "NIK tidak boleh kosong.",
-
-                backdrop: false
-
-            });
-
-            document.getElementById('nik').focus();
-
+            Swal.fire({ icon: "warning", title: "Oops...", text: "NIK tidak boleh kosong.", backdrop: false });
+            form.querySelector('[name="nik"]').focus();
             return;
-
         }
-
-
-        if (nama == "") {
-
+        if (!nama) {
             e.preventDefault();
-
-            Swal.fire({
-
-                icon: "warning",
-
-                title: "Oops...",
-
-                text: "Nama lengkap tidak boleh kosong.",
-
-                backdrop: false
-
-            });
-
-            document.getElementById('nama_lengkap').focus();
-
+            Swal.fire({ icon: "warning", title: "Oops...", text: "Nama lengkap tidak boleh kosong.", backdrop: false });
+            form.querySelector('[name="nama_lengkap"]').focus();
             return;
-
         }
-
-
-        if (jabatan == "") {
-
+        if (!jabatan) {
             e.preventDefault();
-
-            Swal.fire({
-
-                icon: "warning",
-
-                title: "Oops...",
-
-                text: "Jabatan tidak boleh kosong.",
-
-                backdrop: false
-
-            });
-
-            document.getElementById('jabatan').focus();
-
+            Swal.fire({ icon: "warning", title: "Oops...", text: "Jabatan tidak boleh kosong.", backdrop: false });
+            form.querySelector('[name="jabatan"]').focus();
             return;
-
         }
-
-        var posisi = document.getElementById('posisi_input').value;
-        if (posisi == "") {
+        if (!posisi) {
             e.preventDefault();
             Swal.fire({ icon: "warning", title: "Oops...", text: "Posisi harus diisi.", backdrop: false });
-            document.getElementById('posisi_input').focus();
+            form.querySelector('[name="posisi"]').focus();
             return;
         }
-
-        if (unit == "") {
-
+        if (!unit) {
             e.preventDefault();
-
-            Swal.fire({
-
-                icon: "warning",
-
-                title: "Oops...",
-
-                text: "Unit perusahaan harus dipilih.",
-
-                backdrop: false
-
-            });
-
-            document.getElementById('unit').focus();
-
+            Swal.fire({ icon: "warning", title: "Oops...", text: "Unit perusahaan harus dipilih.", backdrop: false });
+            form.querySelector('[name="unit"]').focus();
             return;
-
         }
-
-
-        if (no_hp == "") {
-
+        if (!no_hp) {
             e.preventDefault();
-
-            Swal.fire({
-
-                icon: "warning",
-
-                title: "Oops...",
-
-                text: "Nomor HP tidak boleh kosong.",
-
-                backdrop: false
-
-            });
-
-            document.getElementById('no_hp').focus();
-
+            Swal.fire({ icon: "warning", title: "Oops...", text: "Nomor HP tidak boleh kosong.", backdrop: false });
+            form.querySelector('[name="no_hp"]').focus();
             return;
-
         }
-
-        var password = document.getElementById('password_input').value;
-
-        if (password == "") {
-
+        var password = form.querySelector('[name="password"]');
+        if (password && password.required && !password.value) {
             e.preventDefault();
-
-            Swal.fire({
-
-                icon: "warning",
-
-                title: "Oops...",
-
-                text: "Password tidak boleh kosong.",
-
-                backdrop: false
-
-            });
-
-            document.getElementById('password_input').focus();
-
+            Swal.fire({ icon: "warning", title: "Oops...", text: "Password tidak boleh kosong.", backdrop: false });
+            password.focus();
             return;
-
         }
-
     });
 
+    if (window.lucide) lucide.createIcons();
+
 });
-
 </script>
-
 @endpush

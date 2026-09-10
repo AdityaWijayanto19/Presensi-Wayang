@@ -87,15 +87,6 @@ class KaryawanController extends Controller
         return Redirect::back()->with('success', 'Data karyawan berhasil disimpan!');
     }
 
-    public function edit(Request $request)
-    {
-        $karyawan = Karyawan::findOrFail($request->nik);
-        $unitperusahaan = Unitperusahaan::orderBy('unit')->get();
-        $page = $request->page;
-
-        return view('admin.karyawan.edit', compact('unitperusahaan', 'karyawan', 'page'));
-    }
-
     public function update(string $nik, UpdateKaryawanRequest $request)
     {
 

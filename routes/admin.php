@@ -45,7 +45,6 @@ Route::group(['middleware' => 'permission:unit-delete,user'], function () {
 // Karyawan
 Route::get('/panel/karyawan', [KaryawanController::class, 'index'])->middleware('permission:karyawan-view,user');
 Route::get('/karyawan/get-atasan', [KaryawanController::class, 'getAtasan'])->middleware('permission:karyawan-view,user');
-Route::post('/karyawan/edit', [KaryawanController::class, 'edit'])->middleware('permission:karyawan-view,user');
 Route::group(['middleware' => 'permission:karyawan-create,user'], function () {
     Route::post('/karyawan/store', [KaryawanController::class, 'store']);
 });

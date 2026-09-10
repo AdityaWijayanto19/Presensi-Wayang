@@ -2,7 +2,7 @@
 
 <div class="mb-2">
     @if($label)
-        <label class="block text-xs font-medium text-slate-600 mb-1">{{ $label }}</label>
+        <label class="block text-xs font-medium text-slate-600 mb-1">{!! $label !!}</label>
     @endif
 
     <div class="relative flex items-center">
