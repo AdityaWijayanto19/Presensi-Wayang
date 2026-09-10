@@ -14,7 +14,7 @@
          x-transition:leave-end="opacity-0 scale-95"
          @click.away="open = false"
          @keydown.escape.window="open = false"
-         class="absolute {{ $align === 'right' ? 'right-0' : 'left-0' }} mt-1 w-44 bg-white rounded shadow-lg border border-slate-200 py-1 z-50">
+         class="absolute {{ $align === 'right' ? 'right-0' : 'left-0' }} mt-1 w-44 bg-white rounded shadow-lg border border-slate-200 focus:outline-none py-1 z-50">
         {{ $slot }}
     </div>
 </div>

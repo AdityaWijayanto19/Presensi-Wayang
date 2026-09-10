@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Unitperusahaan;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redirect;
@@ -53,15 +52,6 @@ class UserController extends Controller
             DB::rollBack();
             return Redirect::back()->with('error', 'Data User / Admin Gagal Disimpan');
         }
-    }
-
-    public function edit(Request $request)
-    {
-        $user = User::with('roles')->findOrFail($request->id_user);
-        $unitperusahaan = Unitperusahaan::orderBy('unit')->get();
-        $role = Role::orderBy('id')->get();
-
-        return view('admin.users.edit', compact('unitperusahaan', 'role', 'user'));
     }
 
     public function update(UpdateUserRequest $request, int $id)

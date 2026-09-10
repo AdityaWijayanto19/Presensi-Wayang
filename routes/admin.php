@@ -24,7 +24,6 @@ Route::post('/api/admin/permissions/toggle', [UserPermissionController::class, '
 Route::group(['middleware' => 'permission:user-manage,user'], function () {
     Route::get('/panel/users', [UserController::class, 'index']);
     Route::post('/users/store', [UserController::class, 'store']);
-    Route::post('/users/edit', [UserController::class, 'edit']);
     Route::post('/users/{id}/resetpassword', [UserController::class, 'resetpassword']);
     Route::post('/users/{id_user}/update', [UserController::class, 'update']);
     Route::post('/users/{id_user}/delete', [UserController::class, 'delete']);

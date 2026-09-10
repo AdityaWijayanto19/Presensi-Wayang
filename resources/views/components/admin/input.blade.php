@@ -1,16 +1,23 @@
 @props(['label' => null, 'error' => null, 'type' => 'text', 'icon' => null])
 
-<div>
+<div class="mb-2">
     @if($label)
-        <label class="block text-xs font-medium text-slate-600 mb-0.5">{{ $label }}</label>
+        <label class="block text-xs font-medium text-slate-600 mb-1">{{ $label }}</label>
     @endif
-    <div class="relative">
+
+    <div class="relative flex items-center">
         @if($icon)
-            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">{!! $icon !!}</span>
+            <span class="absolute left-3 flex items-center justify-center text-slate-400 pointer-events-none">
+                {!! $icon !!}
+            </span>
         @endif
-        <input type="{{ $type }}" {{ $attributes->merge(['class' => 'w-full mb-2 rounded-md border border-slate-300 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-colors ' . ($icon ? 'pl-8 pr-3 py-2' : 'px-2.5 py-1.5')]) }}>
+
+        <input type="{{ $type }}" {{ $attributes->merge([
+            'class' => 'w-full rounded-md border border-slate-300 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-colors ' . ($icon ? 'pl-9 pr-3 py-2' : 'px-3 py-2')
+        ]) }}>
     </div>
+
     @if($error)
-        <p class="mt-0.5 text-xs text-red-600">{{ $error }}</p>
+        <p class="mt-1 text-xs text-red-600">{{ $error }}</p>
     @endif
 </div>
