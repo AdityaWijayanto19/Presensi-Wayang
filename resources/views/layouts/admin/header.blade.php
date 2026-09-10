@@ -3,7 +3,8 @@
 
         @if (trim($__env->yieldContent('page_title')) !== '')
             <div class="min-w-0">
-                <h2 class="text-sm font-semibold text-slate-800 leading-tight truncate">{{ $__env->yieldContent('page_title') }}</h2>
+                <h2 class="text-sm font-semibold text-slate-800 leading-tight truncate">
+                    {{ $__env->yieldContent('page_title') }}</h2>
             </div>
         @else
             <div></div>
@@ -17,17 +18,28 @@
                     </span>
                     <div class="hidden xl:block">
                         <div class="text-xs font-medium text-slate-700">{{ Auth::guard('user')->user()->name }}</div>
-                        <div class="text-[10px] text-slate-400">Administrator</div>
+                        <div class="text-[10px] text-slate-400">
+                            @if (Auth::guard('user')->user()->hasRole('super_admin'))
+                                Super Admin
+                            @elseif(Auth::guard('user')->user()->hasRole('admin'))
+                                Admin
+                            @else
+                                Owner
+                            @endif
+                        </div>
                     </div>
-                    <svg class="w-3 h-3 text-slate-400 transition-transform" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    <svg class="w-3 h-3 text-slate-400 transition-transform" :class="open ? 'rotate-180' : ''"
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                     </svg>
                 </button>
             </x-slot:trigger>
 
-            <a href="/panel/settings" class="block px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-100 transition-colors">Pengaturan</a>
+            <a href="/panel/settings"
+                class="block px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-100 transition-colors">Pengaturan</a>
             <div class="border-t border-slate-100 my-0.5"></div>
-            <a href="/proseslogoutadmin" id="logout-admin" class="block px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-100 transition-colors">Logout</a>
+            <a href="/proseslogoutadmin" id="logout-admin"
+                class="block px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-100 transition-colors">Logout</a>
         </x-admin.dropdown>
 
     </div>

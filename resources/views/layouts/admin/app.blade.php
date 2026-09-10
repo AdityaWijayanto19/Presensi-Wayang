@@ -13,10 +13,13 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>[x-cloak] { display: none !important; }</style>
 </head>
 
 <body class="bg-slate-50 font-sans text-slate-800 antialiased">
@@ -43,6 +46,8 @@
     <script src="https://npmcdn.com/flatpickr/dist/l10n/id.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.js"></script>
 
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
     <script>document.addEventListener('DOMContentLoaded',function(){if(window.lucide)lucide.createIcons();});</script>
@@ -74,38 +79,7 @@
         });
     </script>
 
-    @if (Session::get('success'))
-        <script>
-            Swal.fire({
-                icon: 'success',
-                title: 'Berhasil',
-                text: '{{ Session::get("success") }}',
-                backdrop: false
-            });
-        </script>
-    @endif
-
-    @if (Session::get('warning'))
-        <script>
-            Swal.fire({
-                icon: 'warning',
-                title: 'Peringatan',
-                text: '{{ Session::get("warning") }}',
-                backdrop: false
-            });
-        </script>
-    @endif
-
-    @if (Session::get('error'))
-        <script>
-            Swal.fire({
-                icon: 'error',
-                title: 'Gagal',
-                text: '{{ Session::get("error") }}',
-                backdrop: false
-            });
-        </script>
-    @endif
+    <x-admin.alert />
 
     <script>
     (function(){

@@ -23,6 +23,7 @@ class StoreKaryawanRequest extends FormRequest
             'unit' => 'required|exists:unitperusahaans,unit',
             'no_hp' => 'required',
             'password' => 'required|min:5',
+            'foto' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ];
     }
 
@@ -42,6 +43,9 @@ class StoreKaryawanRequest extends FormRequest
             'no_hp.required' => 'Nomor HP wajib diisi.',
             'password.required' => 'Password wajib diisi.',
             'password.min' => 'Password minimal 5 karakter.',
+            'foto.image' => 'File harus berupa gambar.',
+            'foto.mimes' => 'Format gambar harus JPG, JPEG, PNG, atau WEBP.',
+            'foto.max' => 'Ukuran gambar maksimal 2MB.',
         ];
     }
 }

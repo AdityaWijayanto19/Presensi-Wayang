@@ -24,7 +24,7 @@ class ImageService
         $this->imageManager = new ImageManager(new Driver());
     }
 
-    public function processUpload(UploadedFile $file, string $folder = 'projects'): ?string
+    public function processUpload(UploadedFile $file, string $folder = 'projects', ?string $customName = null): ?string
     {
         $start = microtime(true);
 
@@ -38,7 +38,7 @@ class ImageService
             $decodeStart = microtime(true);
             $image = $this->imageManager->decodePath($file->getRealPath());
             $decodeMs = round((microtime(true) - $decodeStart) * 1000, 2);
-            $filename = Str::uuid() . '.webp';
+            $filename = ($customName ?: Str::uuid()) . '.webp';
 
             if ($image->width() > self::MAIN_WIDTH) {
                 $image = $image->scaleDown(width: self::MAIN_WIDTH);

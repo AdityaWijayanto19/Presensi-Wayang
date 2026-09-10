@@ -11,31 +11,6 @@
         <div class="p-3">
 
             {{-- ================================================== --}}
-            {{-- Alert --}}
-            {{-- ================================================== --}}
-            @if ($errors->any())
-                <div class="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-md text-sm">
-                    <ul class="mb-0">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
-            @if (Session::get('error'))
-                <div class="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-md text-sm">
-                    {{ Session::get('error') }}
-                </div>
-            @endif
-
-            @if (Session::get('success'))
-                <div class="bg-green-50 border border-green-200 text-green-700 px-3 py-2 rounded-md text-sm">
-                    {{ Session::get('success') }}
-                </div>
-            @endif
-
-            {{-- ================================================== --}}
             {{-- Button Tambah --}}
             {{-- ================================================== --}}
             @can('karyawan-create')
@@ -282,6 +257,21 @@ document.addEventListener('DOMContentLoaded', function() {
         var fotoLama = form.querySelector('[name="foto_lama"]');
         if (fotoLama) fotoLama.value = k.foto;
 
+        var cropPreview = form.querySelector('#crop-preview-foto');
+        var cropPreviewImg = form.querySelector('#crop-preview-foto-img');
+        var cropBtnText = form.querySelector('[data-crop-btn-text="foto"]');
+        if (cropPreview && cropPreviewImg) {
+            if (k.foto && k.foto !== 'nophoto.png') {
+                cropPreviewImg.src = '{{ asset("storage/uploads/karyawan/") }}/' + k.foto;
+                cropPreview.style.display = '';
+                if (cropBtnText) cropBtnText.textContent = 'Ganti Foto';
+            } else {
+                cropPreviewImg.src = '';
+                cropPreview.style.display = 'none';
+                if (cropBtnText) cropBtnText.textContent = 'Pilih Foto';
+            }
+        }
+
         var btn = form.querySelector('button[type="submit"]');
         btn.innerHTML = '<i data-lucide="save" style="width:16px;height:16px;"></i> Perbarui Data';
 
@@ -489,6 +479,151 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
     });
+
+    // =====================================================
+    // Image Crop — Event Delegation
+    // =====================================================
+    (function() {
+        var cropInstances = {};
+
+        function getOrCreateCropper(id, imgSrc, aspectRatio) {
+            var imgEl = document.getElementById('crop-img-' + id);
+            if (!imgEl) return null;
+            imgEl.src = imgSrc;
+
+            if (cropInstances[id]) {
+                cropInstances[id].destroy();
+            }
+
+            cropInstances[id] = new Cropper(imgEl, {
+                viewMode: 1,
+                aspectRatio: aspectRatio || 1,
+                autoCropArea: 1,
+                responsive: true,
+                background: false,
+                guides: false,
+                center: true,
+                highlight: false,
+                cropBoxMovable: true,
+                cropBoxResizable: true,
+            });
+
+            return cropInstances[id];
+        }
+
+        function openModal(id) {
+            var modal = document.getElementById('crop-modal-' + id);
+            if (modal) {
+                modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeModal(id, keepFile) {
+            var modal = document.getElementById('crop-modal-' + id);
+            if (modal) {
+                modal.style.display = 'none';
+                document.body.style.overflow = '';
+            }
+            if (cropInstances[id]) {
+                cropInstances[id].destroy();
+                cropInstances[id] = null;
+            }
+            if (!keepFile) {
+                var fi = document.getElementById('crop-input-' + id);
+                if (fi) fi.value = '';
+            }
+        }
+
+        function saveCrop(id) {
+            var inst = cropInstances[id];
+            if (!inst) return;
+
+            var canvas = inst.getCroppedCanvas({ width: 800, height: 800 });
+            canvas.toBlob(function(blob) {
+                if (!blob) return;
+
+                var file = new File([blob], 'cropped-foto.webp', { type: 'image/webp' });
+                var dt = new DataTransfer();
+                dt.items.add(file);
+                var fi = document.getElementById('crop-input-' + id);
+                if (fi) fi.files = dt.files;
+
+                var preview = document.getElementById('crop-preview-' + id);
+                var previewImg = document.getElementById('crop-preview-' + id + '-img');
+                if (preview && previewImg) {
+                    previewImg.src = URL.createObjectURL(blob);
+                    preview.style.display = '';
+                    previewImg.onload = function() { URL.revokeObjectURL(previewImg.src); };
+                }
+
+                var btnText = document.querySelector('[data-crop-btn-text="' + id + '"]');
+                if (btnText) btnText.textContent = 'Ganti Foto';
+
+                closeModal(id, true);
+            }, 'image/webp', 0.9);
+        }
+
+        function resetCrop(id) {
+            var fi = document.getElementById('crop-input-' + id);
+            if (fi) fi.value = '';
+            var preview = document.getElementById('crop-preview-' + id);
+            var previewImg = document.getElementById('crop-preview-' + id + '-img');
+            if (preview && previewImg) {
+                previewImg.src = '';
+                preview.style.display = 'none';
+            }
+            var btnText = document.querySelector('[data-crop-btn-text="' + id + '"]');
+            if (btnText) btnText.textContent = 'Pilih Foto';
+        }
+
+        document.addEventListener('change', function(e) {
+            var input = e.target.closest('[data-crop-input]');
+            if (!input) return;
+            var id = input.getAttribute('data-crop-input');
+            var file = input.files && input.files[0];
+            if (!file) return;
+
+            var reader = new FileReader();
+            reader.onload = function(ev) {
+                var img = document.getElementById('crop-img-' + id);
+                if (img) {
+                    img.src = ev.target.result;
+                    openModal(id);
+                    getOrCreateCropper(id, ev.target.result, 1);
+                }
+            };
+            reader.readAsDataURL(file);
+        });
+
+        document.addEventListener('click', function(e) {
+            var trigger = e.target.closest('[data-crop-trigger]');
+            if (trigger) {
+                var id = trigger.getAttribute('data-crop-trigger');
+                var fi = document.getElementById('crop-input-' + id);
+                if (fi) fi.click();
+                return;
+            }
+
+            var cancel = e.target.closest('[data-crop-cancel]');
+            if (cancel) {
+                closeModal(cancel.getAttribute('data-crop-cancel'));
+                return;
+            }
+
+            var save = e.target.closest('[data-crop-save]');
+            if (save) {
+                saveCrop(save.getAttribute('data-crop-save'));
+                return;
+            }
+
+            var reset = e.target.closest('[data-crop-reset]');
+            if (reset) {
+                resetCrop(reset.getAttribute('data-crop-reset'));
+                return;
+            }
+        }, true);
+    })();
 
     if (window.lucide) lucide.createIcons();
 

@@ -91,7 +91,7 @@
         icon="phone" />
 
     {{-- Upload Foto --}}
-    <x-admin.input type="file" name="foto" label="Upload Foto" />
+    <x-admin.image-crop name="foto" id="foto" currentImage="{{ $karyawan?->foto }}" />
 
     @if ($karyawan)
         <input type="hidden" name="foto_lama" value="{{ $karyawan->foto }}">

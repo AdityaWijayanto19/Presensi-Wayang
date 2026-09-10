@@ -14,7 +14,7 @@ class UpdateKaryawanRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'foto' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'password' => 'nullable|min:5',
             'jabatan' => 'required|in:Intern,Staff,SPV,Manager,GM,Direktur',
             'posisi' => 'required',
@@ -27,7 +27,7 @@ class UpdateKaryawanRequest extends FormRequest
     {
         return [
             'foto.image' => 'File harus berupa gambar.',
-            'foto.mimes' => 'Format gambar harus JPG, JPEG, atau PNG.',
+            'foto.mimes' => 'Format gambar harus JPG, JPEG, PNG, atau WEBP.',
             'foto.max' => 'Ukuran gambar maksimal 2MB.',
             'password.min' => 'Password minimal 5 karakter.',
             'jabatan.required' => 'Jabatan wajib dipilih.',

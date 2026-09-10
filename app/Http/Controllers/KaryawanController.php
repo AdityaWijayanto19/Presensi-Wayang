@@ -58,9 +58,12 @@ class KaryawanController extends Controller
         $foto = 'nophoto.png';
         if ($request->hasFile('foto')) {
             $imageService = app(ImageService::class);
-            $fotoPath = $imageService->processUpload($request->file('foto'), 'karyawan');
+            $fotoPath = $imageService->processUpload($request->file('foto'), 'karyawan', $request->nik);
             if ($fotoPath) {
                 $foto = basename($fotoPath);
+            } else {
+                $foto = $request->nik . '.' . $request->file('foto')->getClientOriginalExtension();
+                $request->file('foto')->move(public_path('storage/uploads/karyawan'), $foto);
             }
         }
 
@@ -79,10 +82,6 @@ class KaryawanController extends Controller
             'foto' => $foto,
             'password' => Hash::make($request->password),
         ]);
-
-        if ($request->hasFile('foto')) {
-            $request->file('foto')->move(public_path('storage/uploads/karyawan'), $foto);
-        }
 
         return Redirect::back()->with('success', 'Data karyawan berhasil disimpan!');
     }
@@ -111,8 +110,13 @@ class KaryawanController extends Controller
                 $imageService->deleteFile('uploads/karyawan/' . $fotoLama);
             }
 
-            $fotoPath = $imageService->processUpload($request->file('foto'), 'karyawan');
-            $foto = $fotoPath ? basename($fotoPath) : $fotoLama;
+            $fotoPath = $imageService->processUpload($request->file('foto'), 'karyawan', $nik);
+            if ($fotoPath) {
+                $foto = basename($fotoPath);
+            } else {
+                $foto = $nik . '.' . $request->file('foto')->getClientOriginalExtension();
+                $request->file('foto')->move(public_path('storage/uploads/karyawan'), $foto);
+            }
         }
 
         $updateData = [

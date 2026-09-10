@@ -77,7 +77,7 @@ span.flatpickr-weekday {
 
 /* Table cell truncation */
 .truncate-cell {
-    max-width: 160px;
+    max-width: 140px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
