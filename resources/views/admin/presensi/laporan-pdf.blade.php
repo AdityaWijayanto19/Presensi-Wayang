@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
 
     <title>Laporan WFH - {{ $nama_lengkap }}</title>
+    <link rel="icon" type="image/png" href="{{ asset('assets/img/login/logo_aplikasi.png') }}" sizes="32x32">
+
 
     <style>
         /* =========================================================

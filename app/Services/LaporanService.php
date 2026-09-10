@@ -29,6 +29,30 @@ class LaporanService
 
     public static function cetakLaporan(Request $request)
     {
+        $data = self::buildLaporanData($request);
+        if ($data instanceof \Illuminate\Http\RedirectResponse) {
+            return $data;
+        }
+
+        $pdf = Pdf::loadView('admin.presensi.cetaklaporan', $data);
+
+        return $pdf->download('Laporan_Presensi_' . $data['karyawan']->nama_lengkap . '.pdf');
+    }
+
+    public static function previewLaporan(Request $request)
+    {
+        $data = self::buildLaporanData($request);
+        if ($data instanceof \Illuminate\Http\RedirectResponse) {
+            return $data;
+        }
+
+        $pdf = Pdf::loadView('admin.presensi.cetaklaporan', $data);
+
+        return $pdf->stream('Laporan_Presensi_' . $data['karyawan']->nama_lengkap . '.pdf');
+    }
+
+    private static function buildLaporanData(Request $request): array|\Illuminate\Http\RedirectResponse
+    {
         $nik = $request->nik;
         $bulan = $request->bulan;
         $tahun = $request->tahun;
@@ -41,7 +65,7 @@ class LaporanService
         $namabulan = self::NAMA_BULAN;
 
         $karyawan = Karyawan::with('unitperusahaan')
-            ->where('karyawan.nik', $nik)
+            ->where('nik', $nik)
             ->first();
 
         if (!$karyawan) {
@@ -71,7 +95,7 @@ class LaporanService
             ->whereMonth('tgl_lembur', $bulan)
             ->whereYear('tgl_lembur', $tahun)
             ->get()
-            ->keyBy('tgl_lembur');
+            ->keyBy(fn ($item) => $item->tgl_lembur->format('Y-m-d'));
 
         $totalLembur = 0;
         $totalProrate = 0;
@@ -88,7 +112,7 @@ class LaporanService
             ->whereMonth('tgl_wfh', $bulan)
             ->whereYear('tgl_wfh', $tahun)
             ->get()
-            ->keyBy('tgl_wfh');
+            ->keyBy(fn ($item) => $item->tgl_wfh->format('Y-m-d'));
 
         $totalWfh = $wfh->count();
 
@@ -96,12 +120,10 @@ class LaporanService
             return Redirect::back()->with('warning', 'Data presensi tidak ditemukan');
         }
 
-        $pdf = Pdf::loadView('admin.presensi.cetaklaporan', compact(
+        return compact(
             'bulan', 'tahun', 'namabulan', 'karyawan', 'presensi',
             'lembur', 'wfh', 'totalLembur', 'totalProrate', 'totalWfh',
             'sisaMenitKerja', 'totalJamKerja'
-        ));
-
-        return $pdf->download('Laporan_Presensi_' . $karyawan->nama_lengkap . '.pdf');
+        );
     }
 }

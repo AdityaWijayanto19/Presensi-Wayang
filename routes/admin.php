@@ -64,6 +64,7 @@ Route::post('/tampilkanpetapulang', [AdminPresensiController::class, 'tampilkanp
 Route::get('/panel/laporan', [AdminPresensiController::class, 'laporan'])->middleware('permission:laporan-view,user');
 Route::post('/getkaryawanbyunit', [AdminPresensiController::class, 'getkaryawanbyunit'])->middleware('permission:laporan-view,user');
 Route::post('/presensi/cetaklaporan', [AdminPresensiController::class, 'cetaklaporan'])->middleware('permission:laporan-view,user');
+Route::post('/presensi/previewlaporan', [AdminPresensiController::class, 'previewLaporan'])->middleware('permission:laporan-view,user');
 
 // Data izin
 Route::get('/panel/izin', [AdminPresensiController::class, 'dataizin'])->middleware('permission:izin-view,user');

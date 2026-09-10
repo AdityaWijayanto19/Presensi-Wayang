@@ -11,6 +11,7 @@
     <title>
         Rekap Presensi Karyawan
     </title>
+    <link rel="icon" type="image/png" href="{{ asset('assets/img/login/logo_aplikasi.png') }}" sizes="32x32">
 
     {{-- ================================================== --}}
     {{-- Stylesheet --}}
@@ -156,9 +157,9 @@
             width="100%"
             cellspacing="0"
             border="1">
-        
+
             <tr>
-        
+
                 <th>No.</th>
                 <th>Tanggal</th>
                 <th>Jam Masuk</th>
@@ -168,194 +169,195 @@
                 <th>Lembur</th>
                 <th>Prorate</th>
                 <th>WFH</th>
-        
+
             </tr>
-        
+
             @foreach ($presensi as $p)
-        
+                @php $tglKey = $p->tgl_presensi->format('Y-m-d'); @endphp
+
                 <tr>
-        
+
                     <td align="center">
-        
+
                         {{ $loop->iteration }}
-        
+
                     </td>
-        
+
                     <td align="center">
-        
+
                         {{ date('d-m-Y', strtotime($p->tgl_presensi)) }}
-        
+
                     </td>
-        
+
                     <td align="center">
-        
+
                         {{ $p->jam_in }}
-        
+
                     </td>
-        
+
                     <td align="center">
-        
+
                         {{ $p->jam_out != null ? $p->jam_out : 'Belum Presensi' }}
-        
+
                     </td>
-        
+
                     <td>
-        
+
                         @if ($p->jam_out == null)
-        
+
                             Belum Presensi Pulang
-        
+
                         @elseif ($p->terlambat > 0)
-        
+
                             Terlambat {{ $p->terlambat }} Menit
-        
+
                         @else
-        
+
                             Tepat Waktu
-        
+
                         @endif
-        
+
                     </td>
-        
+
                     <td align="center">
-        
+
                         @if ($p->jam_out != null)
-        
+
                             @php
                                 $jmljamkerja = selisih($p->jam_in, $p->jam_out);
                             @endphp
-        
+
                             {{ $jmljamkerja }}
-        
+
                         @else
-        
+
                             0 Jam 0 Menit
-        
+
                         @endif
-        
+
                     </td>
-        
+
                     {{-- ================================================== --}}
                     {{-- Lembur --}}
                     {{-- ================================================== --}}
                     <td align="center">
-        
-                        @if (isset($lembur[$p->tgl_presensi]) &&
-                                $lembur[$p->tgl_presensi]->durasi != 'Prorate')
-        
-                            {{ $lembur[$p->tgl_presensi]->durasi }}
-        
+
+                        @if (isset($lembur[$tglKey]) &&
+                                $lembur[$tglKey]->durasi != 'Prorate')
+
+                            {{ $lembur[$tglKey]->durasi }}
+
                         @else
-        
+
                             -
-        
+
                         @endif
-        
+
                     </td>
-        
+
                     {{-- ================================================== --}}
                     {{-- Prorate --}}
                     {{-- ================================================== --}}
                     <td align="center">
-        
-                        @if (isset($lembur[$p->tgl_presensi]) &&
-                                $lembur[$p->tgl_presensi]->durasi == 'Prorate')
-        
+
+                        @if (isset($lembur[$tglKey]) &&
+                                $lembur[$tglKey]->durasi == 'Prorate')
+
                             1
-        
+
                         @else
-        
+
                             -
-        
+
                         @endif
-        
+
                     </td>
-        
+
                     {{-- ================================================== --}}
                     {{-- Work From Home --}}
                     {{-- ================================================== --}}
                     <td align="center">
-        
-                        @if(isset($wfh[$p->tgl_presensi]))
-        
+
+                        @if(isset($wfh[$tglKey]))
+
                             ✓
-        
+
                         @else
-        
+
                             -
-        
+
                         @endif
-        
+
                     </td>
-        
+
                 </tr>
-        
+
             @endforeach
-            
+
                     {{-- ================================================== --}}
                     {{-- Total --}}
                     {{-- ================================================== --}}
                     <tr>
-                    
+
                         <td colspan="5"
                             style="text-align: center;">
-                    
+
                             <b>TOTAL</b>
-                    
+
                         </td>
-                    
+
                         {{-- ================================================== --}}
                         {{-- Total Jam Kerja --}}
                         {{-- ================================================== --}}
                         <td style="text-align: center;">
-                    
+
                             <b>
-                    
+
                                 {{ $totalJamKerja }} Jam {{ $sisaMenitKerja }} Menit
-                    
+
                             </b>
-                    
+
                         </td>
-                    
+
                         {{-- ================================================== --}}
                         {{-- Total Lembur --}}
                         {{-- ================================================== --}}
                         <td style="text-align: center;">
-                    
+
                             <b>
-                    
+
                                 {{ $totalLembur }} Jam
-                    
+
                             </b>
-                    
+
                         </td>
-                    
+
                         {{-- ================================================== --}}
                         {{-- Total Prorate --}}
                         {{-- ================================================== --}}
                         <td style="text-align: center;">
-                    
+
                             <b>
-                    
+
                                 {{ $totalProrate }}x
-                    
+
                             </b>
-                    
+
                         </td>
-                    
+
                         {{-- ================================================== --}}
                         {{-- Total Work From Home --}}
                         {{-- ================================================== --}}
                         <td style="text-align: center;">
-                    
+
                             <b>
-                    
+
                                 {{ $totalWfh }} Hari
-                    
+
                             </b>
-                    
+
                         </td>
-                    
+
                     </tr>
 
         </table>

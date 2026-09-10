@@ -62,6 +62,11 @@ class AdminPresensiController extends Controller
         return LaporanService::cetakLaporan($request);
     }
 
+    public function previewLaporan(Request $request)
+    {
+        return LaporanService::previewLaporan($request);
+    }
+
     public function dataizin(Request $request)
     {
         $izinService = new IzinService();

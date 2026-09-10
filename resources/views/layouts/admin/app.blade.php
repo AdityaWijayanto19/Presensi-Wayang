@@ -53,6 +53,127 @@
     <script>document.addEventListener('DOMContentLoaded',function(){if(window.lucide)lucide.createIcons();});</script>
 
     <script>
+    function searchableSelect() {
+        return {
+            open: false,
+            search: '',
+            selectedValue: '',
+            selectedLabel: '',
+            options: [],
+            filtered: [],
+            highlightedIndex: -1,
+
+            init() {
+                var self = this;
+                var select = self.$refs.nativeSelect;
+                if (select) {
+                    Array.from(select.options).forEach(function(opt) {
+                        if (opt.value !== '') {
+                            self.options.push({ value: opt.value, label: opt.textContent.trim() });
+                        }
+                    });
+                    self.filtered = self.options.slice();
+                    if (select.value) {
+                        self.selectedValue = select.value;
+                        var found = self.options.find(function(o) { return o.value === select.value; });
+                        if (found) self.selectedLabel = found.label;
+                    }
+                }
+                self.$watch('search', function() {
+                    var q = self.search.toLowerCase();
+                    self.filtered = q
+                        ? self.options.filter(function(o) { return o.label.toLowerCase().indexOf(q) !== -1; })
+                        : self.options.slice();
+                    self.highlightedIndex = -1;
+                    self.$nextTick(function() {
+                        if (window.lucide) lucide.createIcons();
+                    });
+                });
+            },
+
+            toggle() {
+                this.open = !this.open;
+                if (this.open) {
+                    this.search = '';
+                    this.filtered = this.options.slice();
+                    this.highlightedIndex = -1;
+                    var self = this;
+                    this.$nextTick(function() {
+                        if (self.$refs.searchInput) self.$refs.searchInput.focus();
+                        if (window.lucide) lucide.createIcons();
+                    });
+                }
+            },
+
+            close() {
+                this.open = false;
+                this.search = '';
+            },
+
+            select(option) {
+                this.selectedValue = option.value;
+                this.selectedLabel = option.label;
+                var select = this.$refs.nativeSelect;
+                if (select) {
+                    select.value = option.value;
+                    select.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+                this.close();
+            },
+
+            handleKeydown(e) {
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    this.highlightedIndex = Math.min(this.highlightedIndex + 1, this.filtered.length - 1);
+                    this.scrollToHighlighted();
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    this.highlightedIndex = Math.max(this.highlightedIndex - 1, 0);
+                    this.scrollToHighlighted();
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (this.highlightedIndex >= 0 && this.filtered[this.highlightedIndex]) {
+                        this.select(this.filtered[this.highlightedIndex]);
+                    }
+                }
+            },
+
+            scrollToHighlighted() {
+                var self = this;
+                self.$nextTick(function() {
+                    var list = self.$refs.optionsList;
+                    if (!list) return;
+                    var highlighted = list.querySelector('.bg-blue-50');
+                    if (highlighted) highlighted.scrollIntoView({ block: 'nearest' });
+                });
+            },
+
+            refreshOptions() {
+                var self = this;
+                var select = self.$refs.nativeSelect;
+                if (!select) return;
+                self.options = [];
+                Array.from(select.options).forEach(function(opt) {
+                    if (opt.value !== '') {
+                        self.options.push({ value: opt.value, label: opt.textContent.trim() });
+                    }
+                });
+                var q = self.search.toLowerCase();
+                self.filtered = q
+                    ? self.options.filter(function(o) { return o.label.toLowerCase().indexOf(q) !== -1; })
+                    : self.options.slice();
+                self.selectedValue = select.value;
+                var found = self.options.find(function(o) { return o.value === select.value; });
+                self.selectedLabel = found ? found.label : '';
+                self.$nextTick(function() {
+                    if (window.lucide) lucide.createIcons();
+                });
+            }
+        };
+    }
+    </script>
+
+    <script>
         document.addEventListener('DOMContentLoaded', function() {
             var logoutBtn = document.getElementById('logout-admin');
             if (logoutBtn) {
