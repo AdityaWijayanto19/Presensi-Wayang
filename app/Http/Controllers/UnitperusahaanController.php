@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Unitperusahaan;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
 use App\Http\Requests\Unitperusahaan\StoreUnitperusahaanRequest;
@@ -24,13 +23,6 @@ class UnitperusahaanController extends Controller
         Unitperusahaan::create($request->only('unit', 'perusahaan', 'jam_masuk'));
 
         return Redirect::back()->with('success', 'Data Berhasil Disimpan!');
-    }
-
-    public function edit(Request $request)
-    {
-        $unitperusahaan = Unitperusahaan::findOrFail($request->id);
-
-        return view('admin.unitperusahaan.edit', compact('unitperusahaan'));
     }
 
     public function update(string $id, UpdateUnitperusahaanRequest $request)

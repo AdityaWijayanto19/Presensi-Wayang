@@ -31,7 +31,6 @@ Route::group(['middleware' => 'permission:user-manage,user'], function () {
 
 // Unit perusahaan
 Route::get('/panel/unit', [UnitperusahaanController::class, 'index'])->middleware('permission:unit-view,user');
-Route::post('/unitperusahaan/edit', [UnitperusahaanController::class, 'edit'])->middleware('permission:unit-view,user');
 Route::group(['middleware' => 'permission:unit-create,user'], function () {
     Route::post('/unitperusahaan/store', [UnitperusahaanController::class, 'store']);
 });
