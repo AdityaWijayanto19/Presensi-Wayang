@@ -21,9 +21,9 @@ class WfhRejected extends Notification
         return [
             'type' => 'wfh_rejected',
             'wfh_id' => $this->wfh->id,
-            'tgl_wfh' => $this->wfh->tgl_wfh,
+            'tgl_wfh' => $this->wfh->tgl_wfh->format('Y-m-d'),
             'reason' => $this->reason,
-            'message' => 'WFH tanggal ' . $this->wfh->tgl_wfh . ' ditolak.' . ($this->reason ? ' Alasan: ' . $this->reason : ''),
+            'message' => 'WFH tanggal ' . $this->wfh->tgl_wfh->format('Y-m-d') . ' ditolak.' . ($this->reason ? ' Alasan: ' . $this->reason : ''),
         ];
     }
 

@@ -130,10 +130,10 @@
 
         .info-cell {
             width: 50%;
-            height: 53px;
-            padding: 8px 9px;
+            height: auto;
+            padding: 5px 9px;
             font-size: 10px;
-            line-height: 1.5;
+            line-height: 1.4;
         }
 
         .info-label {
@@ -146,8 +146,9 @@
     ========================================================= */
 
         .activity-cell {
-            height: 72px;
-            padding: 8px 9px;
+            height: auto;
+            min-height: 50px;
+            padding: 5px 9px;
             vertical-align: top;
         }
 
@@ -184,9 +185,11 @@
         }
 
         .foto-grid img {
-            width: 120px;
-            height: 90px;
-            object-fit: cover;
+            max-width: 120px;
+            max-height: 120px;
+            width: auto;
+            height: auto;
+            object-fit: contain;
             border: 1px solid #f0ece8;
             border-radius: 4px;
         }
@@ -251,21 +254,6 @@
             margin-top: 2px;
             font-size: 10px;
         }
-
-
-        /* =========================================================
-       SMALL META
-    ========================================================= */
-
-        .meta {
-            width: calc(100% - 30mm);
-            margin-left: 15mm;
-            margin-right: 15mm;
-            margin-top: 12px;
-            font-size: 7px;
-            color: #a8a29e;
-            text-align: right;
-        }
     </style>
 </head>
 
@@ -281,7 +269,7 @@
             @endif
 
             <div class="company">
-                <div class="company-name">{{ $perusahaan }}</div>
+                <div class="company-name">PT Wayang Arthasena Group</div>
                 <div class="company-text">Jl. Kedondong No. 5A, Rawamangun</div>
                 <div class="company-text">Pulo Gadung, Jakarta Timur - Indonesia</div>
                 <div class="company-text">Telephone: +6221 38859001</div>
@@ -293,12 +281,8 @@
         {{-- TITLE --}}
         <div class="title">
             <div class="title-main">Laporan Hasil Pekerjaan</div>
-            <div class="title-sub">Work From Home</div>
-            <div class="title-sub" style="margin-top:4px;">
-                No: LAPORAN-{{ date('Ymd', strtotime($tgl_wfh)) }}-{{ $nik }}
-                &nbsp;|&nbsp;
-                Tanggal: {{ date('d/m/Y H:i') }}
-            </div>
+            <div class="title-sub">Work From Home (WFH)</div>
+            <div class="title-sub" style="margin-top:4px;">Tanggal: {{ date('d/m/Y H:i') }}</div>
         </div>
 
 
@@ -366,18 +350,18 @@
 
 
         {{-- FOTO HASIL PEKERJAAN --}}
-        @if(!empty($laporan_images) && count($laporan_images) > 0)
-        <div class="foto-section">
-            <div class="foto-label">Foto Hasil Pekerjaan</div>
-            <div class="foto-grid">
-                @foreach($laporan_images as $img)
-                    @php $imgPath = storage_path('app/public/' . $img); @endphp
-                    @if(file_exists($imgPath))
-                        <img src="file://{{ $imgPath }}" alt="Foto {{ $loop->iteration }}">
-                    @endif
-                @endforeach
+        @if (!empty($laporan_images) && count($laporan_images) > 0)
+            <div class="foto-section">
+                <div class="foto-label">Foto Hasil Pekerjaan</div>
+                <div class="foto-grid">
+                    @foreach ($laporan_images as $img)
+                        @php $imgPath = storage_path('app/public/' . $img); @endphp
+                        @if (file_exists($imgPath))
+                            <img src="file://{{ $imgPath }}" alt="Foto {{ $loop->iteration }}">
+                        @endif
+                    @endforeach
+                </div>
             </div>
-        </div>
         @endif
 
 
@@ -385,52 +369,77 @@
         <table class="form-table approval">
 
             <tr>
-                <td class="approval-header">Disetujui Oleh</td>
-                <td class="approval-header">Mengetahui</td>
-                <td class="approval-header">Dilaksanakan Oleh</td>
+
+                <td class="approval-header">
+                    Diajukan oleh
+                </td>
+
+                <td class="approval-header">
+                    Mengetahui
+                </td>
+
+                <td class="approval-header">
+                    Menyetujui
+                </td>
+
             </tr>
+
 
             <tr>
 
-                {{-- ATASAN --}}
-                <td class="approval-body">
-                    <div class="signature-space">
-                        @if(!empty($stempelPath) && file_exists(public_path($stempelPath)))
-                            <img src="{{ public_path($stempelPath) }}" class="stamp" alt="Stempel">
-                        @endif
-                    </div>
-                    <div class="signature-name">{{ $nama_atasan ?? '-' }}</div>
-                    <div class="signature-role">{{ $jabatan_atasan ?? '-' }}</div>
-                </td>
+                {{-- =================================================
+                 PEMOHON
+            ================================================== --}}
 
-                {{-- ADMIN HR --}}
                 <td class="approval-body">
-                    <div class="signature-space">
-                        @if(!empty($stempelPath) && file_exists(public_path($stempelPath)))
-                            <img src="{{ public_path($stempelPath) }}" class="stamp" alt="Stempel">
-                        @endif
-                    </div>
-                    <div class="signature-name">Administrator HR</div>
-                    <div class="signature-role">HRGA</div>
-                </td>
 
-                {{-- KARYAWAN --}}
-                <td class="approval-body">
-                    <div class="signature-space"></div>
+                    <div class="signature-space">
+                        @if (file_exists(public_path('assets\img\stempel-approved.png')))
+                            <img src="{{ public_path('assets\img\stempel-approved.png') }}" class="stamp"
+                                alt="Submission">
+                        @endif
+
+                    </div>
+
                     <div class="signature-name">{{ $nama_lengkap }}</div>
                     <div class="signature-role">{{ $jabatan }}</div>
+
                 </td>
 
-            </tr>
 
+                {{-- =================================================
+                 ATASAN
+            ================================================== --}}
+
+                <td class="approval-body">
+                    <div class="signature-space">
+                        @if (!empty($stempelPath) && file_exists(public_path($stempelPath)))
+                            <img src="{{ public_path($stempelPath) }}" class="stamp" alt="Stempel">
+                        @endif
+                    </div>
+                    <div class="signature-name">{{ $nama_atasan }}</div>
+                    <div class="signature-role">{{ $jabatan_atasan }}</div>
+                </td>
+
+
+                {{-- =================================================
+                 APPROVER
+            ================================================== --}}
+
+                <td class="approval-body">
+                    <div class="signature-space">
+                        @if (!empty($stempelPath) && file_exists(public_path($stempelPath)))
+                            <img src="{{ public_path($stempelPath) }}" class="stamp" alt="Stempel">
+                        @endif
+
+                    </div>
+                    <div class="signature-name">Naufail Imamuddin</div>
+                    <div class="signature-role">Manager HRGA</div>
+                </td>
+            </tr>
         </table>
 
     </div>
-
-    <div class="meta">
-        Dokumen ini digenerate otomatis oleh Sistem Presensi Digital — {{ date('d/m/Y H:i:s') }}
-    </div>
-
 </body>
 
 </html>

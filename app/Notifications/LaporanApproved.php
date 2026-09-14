@@ -21,8 +21,8 @@ class LaporanApproved extends Notification
         return [
             'type' => 'laporan_approved',
             'wfh_id' => $this->wfh->id,
-            'tgl_wfh' => $this->wfh->tgl_wfh,
-            'message' => 'Laporan WFH tanggal ' . $this->wfh->tgl_wfh . ' telah disetujui HR.',
+            'tgl_wfh' => $this->wfh->tgl_wfh->format('Y-m-d'),
+            'message' => 'Laporan WFH tanggal ' . $this->wfh->tgl_wfh->format('Y-m-d') . ' telah disetujui HR.',
         ];
     }
 

@@ -131,7 +131,9 @@ class RealtimeController extends Controller
                     ->orWhere(function ($q2) {
                         $q2->where('status', 'approved')
                             ->where(function ($q3) {
-                                $q3->whereNull('laporan_deskripsi')->orWhere('laporan_deskripsi', '');
+                                $q3->whereNull('laporan_deskripsi')
+                                    ->orWhere('laporan_deskripsi', '')
+                                    ->orWhere('laporan_status', '!=', 'approved');
                             });
                     });
             })

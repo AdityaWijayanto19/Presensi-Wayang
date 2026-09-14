@@ -22,9 +22,9 @@ class WfhMarkedUnpaid extends Notification
         return [
             'type' => 'wfh_unpaid',
             'wfh_id' => $this->wfh->id,
-            'tgl_wfh' => $this->wfh->tgl_wfh,
+            'tgl_wfh' => $this->wfh->tgl_wfh->format('Y-m-d'),
             'reason' => $this->reason,
-            'message' => 'WFH tanggal ' . $this->wfh->tgl_wfh . ' ditandai sebagai Unpaid karena ' . $this->reason,
+            'message' => 'WFH tanggal ' . $this->wfh->tgl_wfh->format('Y-m-d') . ' ditandai sebagai Unpaid karena ' . $this->reason,
         ];
     }
 
@@ -38,7 +38,7 @@ class WfhMarkedUnpaid extends Notification
         WfhService::sendWebPush(
             $notifiable->nik,
             'WFH Unpaid',
-            'WFH tanggal ' . $this->wfh->tgl_wfh . ' ditandai sebagai Unpaid karena ' . $this->reason,
+            'WFH tanggal ' . $this->wfh->tgl_wfh->format('Y-m-d') . ' ditandai sebagai Unpaid karena ' . $this->reason,
             '/presensi/wfh',
             'wfh-unpaid-' . $this->wfh->id
         );

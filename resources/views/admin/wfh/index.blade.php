@@ -305,6 +305,8 @@
                         }).catch(function() {});
                 }
 
+                var adminPollInterval = 5000;
+
                 function pollAdminData() {
                     fetch('/api/realtime/admin/wfh-check?last_check=' + encodeURIComponent(lastCheck), {
                             credentials: 'same-origin'
@@ -315,11 +317,20 @@
                                 lastCheck = new Date().toISOString();
                                 fetchTableData();
                             }
-                        }).catch(function() {});
+                            adminPollInterval = 5000;
+                        }).catch(function() {
+                            adminPollInterval = Math.min(adminPollInterval * 2, 30000);
+                        });
                 }
 
+                function startAdminPoll() {
+                    setTimeout(function() {
+                        pollAdminData();
+                        startAdminPoll();
+                    }, adminPollInterval);
+                }
                 pollAdminData();
-                setInterval(pollAdminData, 5000);
+                startAdminPoll();
 
                 var pagination = document.getElementById('wfhPagination');
                 if (pagination) {

@@ -240,12 +240,9 @@
                                         </div>
                                         @if (!empty($p->laporan_file))
                                             <div class="mt-1">
-                                                <button type="button"
-                                                    class="text-[11px] text-sky-700 hover:underline cursor-pointer js-preview"
-                                                    data-url="{{ Storage::url($p->laporan_file) }}"
-                                                    data-filename="{{ basename($p->laporan_file) }}"
-                                                    data-label="Laporan WFH — {{ $p->nama_lengkap }} {{ date('d M Y', strtotime($p->tgl_wfh)) }}">Form
-                                                    Laporan</button>
+                                                <a href="{{ Storage::url($p->laporan_file) }}"
+                                                    target="_blank"
+                                                    class="text-[11px] text-sky-700 hover:underline">Form Laporan</a>
                                             </div>
                                         @elseif(!empty($p->laporan_deskripsi))
                                             <div class="mt-1">
@@ -533,10 +530,10 @@
                         'Anda harus <b>absen masuk</b> terlebih dahulu sebelum bisa upload laporan WFH.' +
                         '<br><br>Alur upload laporan:' +
                         '<ol style="margin:8px 0 0 18px;text-align:left">' +
-                        '<li>Absen masuk di hari WFH</li>' +
-                        '<li>Tunggu minimal <b>7 jam</b> setelah absen masuk</li>' +
-                        '<li>Baru bisa upload laporan</li>' +
-                        '<li>Setelah upload laporan, bisa absen pulang</li>' +
+                        '<li>1. Absen masuk di hari WFH</li>' +
+                        '<li>2. Tunggu minimal <b>7 jam</b> setelah absen masuk</li>' +
+                        '<li>3. Baru bisa upload laporan</li>' +
+                        '<li>4. Setelah upload laporan, bisa absen pulang</li>' +
                         '</ol>' +
                         '</div>',
                     icon: 'warning',
@@ -666,6 +663,8 @@
             let lastPendingLaporan = {{ $pendingLaporanAtasan->count() ?? 0 }};
             let isPolling = false;
             let sectionHashes = {};
+            let pollInterval = 5000;
+            let pollTimer = null;
 
             function updateSection(el, newHtml, key) {
                 if (!el) return;
@@ -674,6 +673,13 @@
                 sectionHashes[key] = newHash;
                 el.innerHTML = newHtml;
                 if (window.lucide) lucide.createIcons();
+            }
+
+            function esc(str) {
+                if (!str) return '';
+                var div = document.createElement('div');
+                div.appendChild(document.createTextNode(str));
+                return div.innerHTML;
             }
 
             function pollRealtime() {
@@ -722,9 +728,9 @@
                                 const isUnread = !n.read_at;
                                 return '<div class="p-3 hover:bg-[#fdf8f4] ' + (isUnread ?
                                         'bg-amber-50/50' : '') + '">' +
-                                    '<div class="text-[12px] font-medium text-[#1c1917]">' + (n.data
+                                    '<div class="text-[12px] font-medium text-[#1c1917]">' + esc(n.data
                                         .message || 'Notifikasi') + '</div>' +
-                                    '<div class="text-[11px] text-[#a8a29e] mt-1">' + n.created_at +
+                                    '<div class="text-[11px] text-[#a8a29e] mt-1">' + esc(n.created_at) +
                                     '</div>' +
                                     '</div>';
                             }).join('');
@@ -751,19 +757,19 @@
                                         var up = k.unitperusahaan || {};
                                         html +=
                                             '<div class="card mb-2 border-l-4 border-l-amber-400 bg-amber-50/50"><div class="card-body p-3"><div class="flex items-start justify-between gap-3"><div class="flex-1 min-w-0"><div class="text-[13px] font-bold text-[#1c1917]">' +
-                                            (k.nama_lengkap || '-') +
-                                            ' <span class="text-[11px] font-normal text-[#78716c]">• ' + (k
-                                                .jabatan || '-') + ' • ' + (k.posisi || '-') +
-                                            '</span></div><div class="text-[11px] text-[#78716c]">' + (p
-                                                .tgl_wfh || '').substring(0, 10) + ' • ' + (k.unit || '-') + ' (' + (up
+                                            esc(k.nama_lengkap || '-') +
+                                            ' <span class="text-[11px] font-normal text-[#78716c]">• ' + esc(k
+                                                .jabatan || '-') + ' • ' + esc(k.posisi || '-') +
+                                            '</span></div><div class="text-[11px] text-[#78716c]">' + esc((p
+                                                .tgl_wfh || '').substring(0, 10)) + ' • ' + esc(k.unit || '-') + ' (' + esc(up
                                                 .perusahaan || '-') +
                                             ')</div><div class="text-[11px] text-[#57534e] mt-1 line-clamp-2">' +
-                                            (p.deskripsi_pekerjaan || '').substring(0, 70) + '</div>' +
+                                            esc((p.deskripsi_pekerjaan || '').substring(0, 70)) + '</div>' +
                                             '</div><div class="flex flex-col gap-1.5 shrink-0"><button type="button" class="btn btn-sm bg-emerald-500 text-white rounded-full px-3 py-1 text-[11px] w-full btn-approve-atasan" data-id="' +
                                             p.id + '">Setujui</button><button type="button" class="btn btn-sm bg-white border border-rose-200 text-rose-700 rounded-full px-3 py-1 text-[11px] w-full btn-reject-atasan-dynamic" data-id="' +
                                             p.id + '">Tolak</button></div></div>' + (p.pdf_form_path ?
                                                 '<div class="flex"><button type="button" class="text-[11px] text-sky-700 hover:underline cursor-pointer" onclick="window.open(\'/storage/' +
-                                                p.pdf_form_path +
+                                                esc(p.pdf_form_path) +
                                                 '\',\'_blank\')">Form Pengajuan</button></div>' : '') +
                                             '</div></div>';
                                     });
@@ -800,25 +806,22 @@
                                         if (p.laporan_file) {
                                             var laporanUrl = '/storage/' + p.laporan_file;
                                             previewBtn =
-                                                '<div class="mt-1"><button type="button" class="text-[11px] text-sky-700 hover:underline cursor-pointer js-preview" data-url="' +
-                                                laporanUrl + '" data-filename="' + (p.laporan_file.split(
-                                                    '/').pop() || '') + '" data-label="Laporan WFH — ' + (k
-                                                    .nama_lengkap || '-') + '">Form Laporan</button></div>';
+                                                '<div class="mt-1"><a href="' + esc(laporanUrl) + '" target="_blank" class="text-[11px] text-sky-700 hover:underline">Form Laporan</a></div>';
                                         } else if (p.laporan_deskripsi) {
                                             previewBtn =
                                                 '<div class="mt-1"><button type="button" class="text-[11px] text-sky-700 hover:underline cursor-pointer js-preview-laporan" data-deskripsi="' +
-                                                (p.laporan_deskripsi || '').replace(/"/g, '&quot;') +
-                                                '" data-tgl="' + (p.tgl_wfh || '').substring(0, 10) +
-                                                '" data-label="Laporan WFH — ' + (k.nama_lengkap || '-') +
+                                                esc(p.laporan_deskripsi || '') +
+                                                '" data-tgl="' + esc((p.tgl_wfh || '').substring(0, 10)) +
+                                                '" data-label="Laporan WFH — ' + esc(k.nama_lengkap || '-') +
                                                 '">Form Laporan</button></div>';
                                         }
                                         html +=
                                             '<div class="card mb-2 border-l-4 border-l-violet-400 bg-violet-50/50"><div class="card-body p-3"><div class="flex items-start justify-between gap-3"><div class="flex-1 min-w-0"><div class="text-[13px] font-bold text-[#1c1917]">' +
-                                            (k.nama_lengkap || '-') +
-                                            ' <span class="text-[11px] font-normal text-[#78716c]">• ' + (k
-                                                .jabatan || '-') + ' • ' + (k.posisi || '-') +
-                                            '</span></div><div class="text-[11px] text-[#78716c]">' + (p
-                                                .tgl_wfh || '').substring(0, 10) + ' • ' + (k.unit || '-') + ' (' + (up
+                                            esc(k.nama_lengkap || '-') +
+                                            ' <span class="text-[11px] font-normal text-[#78716c]">• ' + esc(k
+                                                .jabatan || '-') + ' • ' + esc(k.posisi || '-') +
+                                            '</span></div><div class="text-[11px] text-[#78716c]">' + esc((p
+                                                .tgl_wfh || '').substring(0, 10)) + ' • ' + esc(k.unit || '-') + ' (' + esc(up
                                                 .perusahaan || '-') +
                                             ')</div><div class="text-[11px] text-[#57534e] mt-1">Laporan WFH menunggu persetujuan Anda</div>' +
                                             previewBtn +
@@ -959,12 +962,12 @@
                                     var tglFormatted = tglParts[2] + '-' + tglParts[1] + '-' + tglParts[0];
                                     var terlambat = d.terlambat > 0;
                                     hHtml += '<li><div class="item">' +
-                                        '<img src="/storage/uploads/absensi/' + (d.foto_in || '') + '?v=' + Date.now() + '" alt="" ' +
+                                        '<img src="/storage/uploads/absensi/' + esc(d.foto_in || '') + '?v=' + Date.now() + '" alt="" ' +
                                         'class="w-[35px] h-[35px] rounded-[10px] object-cover mr-3 border-2 border-white shadow-sm foto-histori-dashboard flex-shrink-0">' +
                                         '<div class="in flex-wrap gap-1">' +
                                         '<div class="w-full text-[13px]">' + tglFormatted + '</div>' +
-                                        '<span class="inline-flex items-center justify-center rounded-full text-white text-[10px] sm:text-xs px-2 py-0.5 ' + (terlambat ? 'bg-red-500' : 'bg-green-500') + '">' + d.jam_in + '</span>' +
-                                        '<span class="inline-flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] sm:text-xs px-2 py-0.5">' + (d.jam_out || 'Belum Presensi') + '</span>' +
+                                        '<span class="inline-flex items-center justify-center rounded-full text-white text-[10px] sm:text-xs px-2 py-0.5 ' + (terlambat ? 'bg-red-500' : 'bg-green-500') + '">' + esc(d.jam_in) + '</span>' +
+                                        '<span class="inline-flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] sm:text-xs px-2 py-0.5">' + esc(d.jam_out || 'Belum Presensi') + '</span>' +
                                         '</div></div></li>';
                                 });
                                 historiList.innerHTML = hHtml;
@@ -1030,13 +1033,13 @@
                                         var months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
                                         var dateStr = parseInt(tglParts[2]) + ' ' + (months[parseInt(tglParts[1]) - 1] || '') + ' ' + tglParts[0];
                                         var keterangan = w.keterangan ?
-                                            '<div class="text-[11px] text-[#78716c] mt-0.5 italic">' + (w
+                                            '<div class="text-[11px] text-[#78716c] mt-0.5 italic">' + esc((w
                                                 .keterangan.length > 50 ? w.keterangan.substring(0, 50) +
-                                                '...' : w.keterangan) + '</div>' : '';
+                                                '...' : w.keterangan)) + '</div>' : '';
                                         var deskripsi = w.deskripsi_pekerjaan ?
-                                            '<div class="text-[11px] text-[#78716c] mt-0.5">' + (w
+                                            '<div class="text-[11px] text-[#78716c] mt-0.5">' + esc((w
                                                 .deskripsi_pekerjaan.length > 50 ? w.deskripsi_pekerjaan
-                                                .substring(0, 50) + '...' : w.deskripsi_pekerjaan) +
+                                                .substring(0, 50) + '...' : w.deskripsi_pekerjaan)) +
                                             '</div>' : '';
                                         var laporanBadge = '';
                                         if (w.laporan_status) {
@@ -1046,21 +1049,21 @@
                                                 .laporan_status;
                                             laporanBadge =
                                                 '<span class="ml-1 inline-flex items-center rounded-full border text-[10px] px-2 py-0.5 ' +
-                                                lb + '">' + ll + '</span>';
+                                                lb + '">' + esc(ll) + '</span>';
                                         }
                                         var actionBtn = '';
                                         if (w.status === 'approved' && !w.laporan_deskripsi) {
                                             actionBtn = '<a href="/wfh/' + w.id +
                                                 '/laporan" class="btn btn-sm bg-emerald-500 text-white rounded-full px-3 py-1 text-[11px] font-semibold btn-laporan" data-jam-in="' +
-                                                (data.presensi && data.presensi.jam_in ? data.presensi
-                                                    .jam_in : '') + '" data-tgl-wfh="' + (w.tgl_wfh || '').substring(0, 10) +
+                                                esc(data.presensi && data.presensi.jam_in ? data.presensi
+                                                    .jam_in : '') + '" data-tgl-wfh="' + esc((w.tgl_wfh || '').substring(0, 10)) +
                                                 '">Upload Laporan</a>';
                                         }
                                         html +=
                                             '<div class="card mb-2"><div class="card-body p-3 flex items-center justify-between"><div class="flex-1 min-w-0"><div class="text-[13px] font-bold text-[#1c1917]">' +
                                             dateStr +
                                             ' <span class="ml-1 inline-flex items-center rounded-full border text-[10px] px-2 py-0.5 ' +
-                                            b[0] + '">' + b[1] + '</span></div>' + keterangan + deskripsi +
+                                            b[0] + '">' + esc(b[1]) + '</span></div>' + keterangan + deskripsi +
                                             laporanBadge +
                                             '</div><div class="flex items-center gap-2 shrink-0 ml-2">' +
                                             actionBtn + '</div></div></div>';
@@ -1072,14 +1075,22 @@
                         }
 
                         isPolling = false;
+                        pollInterval = 5000;
                     }).catch(() => {
                         isPolling = false;
+                        pollInterval = Math.min(pollInterval * 2, 30000);
                     });
             }
 
-            // Poll setiap 5 detik
+            // Poll dengan backoff
+            function startPoll() {
+                setTimeout(function() {
+                    pollRealtime();
+                    startPoll();
+                }, pollInterval);
+            }
             pollRealtime();
-            setInterval(pollRealtime, 5000);
+            startPoll();
 
             // Trigger poll segera saat user kembali ke tab (iOS PWA fix)
             document.addEventListener('visibilitychange', function() {

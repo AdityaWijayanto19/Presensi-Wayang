@@ -24,8 +24,8 @@ class LaporanSubmitted extends Notification
             'pengaju_nik' => $this->pengaju->nik,
             'pengaju_nama' => $this->pengaju->nama_lengkap,
             'pengaju_jabatan' => $this->pengaju->jabatan instanceof \App\Enums\Jabatan ? $this->pengaju->jabatan->value : $this->pengaju->jabatan,
-            'tgl_wfh' => $this->wfh->tgl_wfh,
-            'message' => $this->pengaju->nama_lengkap . ' mengajukan laporan WFH pada tanggal ' . $this->wfh->tgl_wfh,
+            'tgl_wfh' => $this->wfh->tgl_wfh->format('Y-m-d'),
+            'message' => $this->pengaju->nama_lengkap . ' mengajukan laporan WFH pada tanggal ' . $this->wfh->tgl_wfh->format('Y-m-d'),
         ];
     }
 

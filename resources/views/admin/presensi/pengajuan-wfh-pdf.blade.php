@@ -106,41 +106,6 @@
             color: #a08b78;
         }
 
-
-        /* =========================================================
-       ORNAMENT
-
-       Kalau ornament terpisah dari header-surat.png,
-       tetap bisa digunakan.
-    ========================================================= */
-
-        .ornament {
-            position: absolute;
-
-            left: 0;
-            top: 0;
-
-            width: 115px;
-
-            opacity: 0.45;
-
-            z-index: 2;
-        }
-
-        .ornament-right {
-            position: absolute;
-
-            right: 0;
-            top: 0;
-
-            width: 115px;
-
-            opacity: 0.45;
-
-            z-index: 2;
-        }
-
-
         /* =========================================================
        TITLE
     ========================================================= */
@@ -196,9 +161,7 @@
         .info-cell {
             width: 50%;
             height: auto;
-
             padding: 5px 9px;
-
             font-size: 10px;
             line-height: 1.4;
         }
@@ -215,9 +178,7 @@
         .activity-cell {
             height: auto;
             min-height: 50px;
-
             padding: 5px 9px;
-
             vertical-align: top;
         }
 
@@ -268,8 +229,8 @@
 
 
         /* =========================================================
-       SIGNATURE
-    ========================================================= */
+        SIGNATURE
+        ========================================================= */
 
         .signature-space {
             height: 125px;
@@ -307,8 +268,8 @@
 
 
         /* =========================================================
-       SMALL META
-    ========================================================= */
+        SMALL META
+        ========================================================= */
 
         .meta {
             width: calc(100% - 30mm);
@@ -333,33 +294,10 @@
 
 
         {{-- =========================================================
-         HEADER
-    ========================================================== --}}
+            HEADER
+        ========================================================== --}}
 
         <div class="header">
-
-            {{-- Ornamen kiri --}}
-            {{-- Aktifkan kalau file memang tersedia --}}
-            {{--
-        @if (file_exists(public_path('images/wfh/ornament-left.png')))
-            <img
-                src="{{ public_path('images/wfh/ornament-left.png') }}"
-                class="ornament"
-            >
-        @endif
-        --}}
-
-
-            {{-- Ornamen kanan --}}
-            {{--
-        @if (file_exists(public_path('images/wfh/ornament-right.png')))
-            <img
-                src="{{ public_path('images/wfh/ornament-right.png') }}"
-                class="ornament-right"
-            >
-        @endif
-        --}}
-
 
             {{-- Logo --}}
             @if (!empty($headerSuratPath) && file_exists(public_path($headerSuratPath)))
@@ -537,18 +475,14 @@
 
                     <div class="signature-space">
                         @if (file_exists(public_path('assets\img\stempel-approved.png')))
-                            <img src="{{ public_path('assets\img\stempel-approved.png') }}" class="stamp" alt="Submission">
+                            <img src="{{ public_path('assets\img\stempel-approved.png') }}" class="stamp"
+                                alt="Submission">
                         @endif
 
                     </div>
 
-                    <div class="signature-name">
-                        {{ $nama_lengkap }}
-                    </div>
-
-                    <div class="signature-role">
-                        Karyawan
-                    </div>
+                    <div class="signature-name">{{ $nama_lengkap }}</div>
+                    <div class="signature-role">{{ $jabatan }}</div>
 
                 </td>
 
@@ -558,23 +492,13 @@
             ================================================== --}}
 
                 <td class="approval-body">
-
                     <div class="signature-space">
-
                         @if (!empty($stempelPath) && file_exists(public_path($stempelPath)))
                             <img src="{{ public_path($stempelPath) }}" class="stamp" alt="Stempel">
                         @endif
-
                     </div>
-
-                    <div class="signature-name">
-                        {{ $nama_atasan }}
-                    </div>
-
-                    <div class="signature-role">
-                        {{ $jabatan_atasan }}
-                    </div>
-
+                    <div class="signature-name">{{ $nama_atasan }}</div>
+                    <div class="signature-role">{{ $jabatan_atasan }}</div>
                 </td>
 
 
@@ -583,29 +507,17 @@
             ================================================== --}}
 
                 <td class="approval-body">
-
                     <div class="signature-space">
-
                         @if (!empty($stempelPath) && file_exists(public_path($stempelPath)))
                             <img src="{{ public_path($stempelPath) }}" class="stamp" alt="Stempel">
                         @endif
 
                     </div>
-
-                    <div class="signature-name">
-                        Naufail Imamuddin
-                    </div>
-
-                    <div class="signature-role">
-                        Manager HRGA
-                    </div>
-
+                    <div class="signature-name">Naufail Imamuddin</div>
+                    <div class="signature-role">Manager HRGA</div>
                 </td>
-
             </tr>
-
         </table>
-
     </div>
 
 </body>

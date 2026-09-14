@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Wfh extends Model
 {
     protected $table = 'wfhs';
-    public $timestamps = false;
     protected $fillable = [
         'nik',
         'jabatan',      // hierarchy level (enum)

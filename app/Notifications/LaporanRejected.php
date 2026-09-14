@@ -21,9 +21,9 @@ class LaporanRejected extends Notification
         return [
             'type' => 'laporan_rejected',
             'wfh_id' => $this->wfh->id,
-            'tgl_wfh' => $this->wfh->tgl_wfh,
+            'tgl_wfh' => $this->wfh->tgl_wfh->format('Y-m-d'),
             'reason' => $this->reason,
-            'message' => 'Laporan WFH tanggal ' . $this->wfh->tgl_wfh . ' ditolak.' . ($this->reason ? ' Alasan: ' . $this->reason : ''),
+            'message' => 'Laporan WFH tanggal ' . $this->wfh->tgl_wfh->format('Y-m-d') . ' ditolak.' . ($this->reason ? ' Alasan: ' . $this->reason : ''),
         ];
     }
 

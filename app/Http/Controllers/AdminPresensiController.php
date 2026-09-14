@@ -194,12 +194,29 @@ class AdminPresensiController extends Controller
     public function editWfhAdmin(int $id)
     {
         $wfh = Wfh::with(['karyawan', 'atasan'])->findOrFail($id);
-        return response()->json($wfh);
+        $arr = $wfh->toArray();
+        $arr['tgl_wfh'] = $wfh->tgl_wfh instanceof \Carbon\Carbon
+            ? $wfh->tgl_wfh->format('Y-m-d')
+            : $wfh->tgl_wfh;
+        $arr['dikirim_tanggal'] = $wfh->dikirim_tanggal instanceof \Carbon\Carbon
+            ? $wfh->dikirim_tanggal->format('Y-m-d H:i')
+            : $wfh->dikirim_tanggal;
+        $arr['approved_at'] = $wfh->approved_at instanceof \Carbon\Carbon
+            ? $wfh->approved_at->format('Y-m-d H:i')
+            : $wfh->approved_at;
+        $arr['laporan_approved_at'] = $wfh->laporan_approved_at instanceof \Carbon\Carbon
+            ? $wfh->laporan_approved_at->format('Y-m-d H:i')
+            : $wfh->laporan_approved_at;
+        return response()->json($arr);
     }
 
     public function updateWfhAdmin(UpdateWfhAdminRequest $request, int $id)
     {
         $wfh = Wfh::findOrFail($id);
+        $editableStatuses = ['pending_atasan', 'pending_admin', 'rejected'];
+        if (!in_array($wfh->status, $editableStatuses)) {
+            return redirect()->back()->with('error', 'WFH dengan status "' . $wfh->status . '" tidak dapat diedit.');
+        }
         $wfh->update([
             'tgl_wfh' => $request->tgl_wfh,
             'deskripsi_pekerjaan' => $request->deskripsi_pekerjaan,

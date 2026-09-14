@@ -144,8 +144,8 @@
                     @endif
                 @endif
                 @can('presensi-edit')
-                <x-admin.button variant="edit" size="sm" class="edit-wfh"
-                    data-id="{{ $d->id }}" data-tgl_wfh="{{ $d->tgl_wfh }}"
+                    <x-admin.button variant="edit" size="sm" class="edit-wfh"
+                    data-id="{{ $d->id }}" data-tgl_wfh="{{ $d->tgl_wfh instanceof \Carbon\Carbon ? $d->tgl_wfh->format('Y-m-d') : $d->tgl_wfh }}"
                     data-deskripsi="{{ $d->deskripsi_pekerjaan }}" data-keterangan="{{ $d->keterangan }}">Edit</x-admin.button>
                 @endcan
                 @can('wfh-delete')

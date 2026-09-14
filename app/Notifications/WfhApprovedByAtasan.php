@@ -21,9 +21,9 @@ class WfhApprovedByAtasan extends Notification
         return [
             'type' => 'wfh_approved_atasan',
             'wfh_id' => $this->wfh->id,
-            'tgl_wfh' => $this->wfh->tgl_wfh,
+            'tgl_wfh' => $this->wfh->tgl_wfh->format('Y-m-d'),
             'atasan_nama' => $this->atasan->nama_lengkap ?? '-',
-            'message' => 'WFH tanggal ' . $this->wfh->tgl_wfh . ' disetujui oleh ' . ($this->atasan->nama_lengkap ?? 'Atasan') . ', menunggu persetujuan HR',
+            'message' => 'WFH tanggal ' . $this->wfh->tgl_wfh->format('Y-m-d') . ' disetujui oleh ' . ($this->atasan->nama_lengkap ?? 'Atasan') . ', menunggu persetujuan HR',
         ];
     }
 

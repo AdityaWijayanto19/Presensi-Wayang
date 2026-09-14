@@ -89,26 +89,28 @@ class DashboardController extends Controller
             ->whereRaw('YEAR(tgl_wfh) = ?', [$tahunini])
             ->first();
 
-        $wfhSaya = Wfh::where('nik', $nik)
-            ->where(function ($q) {
-                $q->whereIn('status', ['pending_atasan', 'pending_admin'])
-                    ->orWhere(function ($q2) {
-                        $q2->where('status', 'approved')
-                            ->where(function ($q3) {
-                                $q3->whereNull('laporan_deskripsi')->orWhere('laporan_deskripsi', '');
-                            });
-                    });
-            })
-            ->orderBy('tgl_wfh', 'desc')
-            ->limit(5)
-            ->get()
-            ->map(function ($w) use ($hariini) {
-                $tgl = $w->tgl_wfh instanceof \Carbon\Carbon
-                    ? $w->tgl_wfh->format('Y-m-d')
-                    : now('Asia/Jakarta')->format('Y-m-d');
-                $w->is_today = ($tgl === $hariini);
-                return $w;
-            });
+    $wfhSaya = Wfh::where('nik', $nik)
+        ->where(function ($q) {
+            $q->whereIn('status', ['pending_atasan', 'pending_admin'])
+                ->orWhere(function ($q2) {
+                    $q2->where('status', 'approved')
+                        ->where(function ($q3) {
+                            $q3->whereNull('laporan_deskripsi')
+                                ->orWhere('laporan_deskripsi', '')
+                                ->orWhere('laporan_status', '!=', 'approved');
+                        });
+                });
+        })
+        ->orderBy('tgl_wfh', 'desc')
+        ->limit(5)
+        ->get()
+        ->map(function ($w) use ($hariini) {
+            $tgl = $w->tgl_wfh instanceof \Carbon\Carbon
+                ? $w->tgl_wfh->format('Y-m-d')
+                : now('Asia/Jakarta')->format('Y-m-d');
+            $w->is_today = ($tgl === $hariini);
+            return $w;
+        });
 
         $karyawan = Karyawan::where('nik', $nik)->first();
         $pendingAtasan = collect();

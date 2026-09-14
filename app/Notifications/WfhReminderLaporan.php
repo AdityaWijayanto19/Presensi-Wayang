@@ -22,8 +22,8 @@ class WfhReminderLaporan extends Notification
         return [
             'type' => 'wfh_reminder_laporan',
             'wfh_id' => $this->wfh->id,
-            'tgl_wfh' => $this->wfh->tgl_wfh,
-            'message' => 'WFH tanggal ' . $this->wfh->tgl_wfh . ' belum upload laporan! Harap upload sebelum pukul 23:59 agar tidak ditandai sebagai Unpaid.',
+            'tgl_wfh' => $this->wfh->tgl_wfh->format('Y-m-d'),
+            'message' => 'WFH tanggal ' . $this->wfh->tgl_wfh->format('Y-m-d') . ' belum upload laporan! Harap upload sebelum pukul 23:59 agar tidak ditandai sebagai Unpaid.',
         ];
     }
 
@@ -37,7 +37,7 @@ class WfhReminderLaporan extends Notification
         WfhService::sendWebPush(
             $notifiable->nik,
             '⚠️ Reminder Upload Laporan',
-            'WFH tanggal ' . $this->wfh->tgl_wfh . ' belum upload laporan! Upload sebelum pukul 23:59.',
+            'WFH tanggal ' . $this->wfh->tgl_wfh->format('Y-m-d') . ' belum upload laporan! Upload sebelum pukul 23:59.',
             '/presensi/wfh/' . $this->wfh->id . '/laporan',
             'reminder-laporan-' . $this->wfh->id
         );

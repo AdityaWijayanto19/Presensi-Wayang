@@ -176,7 +176,8 @@ class KaryawanPresensiController extends Controller
 
     public function showfilewfh(string $file)
     {
-        $path = WfhService::showFileWfh($file);
+        $nik = Auth::guard('karyawan')->user()->nik;
+        $path = WfhService::showFileWfh($file, $nik);
         if (!$path) abort(404);
 
         if (Storage::disk('public')->exists($path)) {

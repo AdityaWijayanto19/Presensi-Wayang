@@ -105,7 +105,7 @@
                 <div class="form-group mt-3">
                     <label class="text-[12px] font-semibold text-[#44403c] mb-1 block">Deskripsi Pekerjaan <span
                             class="text-red-500">*</span></label>
-                    <textarea name="deskripsi_pekerjaan" id="deskripsi_pekerjaan" rows="5" class="w-full rounded-md border border-slate-300 px-2.5 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    <textarea name="deskripsi_pekerjaan" id="deskripsi_pekerjaan" rows="5" maxlength="2000" class="w-full rounded-md border border-slate-300 px-2.5 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                         placeholder="1. Menuliskan list pekerjaan&#10;2. List pekerjaan dibuat numerik/berurutan&#10;3. Dokumentasikan hasil kerja untuk laporan" required>{{ old('deskripsi_pekerjaan') }}</textarea>
                     <small class="text-[11px] text-[#a8a29e]"><span id="charCount">0</span>/2000 karakter • Maksimal 10
                         poin</small>
