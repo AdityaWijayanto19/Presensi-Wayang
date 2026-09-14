@@ -34,6 +34,12 @@ class MonitoringService
             });
         }
 
+        if ($request->filter_ketepatan === '0') {
+            $query->where('terlambat', 0);
+        } elseif ($request->filter_ketepatan === '1') {
+            $query->where('terlambat', '>', 0);
+        }
+
         return $query->get();
     }
 

@@ -81,7 +81,7 @@
     <x-admin.select name="unit" id="unit" searchable placeholder="Pilih Unit">
         @foreach ($unitperusahaan as $u)
             <option value="{{ $u->unit }}" {{ ($karyawan?->unit ?? '') == $u->unit ? 'selected' : '' }}>
-                {{ $u->unit }}</option>
+                {{ $u->perusahaan }}</option>
         @endforeach
     </x-admin.select>
 

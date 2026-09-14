@@ -2,127 +2,132 @@
 
 @section('content')
 
-    @section('page_title', 'Monitoring Presensi')
+@section('page_title', 'Monitoring Presensi')
 
-    <x-admin.page-body>
+<x-admin.page-body>
 
-        <x-admin.card>
+    <x-admin.card>
 
-            <div class="p-3">
+        <div class="p-3">
 
-                {{-- ================================================== --}}
-                {{-- Filter --}}
-                {{-- ================================================== --}}
-                <x-admin.input
-                    type="text"
-                    name="tanggal"
-                    id="tanggal"
-                    placeholder="Pilih Tanggal Presensi"
-                    autocomplete="off"
-                    value="{{ date('Y-m-d') }}"
-                    icon="calendar"
-                />
+            {{-- ================================================== --}}
+            {{-- Filter --}}
+            {{-- ================================================== --}}
+            <x-admin.input type="text" name="tanggal" id="tanggal" placeholder="Pilih Tanggal Presensi"
+                autocomplete="off" value="{{ date('Y-m-d') }}" icon="calendar" />
 
-                <div class="grid grid-cols-12 gap-2">
-                    <div class="col-span-12 md:col-span-5">
-                        <x-admin.input
-                            name="nama_karyawan"
-                            id="nama_karyawan"
-                            placeholder="Cari Nama Karyawan"
-                            autocomplete="off"
-                        />
-                    </div>
-                    <div class="col-span-12 md:col-span-5">
-                        <x-admin.select name="unit" id="unit" placeholder="Semua Unit">
-                            @foreach ($unitperusahaan as $u)
-                                <option value="{{ $u->unit }}">{{ $u->unit }}</option>
-                            @endforeach
-                        </x-admin.select>
-                    </div>
-                    <div class="col-span-12 md:col-span-2">
-                        <x-admin.button variant="primary" icon="search" id="btnCari" block>Cari Data</x-admin.button>
-                    </div>
+            <div class="grid grid-cols-12 gap-2">
+                <div class="col-span-12 md:col-span-4">
+                    <x-admin.input name="nama_karyawan" id="nama_karyawan" placeholder="Cari Nama Karyawan"
+                        autocomplete="off" />
                 </div>
-
-                {{-- ================================================== --}}
-                {{-- Tabel Monitoring --}}
-                {{-- ================================================== --}}
-                <div class="overflow-x-auto mt-2">
-                    <table class="min-w-full divide-y divide-slate-200">
-                        <thead>
-                            <tr>
-                                <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">No.</th>
-                                <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">NIK</th>
-                                <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Nama Karyawan</th>
-                                <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Unit Perusahaan</th>
-                                <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Masuk</th>
-                                <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Foto Masuk</th>
-                                <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Pulang</th>
-                                <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Foto Pulang</th>
-                                <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Keterangan Presensi</th>
-                                <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Lokasi</th>
-                                <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Lembur</th>
-                            </tr>
-                        </thead>
-                        <tbody id="loadpresensi" class="divide-y divide-slate-200">
-                        </tbody>
-                    </table>
+                <div class="col-span-12 md:col-span-3">
+                    <x-admin.select name="unit" id="unit" searchable placeholder="Semua Unit">
+                        @foreach ($unitperusahaan as $u)
+                            <option value="{{ $u->unit }}" {{ Request('unit') == $u->unit ? 'selected' : '' }}>
+                                {{ $u->unit }}</option>
+                        @endforeach
+                    </x-admin.select>
                 </div>
-
+                <div class="col-span-12 md:col-span-3">
+                    <x-admin.select name="filter_ketepatan" id="filter_ketepatan" placeholder="Semua Ketepatan">
+                        <option value="-1">Semua Ketepatan</option>
+                        <option value="0">Tepat Waktu</option>
+                        <option value="1">Terlambat</option>
+                    </x-admin.select>
+                </div>
+                <div class="col-span-12 md:col-span-2">
+                    <x-admin.button variant="primary" icon="search" id="btnCari" block>Cari Data</x-admin.button>
+                </div>
             </div>
 
-        </x-admin.card>
+            {{-- ================================================== --}}
+            {{-- Tabel Monitoring --}}
+            {{-- ================================================== --}}
+            <div class="overflow-x-auto mt-2">
+                <table class="min-w-full divide-y divide-slate-200">
+                    <thead>
+                        <tr>
+                            <th
+                                class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">
+                                No.</th>
+                            <th
+                                class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">
+                                NIK</th>
+                            <th
+                                class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">
+                                Nama Karyawan</th>
+                            <th
+                                class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">
+                                Unit Perusahaan</th>
+                            <th
+                                class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">
+                                Masuk</th>
+                            <th
+                                class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">
+                                Foto Masuk</th>
+                            <th
+                                class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">
+                                Pulang</th>
+                            <th
+                                class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">
+                                Foto Pulang</th>
+                            <th
+                                class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">
+                                Keterangan Presensi</th>
+                            <th
+                                class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">
+                                Lokasi</th>
+                            <th
+                                class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">
+                                Lembur</th>
+                        </tr>
+                    </thead>
+                    <tbody id="loadpresensi" class="divide-y divide-slate-200">
+                    </tbody>
+                </table>
+            </div>
 
-    </x-admin.page-body>
-
-    {{-- ================================================== --}}
-    {{-- Modal Peta --}}
-    {{-- ================================================== --}}
-    <x-admin.modal id="modal-tampilkanpeta" title="Lokasi Presensi Karyawan">
-        <div id="loadmap">
-            {{-- Map akan dimuat menggunakan AJAX --}}
         </div>
-    </x-admin.modal>
 
-    {{-- ================================================== --}}
-    {{-- Modal Edit Presensi --}}
-    {{-- ================================================== --}}
-    <x-admin.modal id="modal-editpresensi" title="Edit Data Presensi">
-        <form id="formEditPresensi" method="POST">
-            @csrf
-            <input type="hidden" name="presensi_id" id="edit_presensi_id">
+    </x-admin.card>
 
-            <x-admin.input
-                type="time"
-                name="jam_in"
-                id="edit_jam_in"
-                label="Jam Masuk <span class='text-red-500'>*</span>"
-                step="1"
-                required
-            />
+</x-admin.page-body>
 
-            <x-admin.input
-                type="time"
-                name="jam_out"
-                id="edit_jam_out"
-                label="Jam Pulang"
-                step="1"
-            />
-            <small class="text-slate-500 text-xs">Kosongkan jika belum presensi pulang</small>
+{{-- ================================================== --}}
+{{-- Modal Peta --}}
+{{-- ================================================== --}}
+<x-admin.modal id="modal-tampilkanpeta" title="Lokasi Presensi Karyawan">
+    <div id="loadmap">
+        {{-- Map akan dimuat menggunakan AJAX --}}
+    </div>
+</x-admin.modal>
 
-            <div class="mt-2">
-                <x-admin.button variant="primary" icon="save" type="submit" block>Simpan Perubahan</x-admin.button>
-            </div>
-        </form>
-    </x-admin.modal>
+{{-- ================================================== --}}
+{{-- Modal Edit Presensi --}}
+{{-- ================================================== --}}
+<x-admin.modal id="modal-editpresensi" title="Edit Data Presensi">
+    <form id="formEditPresensi" method="POST">
+        @csrf
+        <input type="hidden" name="presensi_id" id="edit_presensi_id">
+
+        <x-admin.input type="time" name="jam_in" id="edit_jam_in"
+            label="Jam Masuk <span class='text-red-500'>*</span>" step="1" required />
+
+        <x-admin.input type="time" name="jam_out" id="edit_jam_out" label="Jam Pulang" step="1" />
+        <small class="text-slate-500 text-xs">Kosongkan jika belum presensi pulang</small>
+
+        <div class="mt-2">
+            <x-admin.button variant="primary" icon="save" type="submit" block>Simpan Perubahan</x-admin.button>
+        </div>
+    </form>
+</x-admin.modal>
 
 @endsection
 
 @push('myscript')
-
 <script>
-
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function() {
 
         flatpickr("#tanggal", {
             locale: "id",
@@ -141,23 +146,27 @@
             var tanggal = document.getElementById('tanggal').value;
             var nama_karyawan = document.getElementById('nama_karyawan').value;
             var unit = document.getElementById('unit').value;
+            var filterKetepatan = document.getElementById('filter_ketepatan').value;
 
             fetch('/getpresensi', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: new URLSearchParams({
-                    tanggal: tanggal,
-                    nama_karyawan: nama_karyawan,
-                    unit: unit
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: new URLSearchParams({
+                        tanggal: tanggal,
+                        nama_karyawan: nama_karyawan,
+                        unit: unit,
+                        filter_ketepatan: filterKetepatan
+                    })
                 })
-            })
-            .then(function (r) { return r.text(); })
-            .then(function (html) {
-                document.getElementById('loadpresensi').innerHTML = html;
-            });
+                .then(function(r) {
+                    return r.text();
+                })
+                .then(function(html) {
+                    document.getElementById('loadpresensi').innerHTML = html;
+                });
 
         }
 
@@ -179,7 +188,7 @@
         // ==================================================
         // Preview Foto Presensi
         // ==================================================
-        document.addEventListener('click', function (e) {
+        document.addEventListener('click', function(e) {
             var el = e.target.closest('.foto-monitoring');
             if (el) {
                 Swal.fire({
@@ -196,7 +205,7 @@
         // ==================================================
         // Edit Presensi Modal
         // ==================================================
-        document.addEventListener('click', function (e) {
+        document.addEventListener('click', function(e) {
             var btn = e.target.closest('.edit-presensi');
             if (btn) {
                 e.preventDefault();
@@ -207,7 +216,8 @@
                 document.getElementById('edit_presensi_id').value = id;
                 document.getElementById('edit_jam_in').value = jamIn || '';
                 document.getElementById('edit_jam_out').value = jamOut || '';
-                document.getElementById('formEditPresensi').setAttribute('action', '/presensi/' + id + '/update');
+                document.getElementById('formEditPresensi').setAttribute('action', '/presensi/' + id +
+                    '/update');
                 window.dispatchEvent(new CustomEvent('open-modal-modal-editpresensi'));
             }
         });
@@ -243,7 +253,7 @@
                 radius: 15
             }).addTo(map);
 
-            setTimeout(function () {
+            setTimeout(function() {
                 map.invalidateSize();
                 marker.openPopup();
             }, 300);
@@ -252,7 +262,7 @@
         // ==================================================
         // Tampilkan Peta Masuk (event delegation)
         // ==================================================
-        document.addEventListener('click', function (e) {
+        document.addEventListener('click', function(e) {
             var btn = e.target.closest('.tampilkanpetamasuk');
             if (btn) {
                 e.preventDefault();
@@ -265,8 +275,12 @@
                         'Content-Type': 'application/x-www-form-urlencoded',
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
                     },
-                    body: new URLSearchParams({ id: id })
-                }).then(function(r) { return r.text(); }).then(function(html) {
+                    body: new URLSearchParams({
+                        id: id
+                    })
+                }).then(function(r) {
+                    return r.text();
+                }).then(function(html) {
                     if (mapContainer) mapContainer.innerHTML = html;
                     window.dispatchEvent(new CustomEvent('open-modal-modal-tampilkanpeta'));
                     setTimeout(initMapFromContainer, 150);
@@ -277,7 +291,7 @@
         // ==================================================
         // Tampilkan Peta Pulang (event delegation)
         // ==================================================
-        document.addEventListener('click', function (e) {
+        document.addEventListener('click', function(e) {
             var btn = e.target.closest('.tampilkanpetapulang');
             if (btn) {
                 e.preventDefault();
@@ -290,8 +304,12 @@
                         'Content-Type': 'application/x-www-form-urlencoded',
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
                     },
-                    body: new URLSearchParams({ id: id })
-                }).then(function(r) { return r.text(); }).then(function(html) {
+                    body: new URLSearchParams({
+                        id: id
+                    })
+                }).then(function(r) {
+                    return r.text();
+                }).then(function(html) {
                     if (mapContainer) mapContainer.innerHTML = html;
                     window.dispatchEvent(new CustomEvent('open-modal-modal-tampilkanpeta'));
                     setTimeout(initMapFromContainer, 150);
@@ -302,7 +320,5 @@
         if (window.lucide) lucide.createIcons();
 
     });
-
 </script>
-
 @endpush
