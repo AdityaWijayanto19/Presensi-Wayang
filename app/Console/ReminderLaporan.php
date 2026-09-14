@@ -14,7 +14,7 @@ class ReminderLaporan extends Command
 
     public function handle()
     {
-        $hariIni = date('Y-m-d');
+        $hariIni = now('Asia/Jakarta')->format('Y-m-d');
 
         // Query WFH yang approved + tanggal hari ini + belum upload laporan
         $wfhList = DB::table('wfhs')

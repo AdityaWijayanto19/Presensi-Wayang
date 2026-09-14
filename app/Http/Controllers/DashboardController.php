@@ -16,7 +16,7 @@ class DashboardController extends Controller
 {
     public function dashboardadmin()
     {
-        $hariini = date('Y-m-d');
+        $hariini = now('Asia/Jakarta')->format('Y-m-d');
 
         $rekappresensi = Presensi::selectRaw('COUNT(nik) as jmlhadir, COUNT(IF(terlambat > 0, 1, NULL)) as jmltelat')
             ->where('tgl_presensi', $hariini)
@@ -48,9 +48,9 @@ class DashboardController extends Controller
 
     public function index()
     {
-        $hariini = date('Y-m-d');
-        $bulanini = (int) date('m');
-        $tahunini = date('Y');
+        $hariini = now('Asia/Jakarta')->format('Y-m-d');
+        $bulanini = (int) now('Asia/Jakarta')->format('m');
+        $tahunini = now('Asia/Jakarta')->format('Y');
         $nik = Auth::guard('karyawan')->user()->nik;
 
         $presensihariini = Presensi::where('nik', $nik)
@@ -101,7 +101,14 @@ class DashboardController extends Controller
             })
             ->orderBy('tgl_wfh', 'desc')
             ->limit(5)
-            ->get();
+            ->get()
+            ->map(function ($w) use ($hariini) {
+                $tgl = $w->tgl_wfh instanceof \Carbon\Carbon
+                    ? $w->tgl_wfh->format('Y-m-d')
+                    : now('Asia/Jakarta')->format('Y-m-d');
+                $w->is_today = ($tgl === $hariini);
+                return $w;
+            });
 
         $karyawan = Karyawan::where('nik', $nik)->first();
         $pendingAtasan = collect();
@@ -121,11 +128,14 @@ class DashboardController extends Controller
                 ->get();
         }
 
-        $besok = date('Y-m-d', strtotime('+1 day'));
+        $besok = now('Asia/Jakarta')->addDay()->format('Y-m-d');
         $wfhBesok = Wfh::where('nik', $nik)->where('tgl_wfh', $besok)->where('status', 'approved')->first();
         $jamMasuk = null;
         if ($wfhBesok) {
             $jamMasuk = Unitperusahaan::where('unit', $karyawan->unit)->value('jam_masuk');
+            if ($jamMasuk instanceof \Carbon\Carbon) {
+                $jamMasuk = $jamMasuk->format('H:i:s');
+            }
         }
 
         $notifications = $karyawan->notifications()->latest()->take(5)->get();

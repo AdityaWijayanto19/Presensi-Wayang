@@ -72,7 +72,7 @@
                     $status = $d->status instanceof \App\Enums\WfhStatus ? $d->status->value : ($d->status ?? 'approved');
                     $statusLabel = match($status){
                         'pending_atasan' => 'Menunggu Atasan',
-                        'pending_admin' => 'Menunggu Admin',
+                        'pending_admin' => 'Menunggu HR',
                         'approved' => 'Disetujui',
                         'rejected' => 'Ditolak',
                         'unpaid' => 'Unpaid',

@@ -238,9 +238,9 @@
 
                     } else {
                         Swal.fire({
-                            title: 'Error!',
+                            title: 'Presensi belum di buka!',
                             text: status[1],
-                            icon: 'error',
+                            icon: 'info',
                             confirmButtonText: 'Ok',
                             confirmButtonColor: '#9c6b43'
                         });

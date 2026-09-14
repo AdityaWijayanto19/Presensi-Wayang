@@ -19,8 +19,8 @@ class PresensiService
     public function processPresensi(Request $request): array
     {
         $nik = Auth::guard('karyawan')->user()->nik;
-        $tglPresensi = now()->format('Y-m-d');
-        $jam = now()->format('H:i:s');
+        $tglPresensi = now('Asia/Jakarta')->format('Y-m-d');
+        $jam = now('Asia/Jakarta')->format('H:i:s');
 
         if ($jam < self::JAM_BUKA_PRESENSI) {
             return ['success' => false, 'message' => 'Presensi baru dibuka pukul 07:00!', 'type' => 'in'];
@@ -124,7 +124,7 @@ class PresensiService
 
         if ($presensi) {
             $presensi->update([
-                'jam_out' => now()->format('H:i:s'),
+                'jam_out' => now('Asia/Jakarta')->format('H:i:s'),
                 'foto_out' => $fileName,
                 'lokasi_out' => $lokasi,
             ]);

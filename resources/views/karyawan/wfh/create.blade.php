@@ -133,10 +133,14 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
 
-            // ── Flatpickr Initialization ────────────────────────
-            var minDateSetting = "{{ $disableToday ? date('Y-m-d', strtotime('+1 day')) : date('Y-m-d') }}";
+            // ── Server Time (source of truth) ────────────────────
+            var SERVER_TODAY = '{{ now("Asia/Jakarta")->format("Y-m-d") }}';
+            var SERVER_DISABLE_TODAY = {{ $disableToday ? 'true' : 'false' }};
 
-            var disableToday = {{ $disableToday ? 'true' : 'false' }};
+            // ── Flatpickr Initialization ────────────────────────
+            var minDateSetting = SERVER_DISABLE_TODAY
+                ? '{{ now("Asia/Jakarta")->addDay()->format("Y-m-d") }}'
+                : SERVER_TODAY;
 
             flatpickr("#tgl_wfh", {
                 locale: "id",
@@ -148,19 +152,21 @@
                 minDate: minDateSetting,
                 disable: [
                     function(date) {
-                        if (disableToday) {
-                            var today = new Date();
-                            today.setHours(0, 0, 0, 0);
-                            if (date.getTime() === today.getTime()) return true;
+                        if (SERVER_DISABLE_TODAY) {
+                            var dateStr = date.getFullYear() + '-'
+                                + String(date.getMonth() + 1).padStart(2, '0') + '-'
+                                + String(date.getDate()).padStart(2, '0');
+                            if (dateStr === SERVER_TODAY) return true;
                         }
                         return false;
                     }
                 ],
                 onDayCreate: function(dObj, dStr, fp, dayElem) {
-                    if (disableToday) {
-                        var today = new Date();
-                        today.setHours(0, 0, 0, 0);
-                        if (dayElem.dateObj.getTime() === today.getTime()) {
+                    if (SERVER_DISABLE_TODAY) {
+                        var dateStr = dayElem.dateObj.getFullYear() + '-'
+                            + String(dayElem.dateObj.getMonth() + 1).padStart(2, '0') + '-'
+                            + String(dayElem.dateObj.getDate()).padStart(2, '0');
+                        if (dateStr === SERVER_TODAY) {
                             dayElem.classList.add('fp-today-disabled', 'flatpickr-disabled');
                             dayElem.style.setProperty('background', '#fee2e2', 'important');
                             dayElem.style.setProperty('border-color', '#fca5a5', 'important');

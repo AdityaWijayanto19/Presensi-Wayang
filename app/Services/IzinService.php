@@ -30,7 +30,7 @@ class IzinService
 
         if ($request->hasFile('file')) {
             $file = $request->file('file');
-            $namaFile = date('YmdHis') . '-' . $file->getClientOriginalName();
+            $namaFile = now('Asia/Jakarta')->format('YmdHis') . '-' . $file->getClientOriginalName();
             $file->storeAs('public/uploads/izin', $namaFile);
 
             Izin::create([
@@ -38,7 +38,7 @@ class IzinService
                 'tgl_izin' => $request->tgl_izin,
                 'jenis_izin' => $request->jenis_izin,
                 'file' => $namaFile,
-                'dikirim_tanggal' => now(),
+                'dikirim_tanggal' => now('Asia/Jakarta'),
             ]);
 
             return ['success' => true, 'message' => 'Data izin berhasil dikirim!'];

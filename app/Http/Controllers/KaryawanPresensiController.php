@@ -23,7 +23,7 @@ class KaryawanPresensiController extends Controller
 {
     public function create()
     {
-        $hariini = date('Y-m-d');
+        $hariini = now('Asia/Jakarta')->format('Y-m-d');
         $nik = Auth::guard('karyawan')->user()->nik;
         $cek = Presensi::where('tgl_presensi', $hariini)->where('nik', $nik)->count();
 
@@ -161,14 +161,14 @@ class KaryawanPresensiController extends Controller
     {
         $karyawan = Auth::guard('karyawan')->user()->load('unitperusahaan');
         $presensiToday = Presensi::where('nik', $karyawan->nik)
-            ->where('tgl_presensi', date('Y-m-d'))
+            ->where('tgl_presensi', now('Asia/Jakarta')->format('Y-m-d'))
             ->first();
 
         $unitkerja = Unitperusahaan::where('unit', $karyawan->unit)->first();
         $jamMasuk = $unitkerja?->jam_masuk instanceof \Carbon\Carbon
             ? $unitkerja->jam_masuk->format('H:i:s')
             : ($unitkerja?->jam_masuk ?? '08:00:00');
-        $sekarang = date('H:i:s');
+        $sekarang = now('Asia/Jakarta')->format('H:i:s');
         $disableToday = ($sekarang >= $jamMasuk);
 
         return view('karyawan.wfh.create', compact('karyawan', 'presensiToday', 'disableToday'));
@@ -239,7 +239,7 @@ class KaryawanPresensiController extends Controller
         }
 
         $presensiToday = Presensi::where('nik', $nik)
-            ->where('tgl_presensi', date('Y-m-d'))
+            ->where('tgl_presensi', now('Asia/Jakarta')->format('Y-m-d'))
             ->first();
         $presensiService = new PresensiService();
         $liveLocation = $presensiService->reverseGeocode($presensiToday?->lokasi_in ?? '');

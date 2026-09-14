@@ -463,7 +463,7 @@
                         Nama Perusahaan:
                     </span>
 
-                    PT Wayang Arthasena Group
+                    {{ $perusahaan }}
 
                 </td>
 

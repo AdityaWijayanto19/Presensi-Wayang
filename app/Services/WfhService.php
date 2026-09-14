@@ -75,8 +75,8 @@ class WfhService
     public static function canLapor($presensi): bool
     {
         if (!$presensi || !$presensi->jam_in) return false;
-        $jamMasuk = \Carbon\Carbon::parse($presensi->jam_in);
-        $selisihJam = $jamMasuk->diffInHours(now());
+        $jamMasuk = \Carbon\Carbon::parse($presensi->jam_in)->setTimezone('Asia/Jakarta');
+        $selisihJam = $jamMasuk->diffInHours(now('Asia/Jakarta'));
         return $selisihJam >= 7;
     }
 
@@ -129,13 +129,13 @@ class WfhService
     {
         $nik = $karyawan->nik;
 
-        if ($request->tgl_wfh === date('Y-m-d')) {
+        if ($request->tgl_wfh === now('Asia/Jakarta')->format('Y-m-d')) {
             $karyawanFresh = Karyawan::with('unitperusahaan')->where('nik', $nik)->first();
             $unitKerja = $karyawanFresh?->unitperusahaan;
             $jamMasuk = $unitKerja?->jam_masuk instanceof \Carbon\Carbon
                 ? $unitKerja->jam_masuk->format('H:i:s')
                 : ($unitKerja?->jam_masuk ?? '08:00:00');
-            if (date('H:i:s') >= $jamMasuk) {
+            if (now('Asia/Jakarta')->format('H:i:s') >= $jamMasuk) {
                 return ['success' => false, 'message' => 'Pengajuan WFH untuk hari ini sudah ditutup setelah jam masuk. Silakan pilih tanggal lain.'];
             }
         }
@@ -163,6 +163,7 @@ class WfhService
             'nama_lengkap' => $karyawanFresh->nama_lengkap,
             'jabatan' => $jabatan,
             'posisi' => $posisi ?? '-',
+            'perusahaan' => $perusahaan,
             'tgl_wfh' => $request->tgl_wfh,
             'deskripsi_pekerjaan' => $request->deskripsi_pekerjaan,
             'nama_atasan' => $atasan?->nama_lengkap ?? '-',
@@ -207,7 +208,7 @@ class WfhService
             DB::commit();
             cache()->forget('pending_wfh_count');
             cache()->forget('pending_wfh_admin_count');
-            return ['success' => true, 'message' => 'Pengajuan WFH berhasil! Menunggu persetujuan.'];
+            return ['success' => true, 'message' => 'Pengajuan WFH berhasil! Silahkan menunggu persetujuan pengajuan WFH.'];
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('storewfh failed: ' . $e->getMessage());
@@ -365,10 +366,10 @@ class WfhService
         $wfh = Wfh::where('id', $id)->where('nik', $nik)->where('status', WfhStatus::Approved->value)->first();
         if (!$wfh) return null;
 
-        $tglWfh = $wfh->tgl_wfh instanceof \Carbon\Carbon ? $wfh->tgl_wfh->format('Y-m-d') : date('Y-m-d', strtotime($wfh->tgl_wfh));
-        $hariIni = date('Y-m-d');
+        $tglWfh = $wfh->tgl_wfh instanceof \Carbon\Carbon ? $wfh->tgl_wfh->format('Y-m-d') : now('Asia/Jakarta')->format('Y-m-d');
+        $hariIni = now('Asia/Jakarta')->format('Y-m-d');
         if ($tglWfh !== $hariIni) {
-            return (object) ['error' => 'Laporan hanya bisa diupload pada tanggal WFH (' . date('d M Y', strtotime($tglWfh)) . '). Hari ini: ' . date('d M Y') . '.'];
+            return (object) ['error' => 'Laporan hanya bisa diupload pada tanggal WFH (' . now('Asia/Jakarta')->parse($tglWfh)->format('d M Y') . '). Hari ini: ' . now('Asia/Jakarta')->format('d M Y') . '.'];
         }
 
         $presensiToday = Presensi::where('nik', $nik)->where('tgl_presensi', $hariIni)->first();
@@ -376,8 +377,8 @@ class WfhService
             return (object) ['error' => 'Anda belum melakukan absen masuk hari ini. Silakan absen masuk terlebih dahulu.'];
         }
 
-        $jamMasuk = \Carbon\Carbon::parse($presensiToday->jam_in);
-        $selisihJam = $jamMasuk->diffInHours(now());
+        $jamMasuk = \Carbon\Carbon::parse($presensiToday->jam_in)->setTimezone('Asia/Jakarta');
+        $selisihJam = $jamMasuk->diffInHours(now('Asia/Jakarta'));
         if ($selisihJam < 7) {
             $sisa = ceil(7 - $selisihJam);
             return (object) ['error' => 'Laporan hanya bisa diisi setelah 7 jam absen masuk. Sisa waktu: ' . $sisa . ' jam.'];
@@ -394,7 +395,15 @@ class WfhService
         $karyawan = Karyawan::where('nik', $nik)->first();
         if (!$karyawan) return ['success' => false, 'message' => 'Data karyawan tidak ditemukan'];
 
-        $presensiToday = Presensi::where('nik', $nik)->where('tgl_presensi', date('Y-m-d'))->first();
+        $hariIni = now('Asia/Jakarta')->format('Y-m-d');
+        $tglWfh = $wfh->tgl_wfh instanceof \Carbon\Carbon
+            ? $wfh->tgl_wfh->format('Y-m-d')
+            : now('Asia/Jakarta')->format('Y-m-d');
+        if ($tglWfh !== $hariIni) {
+            return ['success' => false, 'message' => 'Laporan hanya bisa diupload pada tanggal WFH (' . $tglWfh . ')'];
+        }
+
+        $presensiToday = Presensi::where('nik', $nik)->where('tgl_presensi', $hariIni)->first();
 
         DB::beginTransaction();
         try {
@@ -455,6 +464,7 @@ class WfhService
 
             $wfh->update([
                 'laporan_deskripsi' => $request->laporan_deskripsi,
+                'live_location' => $liveLocation,
                 'laporan_images' => json_encode($imagePaths),
                 'laporan_file' => $pdfPath,
                 'laporan_atasan_nik' => $laporanAtasanNik,
@@ -477,7 +487,7 @@ class WfhService
                 Log::warning('Laporan submission notification failed: ' . $e->getMessage());
             }
 
-            return ['success' => true, 'message' => 'Laporan WFH berhasil dikirim! Menunggu persetujuan atasan dan administrator.'];
+            return ['success' => true, 'message' => 'Laporan WFH berhasil dikirim! Silahkan menunggu persetujuan Laporan.'];
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('storeLaporanWfh failed: ' . $e->getMessage());

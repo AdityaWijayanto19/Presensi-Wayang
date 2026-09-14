@@ -106,7 +106,7 @@ class ImageService
             file_put_contents($tempFile, $decoded);
 
             $image = $this->imageManager->decodePath($tempFile);
-            $filename = "{$nik}_" . date('Y-m-d') . "_{$type}.webp";
+            $filename = "{$nik}_" . now('Asia/Jakarta')->format('Y-m-d') . "_{$type}.webp";
 
             if ($image->width() > self::MAIN_WIDTH) {
                 $image = $image->scaleDown(width: self::MAIN_WIDTH);

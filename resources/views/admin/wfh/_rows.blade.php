@@ -11,7 +11,7 @@
         };
         $label = match ($status) {
             'pending_atasan' => 'Menunggu Atasan',
-            'pending_admin' => 'Menunggu Admin',
+            'pending_admin' => 'Menunggu HR',
             'approved' => 'Disetujui',
             'rejected' => 'Ditolak',
             'unpaid' => 'Unpaid',
@@ -119,7 +119,7 @@
                         };
                         $lLabel = match ($lStatus) {
                             'pending_atasan' => 'Laporan: Menunggu Atasan',
-                            'pending_admin' => 'Laporan: Menunggu Admin',
+                            'pending_admin' => 'Laporan: Menunggu HR',
                             'approved' => 'Laporan: Disetujui',
                             'rejected' => 'Laporan: Ditolak',
                             default => 'Laporan: ' . $lStatus,

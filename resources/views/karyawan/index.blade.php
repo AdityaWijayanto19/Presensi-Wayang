@@ -64,8 +64,6 @@
 
     </div>
 
-
-
     {{-- REKAP PRESENSI --}}
     <div class="section px-4" id="presence-section"
         style="margin-top:-30px;width:100%;background-color:#e9ecef;border-radius:15px 15px 0 0;position:relative;z-index:2;">
@@ -87,7 +85,7 @@
                             <span class="text-center text-xs font-bold block mt-1 leading-[1.2]">Hadir</span>
                         </div>
                         @if ($rekappresensi->jmlhadir > 0)
-                            <span
+                            <span id="rekap-hadir"
                                 class="absolute bottom-0 left-0 bg-green-500/90 text-white text-base font-bold px-2.5 py-0.5 rounded-tr-lg">
                                 {{ $rekappresensi->jmlhadir }}
                             </span>
@@ -104,7 +102,7 @@
                             <span class="text-center text-xs font-bold block mt-1 leading-[1.2]">WFH</span>
                         </div>
                         @if ($rekapwfh->jmlwfh > 0)
-                            <span
+                            <span id="rekap-wfh"
                                 class="absolute bottom-0 left-0 bg-blue-500/90 text-white text-base font-bold px-2.5 py-0.5 rounded-tr-lg">
                                 {{ $rekapwfh->jmlwfh }}
                             </span>
@@ -121,7 +119,7 @@
                             <span class="text-center text-xs font-bold block mt-1 leading-[1.2]">Lembur</span>
                         </div>
                         @if (($rekaplembur->jmllembur ?? 0) > 0)
-                            <span
+                            <span id="rekap-lembur"
                                 class="absolute bottom-0 left-0 bg-yellow-500/90 text-white text-base font-bold px-2.5 py-0.5 rounded-tr-lg">
                                 {{ $rekaplembur->jmllembur }}
                             </span>
@@ -138,7 +136,7 @@
                             <span class="text-center text-xs font-bold block mt-1 leading-[1.2]">Izin / Sakit</span>
                         </div>
                         @if ($rekapizin->jmlizin > 0)
-                            <span
+                            <span id="rekap-izin"
                                 class="absolute bottom-0 left-0 bg-red-500/90 text-white text-base font-bold px-2.5 py-0.5 rounded-tr-lg">
                                 {{ $rekapizin->jmlizin }}
                             </span>
@@ -159,20 +157,21 @@
                         <div class="p-4 sm:p-6">
                             <div class="flex items-center gap-2.5">
                                 <div
-                                    class="w-[44px] h-[44px] sm:w-[50px] sm:h-[50px] flex-shrink-0 flex items-center justify-center">
+                                    class="w-[44px] h-[44px] sm:w-[50px] sm:h-[50px] flex-shrink-0 flex items-center justify-center" id="presensi-foto-in-wrap">
                                     @if ($presensihariini != null)
                                         @php
                                             $path = Storage::url('uploads/absensi/' . $presensihariini->foto_in);
                                         @endphp
                                         <img src="{{ url($path) }}?v={{ time() }}" alt=""
+                                            id="presensi-foto-in"
                                             class="w-[44px] h-[44px] sm:w-[50px] sm:h-[50px] object-cover rounded-xl">
                                     @else
-                                        <i data-lucide="camera" class="text-[26px] sm:text-[30px]"></i>
+                                        <i data-lucide="camera" id="presensi-foto-in-placeholder" class="text-[26px] sm:text-[30px]"></i>
                                     @endif
                                 </div>
                                 <div class="leading-[1.3] min-w-0">
                                     <h4 class="text-white font-semibold text-sm sm:text-base mb-1">Masuk</h4>
-                                    <span class="text-[11px] sm:text-[13px] block break-words">
+                                    <span id="presensi-jam-in" class="text-[11px] sm:text-[13px] block break-words">
                                         {{ $presensihariini != null ? $presensihariini->jam_in : 'Belum Presensi' }}
                                     </span>
                                 </div>
@@ -187,20 +186,21 @@
                         <div class="p-4 sm:p-6">
                             <div class="flex items-center gap-2.5">
                                 <div
-                                    class="w-[44px] h-[44px] sm:w-[50px] sm:h-[50px] flex-shrink-0 flex items-center justify-center">
+                                    class="w-[44px] h-[44px] sm:w-[50px] sm:h-[50px] flex-shrink-0 flex items-center justify-center" id="presensi-foto-out-wrap">
                                     @if ($presensihariini != null && $presensihariini->jam_out != null)
                                         @php
                                             $path = Storage::url('uploads/absensi/' . $presensihariini->foto_out);
                                         @endphp
                                         <img src="{{ url($path) }}?v={{ time() }}" alt=""
+                                            id="presensi-foto-out"
                                             class="w-[44px] h-[44px] sm:w-[50px] sm:h-[50px] object-cover rounded-xl">
                                     @else
-                                        <i data-lucide="camera" class="text-[26px] sm:text-[30px]"></i>
+                                        <i data-lucide="camera" id="presensi-foto-out-placeholder" class="text-[26px] sm:text-[30px]"></i>
                                     @endif
                                 </div>
                                 <div class="leading-[1.3] min-w-0">
                                     <h4 class="text-white font-semibold text-sm sm:text-base mb-1">Pulang</h4>
-                                    <span class="text-[11px] sm:text-[13px] block break-words">
+                                    <span id="presensi-jam-out" class="text-[11px] sm:text-[13px] block break-words">
                                         {{ $presensihariini != null && $presensihariini->jam_out != null ? $presensihariini->jam_out : 'Belum Presensi' }}
                                     </span>
                                 </div>
@@ -379,7 +379,7 @@
                                             };
                                             $lLabel = match ($lStatus) {
                                                 'pending_atasan' => 'Laporan: Menunggu Atasan',
-                                                'pending_admin' => 'Laporan: Menunggu Admin',
+                                                'pending_admin' => 'Laporan: Menunggu HR',
                                                 'approved' => 'Laporan: Disetujui',
                                                 'rejected' => 'Laporan: Ditolak',
                                                 default => 'Laporan: ' . $lStatus,
@@ -394,7 +394,7 @@
                                         <a href="/wfh/{{ $w->id }}/laporan"
                                             class="btn btn-sm bg-emerald-500 text-white rounded-full px-3 py-1 text-[11px] font-semibold btn-laporan"
                                             data-jam-in="{{ $presensihariini->jam_in ?? '' }}"
-                                            data-tgl-wfh="{{ $w->tgl_wfh }}">Upload
+                                            data-tgl-wfh="{{ date('Y-m-d', strtotime($w->tgl_wfh)) }}">Upload
                                             Laporan</a>
                                     @else
                                     @endif
@@ -436,7 +436,7 @@
 
             <div class="tab-content mt-2 mb-24">
                 <div class="tab-pane fade show active" id="home" role="tabpanel">
-                    <ul class="listview image-listview">
+                    <ul class="listview image-listview" id="histori-list">
                         @foreach ($historibulanini as $d)
                             @php
                                 $path = Storage::url('uploads/absensi/' . $d->foto_in);
@@ -488,17 +488,15 @@
 
     {{-- COUNTDOWN ALERT UPLOAD LAPORAN --}}
     <script>
+        var SERVER_TODAY = '{{ now("Asia/Jakarta")->format("Y-m-d") }}';
+        var SERVER_TIME = '{{ now("Asia/Jakarta")->format("H:i:s") }}';
         document.addEventListener('click', function(e) {
             var btn = e.target.closest('.btn-laporan');
             if (!btn) return;
 
             var tglWfh = btn.getAttribute('data-tgl-wfh');
             var jamIn = btn.getAttribute('data-jam-in');
-            var today = new Date();
-            var yyyy = today.getFullYear();
-            var mm = String(today.getMonth() + 1).padStart(2, '0');
-            var dd = String(today.getDate()).padStart(2, '0');
-            var todayStr = yyyy + '-' + mm + '-' + dd;
+            var todayStr = SERVER_TODAY;
 
             if (tglWfh && tglWfh !== todayStr) {
                 e.preventDefault();
@@ -507,13 +505,22 @@
                     'September', 'Oktober', 'November', 'Desember'
                 ];
                 var label = parseInt(partsWfh[2]) + ' ' + months[parseInt(partsWfh[1]) - 1] + ' ' + partsWfh[0];
+                var partsToday = todayStr.split('-');
+                var labelToday = parseInt(partsToday[2]) + ' ' + months[parseInt(partsToday[1]) - 1] + ' ' + partsToday[0];
                 Swal.fire({
-                    title: 'Tanggal Tidak Sesuai',
-                    html: 'Laporan WFH hanya bisa diupload pada tanggal pengajuan WFH.<br><br>Tanggal WFH: <b>' +
-                        label + '</b>',
-                    icon: 'warning',
+                    title: 'Tanggal Belum Sampai',
+                    html: '<div style="text-align:left">' +
+                        '<b>Laporan WFH</b> hanya bisa diupload pada <b>tanggal WFH</b> yang diajukan.' +
+                        '<br><br>' +
+                        '<table style="margin:0 auto;font-size:13px">' +
+                        '<tr><td style="padding:2px 12px 2px 0;color:#78716c">Hari ini</td><td><b>' + labelToday + '</b></td></tr>' +
+                        '<tr><td style="padding:2px 12px 2px 0;color:#78716c">Tanggal WFH</td><td><b>' + label + '</b></td></tr>' +
+                        '</table>' +
+                        '<br>Silakan upload laporan pada tanggal <b>' + label + '</b>.' +
+                        '</div>',
+                    icon: 'info',
                     confirmButtonColor: '#7a5344',
-                    confirmButtonText: 'Tutup'
+                    confirmButtonText: 'Mengerti'
                 });
                 return;
             }
@@ -522,30 +529,47 @@
                 e.preventDefault();
                 Swal.fire({
                     title: 'Belum Absen Masuk',
-                    html: 'Anda harus melakukan presensi masuk terlebih dahulu sebelum bisa upload laporan WFH.',
+                    html: '<div style="text-align:left">' +
+                        'Anda harus <b>absen masuk</b> terlebih dahulu sebelum bisa upload laporan WFH.' +
+                        '<br><br>Alur upload laporan:' +
+                        '<ol style="margin:8px 0 0 18px;text-align:left">' +
+                        '<li>Absen masuk di hari WFH</li>' +
+                        '<li>Tunggu minimal <b>7 jam</b> setelah absen masuk</li>' +
+                        '<li>Baru bisa upload laporan</li>' +
+                        '<li>Setelah upload laporan, bisa absen pulang</li>' +
+                        '</ol>' +
+                        '</div>',
                     icon: 'warning',
                     confirmButtonColor: '#7a5344',
-                    confirmButtonText: 'Tutup'
+                    confirmButtonText: 'Mengerti'
                 });
                 return;
             }
 
-            var parts = jamIn.split(':');
-            var jamInDate = new Date();
-            jamInDate.setHours(parseInt(parts[0]), parseInt(parts[1]) || 0, parseInt(parts[2]) || 0, 0);
-            var selisihMs = today - jamInDate;
-            var selisihJam = selisihMs / 3600000;
+            // Hitung selisih pakai SERVER_TIME, bukan new Date()
+            var partsJamIn = jamIn.split(':');
+            var partsServer = SERVER_TIME.split(':');
+            var jamInDetik = parseInt(partsJamIn[0]) * 3600 + parseInt(partsJamIn[1]) * 60 + (parseInt(partsJamIn[2]) || 0);
+            var serverDetik = parseInt(partsServer[0]) * 3600 + parseInt(partsServer[1]) * 60 + (parseInt(partsServer[2]) || 0);
+            var selisihDetik = serverDetik - jamInDetik;
+            var selisihJam = selisihDetik / 3600;
             if (selisihJam < 7) {
                 e.preventDefault();
-                var sisaDetik = Math.ceil((7 * 3600000 - selisihMs) / 1000);
+                var sisaDetik = Math.ceil(7 * 3600 - selisihDetik);
                 var jam = Math.floor(sisaDetik / 3600);
                 var menit = Math.floor((sisaDetik % 3600) / 60);
                 var detik = sisaDetik % 60;
-                var countdownInterval;
+                var sisaWaktuStr = '';
+                if (jam > 0) sisaWaktuStr += jam + ' jam ';
+                if (menit > 0) sisaWaktuStr += menit + ' menit ';
+                if (detik > 0 || sisaWaktuStr === '') sisaWaktuStr += detik + ' detik';
                 Swal.fire({
                     title: 'Belum Bisa Upload Laporan',
-                    html: 'Laporan WFH hanya bisa diupload setelah <b>7 jam</b> absen masuk.<br><br>Sisa waktu: <b id="sisaWaktu">' +
-                        jam + 'j ' + menit + 'm ' + detik + 's</b>',
+                    html: '<div style="text-align:left">' +
+                        'Laporan WFH hanya bisa diupload setelah <b>7 jam</b> absen masuk.' +
+                        '<br><br><b>Sisa waktu: <span id="sisaWaktu">' + sisaWaktuStr.trim() + '</span></b>' +
+                        '<br><br>Silakan tunggu hingga waktu yang tersisa habis.' +
+                        '</div>',
                     icon: 'info',
                     confirmButtonText: 'Tutup',
                     confirmButtonColor: '#7a5234',
@@ -562,8 +586,12 @@
                             var h = Math.floor(remaining / 3600);
                             var m = Math.floor((remaining % 3600) / 60);
                             var s = remaining % 60;
+                            var txt = '';
+                            if (h > 0) txt += h + ' jam ';
+                            if (m > 0) txt += m + ' menit ';
+                            if (s > 0 || txt === '') txt += s + ' detik';
                             var el = document.getElementById('sisaWaktu');
-                            if (el) el.textContent = h + 'j ' + m + 'm ' + s + 's';
+                            if (el) el.textContent = txt.trim();
                         }, 1000);
                     },
                     willClose: function() {
@@ -727,7 +755,7 @@
                                             ' <span class="text-[11px] font-normal text-[#78716c]">• ' + (k
                                                 .jabatan || '-') + ' • ' + (k.posisi || '-') +
                                             '</span></div><div class="text-[11px] text-[#78716c]">' + (p
-                                                .tgl_wfh || '') + ' • ' + (k.unit || '-') + ' (' + (up
+                                                .tgl_wfh || '').substring(0, 10) + ' • ' + (k.unit || '-') + ' (' + (up
                                                 .perusahaan || '-') +
                                             ')</div><div class="text-[11px] text-[#57534e] mt-1 line-clamp-2">' +
                                             (p.deskripsi_pekerjaan || '').substring(0, 70) + '</div>' +
@@ -780,7 +808,7 @@
                                             previewBtn =
                                                 '<div class="mt-1"><button type="button" class="text-[11px] text-sky-700 hover:underline cursor-pointer js-preview-laporan" data-deskripsi="' +
                                                 (p.laporan_deskripsi || '').replace(/"/g, '&quot;') +
-                                                '" data-tgl="' + (p.tgl_wfh || '') +
+                                                '" data-tgl="' + (p.tgl_wfh || '').substring(0, 10) +
                                                 '" data-label="Laporan WFH — ' + (k.nama_lengkap || '-') +
                                                 '">Form Laporan</button></div>';
                                         }
@@ -790,7 +818,7 @@
                                             ' <span class="text-[11px] font-normal text-[#78716c]">• ' + (k
                                                 .jabatan || '-') + ' • ' + (k.posisi || '-') +
                                             '</span></div><div class="text-[11px] text-[#78716c]">' + (p
-                                                .tgl_wfh || '') + ' • ' + (k.unit || '-') + ' (' + (up
+                                                .tgl_wfh || '').substring(0, 10) + ' • ' + (k.unit || '-') + ' (' + (up
                                                 .perusahaan || '-') +
                                             ')</div><div class="text-[11px] text-[#57534e] mt-1">Laporan WFH menunggu persetujuan Anda</div>' +
                                             previewBtn +
@@ -813,12 +841,146 @@
                             lastPendingLaporan = count;
                         }
 
-                        // 6. Update presensi jam in/out
+                        // 6. Update presensi jam in/out + foto
                         if (data.presensi) {
-                            const jamInEl = document.querySelector('[data-presensi-jam-in]');
-                            const jamOutEl = document.querySelector('[data-presensi-jam-out]');
-                            if (jamInEl && data.presensi.jam_in) jamInEl.textContent = data.presensi.jam_in;
-                            if (jamOutEl && data.presensi.jam_out) jamOutEl.textContent = data.presensi.jam_out;
+                            var p = data.presensi;
+                            var jamInEl = document.getElementById('presensi-jam-in');
+                            var jamOutEl = document.getElementById('presensi-jam-out');
+                            if (jamInEl) jamInEl.textContent = p.jam_in || 'Belum Presensi';
+                            if (jamOutEl) jamOutEl.textContent = p.jam_out || 'Belum Presensi';
+
+                            var fotoInWrap = document.getElementById('presensi-foto-in-wrap');
+                            if (p.foto_in && fotoInWrap) {
+                                var existingFotoIn = document.getElementById('presensi-foto-in');
+                                if (!existingFotoIn) {
+                                    var placeholder = document.getElementById('presensi-foto-in-placeholder');
+                                    if (placeholder) placeholder.remove();
+                                    var img = document.createElement('img');
+                                    img.id = 'presensi-foto-in';
+                                    img.alt = '';
+                                    img.className = 'w-[44px] h-[44px] sm:w-[50px] sm:h-[50px] object-cover rounded-xl';
+                                    img.src = '/storage/uploads/absensi/' + p.foto_in + '?v=' + Date.now();
+                                    fotoInWrap.appendChild(img);
+                                } else if (existingFotoIn.src.indexOf(p.foto_in) === -1) {
+                                    existingFotoIn.src = '/storage/uploads/absensi/' + p.foto_in + '?v=' + Date.now();
+                                }
+                            }
+
+                            var fotoOutWrap = document.getElementById('presensi-foto-out-wrap');
+                            if (p.foto_out && fotoOutWrap) {
+                                var existingFotoOut = document.getElementById('presensi-foto-out');
+                                if (!existingFotoOut) {
+                                    var placeholderOut = document.getElementById('presensi-foto-out-placeholder');
+                                    if (placeholderOut) placeholderOut.remove();
+                                    var imgOut = document.createElement('img');
+                                    imgOut.id = 'presensi-foto-out';
+                                    imgOut.alt = '';
+                                    imgOut.className = 'w-[44px] h-[44px] sm:w-[50px] sm:h-[50px] object-cover rounded-xl';
+                                    imgOut.src = '/storage/uploads/absensi/' + p.foto_out + '?v=' + Date.now();
+                                    fotoOutWrap.appendChild(imgOut);
+                                } else if (existingFotoOut.src.indexOf(p.foto_out) === -1) {
+                                    existingFotoOut.src = '/storage/uploads/absensi/' + p.foto_out + '?v=' + Date.now();
+                                }
+                            }
+                        }
+
+                        // 6b. Update rekap counters
+                        if (data.rekap) {
+                            var r = data.rekap;
+                            var hadirEl = document.getElementById('rekap-hadir');
+                            if (r.hadir > 0) {
+                                if (hadirEl) { hadirEl.textContent = r.hadir; }
+                                else {
+                                    var card = document.querySelector('#rekappresensi .w-1\\/2:first-child .card');
+                                    if (card && !document.getElementById('rekap-hadir')) {
+                                        var span = document.createElement('span');
+                                        span.id = 'rekap-hadir';
+                                        span.className = 'absolute bottom-0 left-0 bg-green-500/90 text-white text-base font-bold px-2.5 py-0.5 rounded-tr-lg';
+                                        span.textContent = r.hadir;
+                                        card.appendChild(span);
+                                    }
+                                }
+                            } else if (hadirEl) { hadirEl.remove(); }
+
+                            var wfhEl = document.getElementById('rekap-wfh');
+                            if (r.wfh > 0) {
+                                if (wfhEl) { wfhEl.textContent = r.wfh; }
+                                else {
+                                    var cardWfh = document.querySelector('#rekappresensi .w-1\\/2:nth-child(2) .card');
+                                    if (cardWfh && !document.getElementById('rekap-wfh')) {
+                                        var spanWfh = document.createElement('span');
+                                        spanWfh.id = 'rekap-wfh';
+                                        spanWfh.className = 'absolute bottom-0 left-0 bg-blue-500/90 text-white text-base font-bold px-2.5 py-0.5 rounded-tr-lg';
+                                        spanWfh.textContent = r.wfh;
+                                        cardWfh.appendChild(spanWfh);
+                                    }
+                                }
+                            } else if (wfhEl) { wfhEl.remove(); }
+
+                            var lemburEl = document.getElementById('rekap-lembur');
+                            if (r.lembur > 0) {
+                                if (lemburEl) { lemburEl.textContent = r.lembur; }
+                                else {
+                                    var cardLembur = document.querySelector('#rekappresensi .w-1\\/2:nth-child(3) .card');
+                                    if (cardLembur && !document.getElementById('rekap-lembur')) {
+                                        var spanLembur = document.createElement('span');
+                                        spanLembur.id = 'rekap-lembur';
+                                        spanLembur.className = 'absolute bottom-0 left-0 bg-yellow-500/90 text-white text-base font-bold px-2.5 py-0.5 rounded-tr-lg';
+                                        spanLembur.textContent = r.lembur;
+                                        cardLembur.appendChild(spanLembur);
+                                    }
+                                }
+                            } else if (lemburEl) { lemburEl.remove(); }
+
+                            var izinEl = document.getElementById('rekap-izin');
+                            if (r.izin > 0) {
+                                if (izinEl) { izinEl.textContent = r.izin; }
+                                else {
+                                    var cardIzin = document.querySelector('#rekappresensi .w-1\\/2:nth-child(4) .card');
+                                    if (cardIzin && !document.getElementById('rekap-izin')) {
+                                        var spanIzin = document.createElement('span');
+                                        spanIzin.id = 'rekap-izin';
+                                        spanIzin.className = 'absolute bottom-0 left-0 bg-red-500/90 text-white text-base font-bold px-2.5 py-0.5 rounded-tr-lg';
+                                        spanIzin.textContent = r.izin;
+                                        cardIzin.appendChild(spanIzin);
+                                    }
+                                }
+                            } else if (izinEl) { izinEl.remove(); }
+                        }
+
+                        // 6c. Update histori list
+                        if (data.histori && data.histori.length > 0) {
+                            var historiList = document.getElementById('histori-list');
+                            if (historiList) {
+                                var hHtml = '';
+                                data.histori.forEach(function(d) {
+                                    var tgl = (d.tgl_presensi || '').substring(0, 10);
+                                    var tglParts = tgl.split('-');
+                                    var tglFormatted = tglParts[2] + '-' + tglParts[1] + '-' + tglParts[0];
+                                    var terlambat = d.terlambat > 0;
+                                    hHtml += '<li><div class="item">' +
+                                        '<img src="/storage/uploads/absensi/' + (d.foto_in || '') + '?v=' + Date.now() + '" alt="" ' +
+                                        'class="w-[35px] h-[35px] rounded-[10px] object-cover mr-3 border-2 border-white shadow-sm foto-histori-dashboard flex-shrink-0">' +
+                                        '<div class="in flex-wrap gap-1">' +
+                                        '<div class="w-full text-[13px]">' + tglFormatted + '</div>' +
+                                        '<span class="inline-flex items-center justify-center rounded-full text-white text-[10px] sm:text-xs px-2 py-0.5 ' + (terlambat ? 'bg-red-500' : 'bg-green-500') + '">' + d.jam_in + '</span>' +
+                                        '<span class="inline-flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] sm:text-xs px-2 py-0.5">' + (d.jam_out || 'Belum Presensi') + '</span>' +
+                                        '</div></div></li>';
+                                });
+                                historiList.innerHTML = hHtml;
+                                historiList.querySelectorAll('.foto-histori-dashboard').forEach(function(foto) {
+                                    foto.addEventListener('click', function() {
+                                        Swal.fire({
+                                            html: '<img src="' + this.src + '" style="width:100%;height:100%;border-radius:12px;display:block;">',
+                                            showConfirmButton: false,
+                                            showCloseButton: true,
+                                            width: '390px',
+                                            padding: '10px',
+                                            background: 'transparent'
+                                        });
+                                    });
+                                });
+                            }
                         }
 
                         // 7. Update Perlu Tindakan (WFH Saya)
@@ -849,7 +1011,7 @@
                                     };
                                     let lLabelMap = {
                                         'pending_atasan': 'Laporan: Menunggu Atasan',
-                                        'pending_admin': 'Laporan: Menunggu Admin',
+                                        'pending_admin': 'Laporan: Menunggu HR',
                                         'approved': 'Laporan: Disetujui',
                                         'rejected': 'Laporan: Ditolak'
                                     };
@@ -864,11 +1026,9 @@
                                         } else if (w.status === 'approved') {
                                             b = [b[0], 'Disetujui'];
                                         }
-                                        var dateStr = new Date(w.tgl_wfh).toLocaleDateString('id-ID', {
-                                            day: '2-digit',
-                                            month: 'short',
-                                            year: 'numeric'
-                                        });
+                                        var tglParts = (w.tgl_wfh || '').substring(0, 10).split('-');
+                                        var months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+                                        var dateStr = parseInt(tglParts[2]) + ' ' + (months[parseInt(tglParts[1]) - 1] || '') + ' ' + tglParts[0];
                                         var keterangan = w.keterangan ?
                                             '<div class="text-[11px] text-[#78716c] mt-0.5 italic">' + (w
                                                 .keterangan.length > 50 ? w.keterangan.substring(0, 50) +
@@ -893,7 +1053,7 @@
                                             actionBtn = '<a href="/wfh/' + w.id +
                                                 '/laporan" class="btn btn-sm bg-emerald-500 text-white rounded-full px-3 py-1 text-[11px] font-semibold btn-laporan" data-jam-in="' +
                                                 (data.presensi && data.presensi.jam_in ? data.presensi
-                                                    .jam_in : '') + '" data-tgl-wfh="' + w.tgl_wfh +
+                                                    .jam_in : '') + '" data-tgl-wfh="' + (w.tgl_wfh || '').substring(0, 10) +
                                                 '">Upload Laporan</a>';
                                         }
                                         html +=
@@ -1096,45 +1256,62 @@
             });
 
             // === ALERT H-1 : 10 menit sebelum jam masuk ===
-            @if (isset($wfhBesok) && $wfhBesok && isset($jamMasuk) && $jamMasuk)
+            @if (isset($wfhBesok) && $wfhBesok)
                 (function() {
-                    const jamMasuk = "{{ $jamMasuk }}";
-                    const tglBesok = "{{ $wfhBesok->tgl_wfh }}";
+                    var countdownEl = document.getElementById('countdownH1');
+                    @if (isset($jamMasuk) && $jamMasuk)
+                        var jamMasuk = "{{ $jamMasuk }}";
+                        var tglBesok = "{{ date('Y-m-d', strtotime($wfhBesok->tgl_wfh)) }}";
 
-                    function checkH1() {
-                        const now = new Date();
-                        const tomorrow = new Date(tglBesok + 'T' + jamMasuk);
-                        const alertTime = new Date(tomorrow.getTime() - 10 * 60 * 1000);
-                        const diff = alertTime - now;
-                        const countdownEl = document.getElementById('countdownH1');
-                        if (countdownEl) {
-                            if (diff > 0) {
-                                const hrs = Math.floor(diff / 3600000);
-                                const mins = Math.floor((diff % 3600000) / 60000);
-                                const secs = Math.floor((diff % 60000) / 1000);
-                                countdownEl.textContent = 'Alert dalam ' + hrs + 'j ' + mins + 'm ' + secs + 's';
-                            } else if (diff > -600000) {
-                                countdownEl.textContent = 'Waktunya absen!';
-                                if (!window._h1AlertShown) {
-                                    window._h1AlertShown = true;
-                                    Swal.fire({
-                                        icon: 'info',
-                                        title: 'Pengingat Absen WFH',
-                                        text: 'WFH besok sudah disetujui. Jangan lupa absen 10 menit sebelum jam masuk ({{ $jamMasuk }})!',
-                                        confirmButtonColor: '#7a5234'
-                                    });
-                                    if (Notification.permission === 'granted') {
-                                        new Notification('Pengingat Absen WFH Besok', {
-                                            body: 'Jangan lupa absen 10 menit sebelum {{ $jamMasuk }}',
-                                            icon: '/assets/img/login/logo_aplikasi.png'
+                        var SERVER_EPOCH_MS = {{ now('Asia/Jakarta')->timestamp * 1000 }};
+                        var CLIENT_LOAD_MS = Date.now();
+
+                        function serverNowMs() {
+                            return SERVER_EPOCH_MS + (Date.now() - CLIENT_LOAD_MS);
+                        }
+
+                        function checkH1() {
+                            var nowMs = serverNowMs();
+                            var jamParts = jamMasuk.split(':');
+                            var tglParts = tglBesok.split('-');
+                            var targetMs = new Date(parseInt(tglParts[0]), parseInt(tglParts[1]) - 1, parseInt(tglParts[2]), parseInt(jamParts[0]), parseInt(jamParts[1]), parseInt(jamParts[2] || 0)).getTime();
+                            var alertMs = targetMs - 10 * 60 * 1000;
+                            var diff = alertMs - nowMs;
+                            if (countdownEl) {
+                                if (diff > 0) {
+                                    var hrs = Math.floor(diff / 3600000);
+                                    var mins = Math.floor((diff % 3600000) / 60000);
+                                    var secs = Math.floor((diff % 60000) / 1000);
+                                    countdownEl.textContent = 'Alert dalam ' + hrs + 'j ' + mins + 'm ' + secs + 's';
+                                } else if (diff > -600000) {
+                                    countdownEl.textContent = 'Waktunya absen!';
+                                    if (!window._h1AlertShown) {
+                                        window._h1AlertShown = true;
+                                        Swal.fire({
+                                            icon: 'info',
+                                            title: 'Pengingat Absen WFH',
+                                            text: 'WFH besok sudah disetujui. Jangan lupa absen 10 menit sebelum jam masuk ({{ $jamMasuk }})!',
+                                            confirmButtonColor: '#7a5234'
                                         });
+                                        if (Notification.permission === 'granted') {
+                                            new Notification('Pengingat Absen WFH Besok', {
+                                                body: 'Jangan lupa absen 10 menit sebelum {{ $jamMasuk }}',
+                                                icon: '/assets/img/login/logo_aplikasi.png'
+                                            });
+                                        }
                                     }
+                                } else {
+                                    countdownEl.textContent = 'Sudah melewati jam masuk.';
                                 }
                             }
                         }
-                    }
-                    setInterval(checkH1, 1000);
-                    checkH1();
+                        setInterval(checkH1, 1000);
+                        checkH1();
+                    @else
+                        if (countdownEl) {
+                            countdownEl.textContent = 'Jam masuk belum ditentukan.';
+                        }
+                    @endif
                 })();
             @endif
         })();

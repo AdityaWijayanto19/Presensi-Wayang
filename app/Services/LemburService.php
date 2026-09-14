@@ -21,7 +21,7 @@ class LemburService
     {
         $nik = Auth::guard('karyawan')->user()->nik;
 
-        if ($request->tgl_lembur > date('Y-m-d')) {
+        if ($request->tgl_lembur > now('Asia/Jakarta')->format('Y-m-d')) {
             return ['success' => false, 'message' => 'Tanggal lembur tidak boleh melebihi hari ini!'];
         }
 
@@ -36,7 +36,7 @@ class LemburService
         if ($request->hasFile('file_form') && $request->hasFile('file_laporan')) {
             $form = $request->file('file_form');
             $laporan = $request->file('file_laporan');
-            $timestamp = date('YmdHis');
+            $timestamp = now('Asia/Jakarta')->format('YmdHis');
 
             $imageService = app(ImageService::class);
 
@@ -62,7 +62,7 @@ class LemburService
                 'durasi' => $request->durasi,
                 'file_form' => $namaForm,
                 'file_laporan' => $namaLaporan,
-                'dikirim_tanggal' => now(),
+                'dikirim_tanggal' => now('Asia/Jakarta'),
             ]);
 
             return ['success' => true, 'message' => 'Data lembur berhasil dikirim!'];

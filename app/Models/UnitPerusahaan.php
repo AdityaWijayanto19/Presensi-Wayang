@@ -17,7 +17,7 @@ class Unitperusahaan extends Model
     ];
 
     protected $casts = [
-        'jam_masuk' => 'datetime:H:i:s',
+        'jam_masuk' => 'string',
     ];
 
 }

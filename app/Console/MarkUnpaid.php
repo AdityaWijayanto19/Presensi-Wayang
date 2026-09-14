@@ -14,32 +14,36 @@ class MarkUnpaid extends Command
 
     public function handle()
     {
-        $hariIni = date('Y-m-d');
+        $hariIni = now('Asia/Jakarta')->format('Y-m-d');
 
         // Query WFH yang akan jadi unpaid:
-        // - status approved
-        // - tgl_wfh sudah lewat
-        // - laporan kosong ATAU belum absen pulang
-        $wfhList = DB::table('wfhs')
-            ->leftJoin('presensis', function ($join) {
-                $join->on('wfhs.nik', '=', 'presensis.nik')
-                     ->on('wfhs.tgl_wfh', '=', 'presensis.tgl_presensi');
-            })
+        // 1. Status approved, tgl_wfh sudah lewat, BELUM upload laporan
+        // 2. Status approved, tgl_wfh sudah lewat, SUDAH upload laporan tapi BELUM absen pulang
+        $wfhBelumLaporan = DB::table('wfhs')
             ->where('wfhs.status', WfhStatus::Approved->value)
             ->where('wfhs.tgl_wfh', '<', $hariIni)
             ->where(function ($q) {
                 $q->whereNull('wfhs.laporan_deskripsi')
                   ->orWhere('wfhs.laporan_deskripsi', '');
             })
-            ->orWhere(function ($q) use ($hariIni) {
-                $q->where('wfhs.status', WfhStatus::Approved->value)
-                  ->where('wfhs.tgl_wfh', '<', $hariIni)
-                  ->whereNotNull('wfhs.laporan_deskripsi')
-                  ->where('wfhs.laporan_deskripsi', '!=', '')
-                  ->whereNull('presensis.jam_out');
-            })
-            ->select('wfhs.*', 'presensis.jam_out')
+            ->select('wfhs.*')
             ->get();
+
+        $wfhBelumPulang = DB::table('wfhs')
+            ->leftJoin('presensis', function ($join) {
+                $join->on('wfhs.nik', '=', 'presensis.nik')
+                     ->on('wfhs.tgl_wfh', '=', 'presensis.tgl_presensi');
+            })
+            ->where('wfhs.status', WfhStatus::Approved->value)
+            ->where('wfhs.tgl_wfh', '<', $hariIni)
+            ->whereNotNull('wfhs.laporan_deskripsi')
+            ->where('wfhs.laporan_deskripsi', '!=', '')
+            ->whereNull('presensis.jam_out')
+            ->select('wfhs.*', 'presensis.jam_out')
+            ->groupBy('wfhs.id')
+            ->get();
+
+        $wfhList = $wfhBelumLaporan->concat($wfhBelumPulang)->unique('id');
 
         if ($wfhList->isEmpty()) {
             $this->info('No WFH records to mark as unpaid.');
