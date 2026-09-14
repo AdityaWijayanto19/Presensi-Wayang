@@ -259,15 +259,12 @@
                                         @endif
                                     </div>
                                     <div class="flex flex-col gap-1.5 shrink-0">
-                                        <form action="/wfh/{{ $p->id }}/approve-laporan-atasan"
-                                            method="POST">
-                                            @csrf
-                                            <button type="submit"
-                                                class="btn btn-sm bg-emerald-500 text-white rounded-full px-3 py-1 text-[11px] w-full">Setujui</button>
-                                        </form>
                                         <button type="button"
-                                            class="btn btn-sm bg-white border border-rose-200 text-rose-700 rounded-full px-3 py-1 text-[11px] w-full"
-                                            onclick="(function(id){ Swal.fire({title:'Tolak Laporan WFH?', input:'textarea', inputPlaceholder:'Alasan...', showCancelButton:true, confirmButtonColor:'#e11d48', confirmButtonText:'Tolak', inputValidator:v=>{if(!v||v.trim().length<5) return 'Minimal 5 karakter';}}).then(r=>{if(r.isConfirmed){ const f=document.createElement('form'); f.method='POST'; f.action='/wfh/'+id+'/reject-laporan-atasan'; const c=document.createElement('input'); c.type='hidden'; c.name='_token'; c.value='{{ csrf_token() }}'; const re=document.createElement('input'); re.type='hidden'; re.name='rejected_reason'; re.value=r.value; f.appendChild(c); f.appendChild(re); document.body.appendChild(f); f.submit();}}); })({{ $p->id }})">Tolak</button>
+                                            class="btn btn-sm bg-emerald-500 text-white rounded-full px-3 py-1 text-[11px] w-full btn-approve-laporan-atasan"
+                                            data-id="{{ $p->id }}">Setujui</button>
+                                        <button type="button"
+                                            class="btn btn-sm bg-white border border-rose-200 text-rose-700 rounded-full px-3 py-1 text-[11px] w-full btn-reject-laporan-atasan-dynamic"
+                                            data-id="{{ $p->id }}">Tolak</button>
                                     </div>
                                 </div>
                             </div>
@@ -293,24 +290,22 @@
                             <div class="card-body p-3">
                                 <div class="flex items-start justify-between gap-3">
                                     <div class="flex-1 min-w-0">
-                                        <div class="text-[13px] font-bold text-[#1c1917]">{{ $p->nama_lengkap }} <span
-                                                class="text-[11px] font-normal text-[#78716c]">• {{ $p->jabatan }} •
-                                                {{ $p->posisi }}</span></div>
+                                        <div class="text-[13px] font-bold text-[#1c1917]">{{ $p->karyawan->nama_lengkap ?? '-' }} <span
+                                                class="text-[11px] font-normal text-[#78716c]">• {{ $p->karyawan->jabatan ?? '-' }} •
+                                                {{ $p->karyawan->posisi ?? '-' }}</span></div>
                                         <div class="text-[11px] text-[#78716c]">
                                             {{ date('d M Y', strtotime($p->tgl_wfh)) }} •
-                                            {{ $p->unit }} ({{ $p->perusahaan }})</div>
+                                            {{ $p->karyawan->unit ?? '-' }} ({{ $p->karyawan->unitperusahaan->perusahaan ?? '-' }})</div>
                                         <div class="text-[11px] text-[#57534e] mt-1 line-clamp-2">
                                             {{ Str::limit($p->deskripsi_pekerjaan, 70) }}</div>
                                     </div>
                                     <div class="flex flex-col gap-1.5 shrink-0">
-                                        <form action="/wfh/{{ $p->id }}/approve-atasan" method="POST">
-                                            @csrf
-                                            <button type="submit"
-                                                class="btn btn-sm bg-emerald-500 text-white rounded-full px-3 py-1 text-[11px] w-full">Setujui</button>
-                                        </form>
                                         <button type="button"
-                                            class="btn btn-sm bg-white border border-rose-200 text-rose-700 rounded-full px-3 py-1 text-[11px] w-full"
-                                            onclick="(function(id){ Swal.fire({title:'Tolak WFH?', input:'textarea', inputPlaceholder:'Alasan...', showCancelButton:true, confirmButtonColor:'#e11d48', confirmButtonText:'Tolak', inputValidator:v=>{if(!v||v.trim().length<5) return 'Minimal 5 karakter';}}).then(r=>{if(r.isConfirmed){ const f=document.createElement('form'); f.method='POST'; f.action='/wfh/'+id+'/reject-atasan'; const c=document.createElement('input'); c.type='hidden'; c.name='_token'; c.value='{{ csrf_token() }}'; const re=document.createElement('input'); re.type='hidden'; re.name='rejected_reason'; re.value=r.value; f.appendChild(c); f.appendChild(re); document.body.appendChild(f); f.submit();}}); })({{ $p->id }})">Tolak</button>
+                                            class="btn btn-sm bg-emerald-500 text-white rounded-full px-3 py-1 text-[11px] w-full btn-approve-atasan"
+                                            data-id="{{ $p->id }}">Setujui</button>
+                                        <button type="button"
+                                            class="btn btn-sm bg-white border border-rose-200 text-rose-700 rounded-full px-3 py-1 text-[11px] w-full btn-reject-atasan-dynamic"
+                                            data-id="{{ $p->id }}">Tolak</button>
                                     </div>
                                 </div>
                                 <div class="flex">
@@ -724,21 +719,20 @@
                                         '<div class="mt-6"><div class="flex items-center justify-between mb-2"><h3 class="text-[15px] font-bold text-[#1c1917] flex items-center gap-2"><span class="w-8 h-8 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center text-amber-700"><i data-lucide="shield-check"></i></span>Pengajuan Perlu Persetujuan (' +
                                         count + ')</h3></div>';
                                     data.pendingAtasan.forEach(function(p) {
+                                        var k = p.karyawan || {};
+                                        var up = k.unitperusahaan || {};
                                         html +=
                                             '<div class="card mb-2 border-l-4 border-l-amber-400 bg-amber-50/50"><div class="card-body p-3"><div class="flex items-start justify-between gap-3"><div class="flex-1 min-w-0"><div class="text-[13px] font-bold text-[#1c1917]">' +
-                                            (p.nama_lengkap || '') +
-                                            ' <span class="text-[11px] font-normal text-[#78716c]">• ' + (p
-                                                .jabatan || '') + ' • ' + (p.posisi || '') +
+                                            (k.nama_lengkap || '-') +
+                                            ' <span class="text-[11px] font-normal text-[#78716c]">• ' + (k
+                                                .jabatan || '-') + ' • ' + (k.posisi || '-') +
                                             '</span></div><div class="text-[11px] text-[#78716c]">' + (p
-                                                .tgl_wfh || '') + ' • ' + (p.unit || '') + ' (' + (p
-                                                .perusahaan || '') +
+                                                .tgl_wfh || '') + ' • ' + (k.unit || '-') + ' (' + (up
+                                                .perusahaan || '-') +
                                             ')</div><div class="text-[11px] text-[#57534e] mt-1 line-clamp-2">' +
                                             (p.deskripsi_pekerjaan || '').substring(0, 70) + '</div>' +
-                                            '</div><div class="flex flex-col gap-1.5 shrink-0"><form action="/wfh/' +
-                                            p.id +
-                                            '/approve-atasan" method="POST"><input type="hidden" name="_token" value="' +
-                                            CSRF +
-                                            '"><button type="submit" class="btn btn-sm bg-emerald-500 text-white rounded-full px-3 py-1 text-[11px] w-full">Setujui</button></form><button type="button" class="btn btn-sm bg-white border border-rose-200 text-rose-700 rounded-full px-3 py-1 text-[11px] w-full btn-reject-atasan-dynamic" data-id="' +
+                                            '</div><div class="flex flex-col gap-1.5 shrink-0"><button type="button" class="btn btn-sm bg-emerald-500 text-white rounded-full px-3 py-1 text-[11px] w-full btn-approve-atasan" data-id="' +
+                                            p.id + '">Setujui</button><button type="button" class="btn btn-sm bg-white border border-rose-200 text-rose-700 rounded-full px-3 py-1 text-[11px] w-full btn-reject-atasan-dynamic" data-id="' +
                                             p.id + '">Tolak</button></div></div>' + (p.pdf_form_path ?
                                                 '<div class="flex"><button type="button" class="text-[11px] text-sky-700 hover:underline cursor-pointer" onclick="window.open(\'/storage/' +
                                                 p.pdf_form_path +
@@ -772,37 +766,36 @@
                                         '<div class="mt-6"><div class="flex items-center justify-between mb-2"><h3 class="text-[15px] font-bold text-[#1c1917] flex items-center gap-2"><span class="w-8 h-8 rounded-xl bg-violet-100 border border-violet-200 flex items-center justify-center text-violet-700"><i data-lucide="file-text"></i></span>Laporan Perlu Persetujuan (' +
                                         count + ')</h3></div>';
                                     data.pendingLaporanAtasan.forEach(function(p) {
+                                        var k = p.karyawan || {};
+                                        var up = k.unitperusahaan || {};
                                         var previewBtn = '';
                                         if (p.laporan_file) {
                                             var laporanUrl = '/storage/' + p.laporan_file;
                                             previewBtn =
                                                 '<div class="mt-1"><button type="button" class="text-[11px] text-sky-700 hover:underline cursor-pointer js-preview" data-url="' +
                                                 laporanUrl + '" data-filename="' + (p.laporan_file.split(
-                                                    '/').pop() || '') + '" data-label="Laporan WFH — ' + (p
-                                                    .nama_lengkap || '') + '">Form Laporan</button></div>';
+                                                    '/').pop() || '') + '" data-label="Laporan WFH — ' + (k
+                                                    .nama_lengkap || '-') + '">Form Laporan</button></div>';
                                         } else if (p.laporan_deskripsi) {
                                             previewBtn =
                                                 '<div class="mt-1"><button type="button" class="text-[11px] text-sky-700 hover:underline cursor-pointer js-preview-laporan" data-deskripsi="' +
                                                 (p.laporan_deskripsi || '').replace(/"/g, '&quot;') +
                                                 '" data-tgl="' + (p.tgl_wfh || '') +
-                                                '" data-label="Laporan WFH — ' + (p.nama_lengkap || '') +
+                                                '" data-label="Laporan WFH — ' + (k.nama_lengkap || '-') +
                                                 '">Form Laporan</button></div>';
                                         }
                                         html +=
                                             '<div class="card mb-2 border-l-4 border-l-violet-400 bg-violet-50/50"><div class="card-body p-3"><div class="flex items-start justify-between gap-3"><div class="flex-1 min-w-0"><div class="text-[13px] font-bold text-[#1c1917]">' +
-                                            (p.nama_lengkap || '') +
-                                            ' <span class="text-[11px] font-normal text-[#78716c]">• ' + (p
-                                                .jabatan || '') + ' • ' + (p.posisi || '') +
+                                            (k.nama_lengkap || '-') +
+                                            ' <span class="text-[11px] font-normal text-[#78716c]">• ' + (k
+                                                .jabatan || '-') + ' • ' + (k.posisi || '-') +
                                             '</span></div><div class="text-[11px] text-[#78716c]">' + (p
-                                                .tgl_wfh || '') + ' • ' + (p.unit || '') + ' (' + (p
-                                                .perusahaan || '') +
+                                                .tgl_wfh || '') + ' • ' + (k.unit || '-') + ' (' + (up
+                                                .perusahaan || '-') +
                                             ')</div><div class="text-[11px] text-[#57534e] mt-1">Laporan WFH menunggu persetujuan Anda</div>' +
                                             previewBtn +
-                                            '</div><div class="flex flex-col gap-1.5 shrink-0"><form action="/wfh/' +
-                                            p.id +
-                                            '/approve-laporan-atasan" method="POST"><input type="hidden" name="_token" value="' +
-                                            CSRF +
-                                            '"><button type="submit" class="btn btn-sm bg-emerald-500 text-white rounded-full px-3 py-1 text-[11px] w-full">Setujui</button></form><button type="button" class="btn btn-sm bg-white border border-rose-200 text-rose-700 rounded-full px-3 py-1 text-[11px] w-full btn-reject-laporan-atasan-dynamic" data-id="' +
+                                            '</div><div class="flex flex-col gap-1.5 shrink-0"><button type="button" class="btn btn-sm bg-emerald-500 text-white rounded-full px-3 py-1 text-[11px] w-full btn-approve-laporan-atasan" data-id="' +
+                                            p.id + '">Setujui</button><button type="button" class="btn btn-sm bg-white border border-rose-200 text-rose-700 rounded-full px-3 py-1 text-[11px] w-full btn-reject-laporan-atasan-dynamic" data-id="' +
                                             p.id + '">Tolak</button></div></div></div></div>';
                                     });
                                     html += '</div>';
@@ -935,8 +928,89 @@
                 }
             });
 
-            // === EVENT DELEGATION: Reject buttons (dynamic cards) ===
+            // === EVENT DELEGATION: Approve + Reject buttons (Blade & realtime cards) ===
             document.addEventListener('click', function(e) {
+                // Approve WFH Atasan
+                var btnApprove = e.target.closest('.btn-approve-atasan');
+                if (btnApprove) {
+                    e.preventDefault();
+                    var id = btnApprove.dataset.id;
+                    Swal.fire({
+                        title: 'Setujui WFH?',
+                        text: 'Pengajuan akan diteruskan ke HR.',
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#10b981',
+                        confirmButtonText: 'Ya, Setujui',
+                        cancelButtonText: 'Batal'
+                    }).then(function(r) {
+                        if (r.isConfirmed) {
+                            btnApprove.disabled = true;
+                            btnApprove.textContent = 'Memproses...';
+                            fetch('/wfh/' + id + '/approve-atasan', {
+                                method: 'POST',
+                                headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                                credentials: 'same-origin'
+                            }).then(function(resp) { return resp.json(); }).then(function(data) {
+                                if (data.success) {
+                                    Swal.fire({ icon: 'success', title: 'Berhasil', text: data.message, timer: 1500, showConfirmButton: false });
+                                    setTimeout(function() { pollRealtime(); }, 300);
+                                } else {
+                                    btnApprove.disabled = false;
+                                    btnApprove.textContent = 'Setujui';
+                                    Swal.fire({ icon: 'error', title: 'Gagal', text: data.message });
+                                }
+                            }).catch(function() {
+                                btnApprove.disabled = false;
+                                btnApprove.textContent = 'Setujui';
+                                Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan jaringan.' });
+                            });
+                        }
+                    });
+                    return;
+                }
+
+                // Approve Laporan Atasan
+                var btnApproveLaporan = e.target.closest('.btn-approve-laporan-atasan');
+                if (btnApproveLaporan) {
+                    e.preventDefault();
+                    var idLap = btnApproveLaporan.dataset.id;
+                    Swal.fire({
+                        title: 'Setujui Laporan?',
+                        text: 'Laporan WFH akan diteruskan ke Admin.',
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#10b981',
+                        confirmButtonText: 'Ya, Setujui',
+                        cancelButtonText: 'Batal'
+                    }).then(function(r) {
+                        if (r.isConfirmed) {
+                            btnApproveLaporan.disabled = true;
+                            btnApproveLaporan.textContent = 'Memproses...';
+                            fetch('/wfh/' + idLap + '/approve-laporan-atasan', {
+                                method: 'POST',
+                                headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                                credentials: 'same-origin'
+                            }).then(function(resp) { return resp.json(); }).then(function(data) {
+                                if (data.success) {
+                                    Swal.fire({ icon: 'success', title: 'Berhasil', text: data.message, timer: 1500, showConfirmButton: false });
+                                    setTimeout(function() { pollRealtime(); }, 300);
+                                } else {
+                                    btnApproveLaporan.disabled = false;
+                                    btnApproveLaporan.textContent = 'Setujui';
+                                    Swal.fire({ icon: 'error', title: 'Gagal', text: data.message });
+                                }
+                            }).catch(function() {
+                                btnApproveLaporan.disabled = false;
+                                btnApproveLaporan.textContent = 'Setujui';
+                                Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan jaringan.' });
+                            });
+                        }
+                    });
+                    return;
+                }
+
+                // Reject WFH Atasan
                 var btn = e.target.closest('.btn-reject-atasan-dynamic');
                 if (btn) {
                     e.preventDefault();
@@ -953,24 +1027,32 @@
                         }
                     }).then(function(r) {
                         if (r.isConfirmed) {
-                            var f = document.createElement('form');
-                            f.method = 'POST';
-                            f.action = '/wfh/' + id + '/reject-atasan';
-                            var c = document.createElement('input');
-                            c.type = 'hidden';
-                            c.name = '_token';
-                            c.value = CSRF;
-                            var re = document.createElement('input');
-                            re.type = 'hidden';
-                            re.name = 'rejected_reason';
-                            re.value = r.value;
-                            f.appendChild(c);
-                            f.appendChild(re);
-                            document.body.appendChild(f);
-                            f.submit();
+                            btn.disabled = true;
+                            btn.textContent = 'Memproses...';
+                            fetch('/wfh/' + id + '/reject-atasan', {
+                                method: 'POST',
+                                headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' },
+                                credentials: 'same-origin',
+                                body: JSON.stringify({ rejected_reason: r.value })
+                            }).then(function(resp) { return resp.json(); }).then(function(data) {
+                                if (data.success) {
+                                    Swal.fire({ icon: 'success', title: 'Berhasil', text: data.message, timer: 1500, showConfirmButton: false });
+                                    setTimeout(function() { pollRealtime(); }, 300);
+                                } else {
+                                    btn.disabled = false;
+                                    btn.textContent = 'Tolak';
+                                    Swal.fire({ icon: 'error', title: 'Gagal', text: data.message });
+                                }
+                            }).catch(function() {
+                                btn.disabled = false;
+                                btn.textContent = 'Tolak';
+                                Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan jaringan.' });
+                            });
                         }
                     });
                 }
+
+                // Reject Laporan Atasan
                 var btnL = e.target.closest('.btn-reject-laporan-atasan-dynamic');
                 if (btnL) {
                     e.preventDefault();
@@ -987,21 +1069,27 @@
                         }
                     }).then(function(r) {
                         if (r.isConfirmed) {
-                            var f = document.createElement('form');
-                            f.method = 'POST';
-                            f.action = '/wfh/' + idL + '/reject-laporan-atasan';
-                            var c = document.createElement('input');
-                            c.type = 'hidden';
-                            c.name = '_token';
-                            c.value = CSRF;
-                            var re = document.createElement('input');
-                            re.type = 'hidden';
-                            re.name = 'rejected_reason';
-                            re.value = r.value;
-                            f.appendChild(c);
-                            f.appendChild(re);
-                            document.body.appendChild(f);
-                            f.submit();
+                            btnL.disabled = true;
+                            btnL.textContent = 'Memproses...';
+                            fetch('/wfh/' + idL + '/reject-laporan-atasan', {
+                                method: 'POST',
+                                headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' },
+                                credentials: 'same-origin',
+                                body: JSON.stringify({ rejected_reason: r.value })
+                            }).then(function(resp) { return resp.json(); }).then(function(data) {
+                                if (data.success) {
+                                    Swal.fire({ icon: 'success', title: 'Berhasil', text: data.message, timer: 1500, showConfirmButton: false });
+                                    setTimeout(function() { pollRealtime(); }, 300);
+                                } else {
+                                    btnL.disabled = false;
+                                    btnL.textContent = 'Tolak';
+                                    Swal.fire({ icon: 'error', title: 'Gagal', text: data.message });
+                                }
+                            }).catch(function() {
+                                btnL.disabled = false;
+                                btnL.textContent = 'Tolak';
+                                Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan jaringan.' });
+                            });
                         }
                     });
                 }

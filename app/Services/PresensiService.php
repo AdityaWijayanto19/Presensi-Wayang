@@ -36,7 +36,9 @@ class PresensiService
             return ['success' => false, 'message' => 'Unit kerja tidak ditemukan.', 'type' => 'in'];
         }
 
-        $jamMasuk = $unitKerja->jam_masuk;
+        $jamMasuk = $unitKerja->jam_masuk instanceof \Carbon\Carbon
+            ? $unitKerja->jam_masuk->format('H:i:s')
+            : (string) $unitKerja->jam_masuk;
         $terlambat = $this->hitungKeterlambatan($karyawan->unit, $jamMasuk, $jam);
 
         return DB::transaction(function () use ($nik, $tglPresensi, $jam, $karyawan, $terlambat, $request) {

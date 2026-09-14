@@ -109,7 +109,7 @@
 
         /* =========================================================
        ORNAMENT
-       
+
        Kalau ornament terpisah dari header-surat.png,
        tetap bisa digunakan.
     ========================================================= */
@@ -195,12 +195,12 @@
 
         .info-cell {
             width: 50%;
-            height: 53px;
+            height: auto;
 
-            padding: 8px 9px;
+            padding: 5px 9px;
 
             font-size: 10px;
-            line-height: 1.5;
+            line-height: 1.4;
         }
 
         .info-label {
@@ -213,9 +213,10 @@
     ========================================================= */
 
         .activity-cell {
-            height: 72px;
+            height: auto;
+            min-height: 50px;
 
-            padding: 8px 9px;
+            padding: 5px 9px;
 
             vertical-align: top;
         }
@@ -370,7 +371,7 @@
             <div class="company">
 
                 <div class="company-name">
-                    {{ $perusahaan }}
+                    PT Wayang Arthasena Group
                 </div>
 
                 <div class="company-text">
@@ -405,7 +406,7 @@
             </div>
 
             <div class="title-sub">
-                Flexible Working Space
+                Work From Home (WFH)
             </div>
 
         </div>
@@ -462,7 +463,7 @@
                         Nama Perusahaan:
                     </span>
 
-                    {{ $perusahaan }}
+                    PT Wayang Arthasena Group
 
                 </td>
 
@@ -535,8 +536,9 @@
                 <td class="approval-body">
 
                     <div class="signature-space">
-
-                        {{-- TTD pemohon kalau nanti tersedia --}}
+                        @if (file_exists(public_path('assets\img\stempel-approved.png')))
+                            <img src="{{ public_path('assets\img\stempel-approved.png') }}" class="stamp" alt="Submission">
+                        @endif
 
                     </div>
 
@@ -591,11 +593,11 @@
                     </div>
 
                     <div class="signature-name">
-                        {{ $nama_approver }}
+                        Naufail Imamuddin
                     </div>
 
                     <div class="signature-role">
-                        {{ $jabatan_approver }}
+                        Manager HRGA
                     </div>
 
                 </td>

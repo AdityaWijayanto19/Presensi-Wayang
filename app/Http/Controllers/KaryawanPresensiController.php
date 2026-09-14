@@ -165,7 +165,9 @@ class KaryawanPresensiController extends Controller
             ->first();
 
         $unitkerja = Unitperusahaan::where('unit', $karyawan->unit)->first();
-        $jamMasuk = $unitkerja?->jam_masuk ?? '08:00:00';
+        $jamMasuk = $unitkerja?->jam_masuk instanceof \Carbon\Carbon
+            ? $unitkerja->jam_masuk->format('H:i:s')
+            : ($unitkerja?->jam_masuk ?? '08:00:00');
         $sekarang = date('H:i:s');
         $disableToday = ($sekarang >= $jamMasuk);
 
@@ -209,6 +211,9 @@ class KaryawanPresensiController extends Controller
         $karyawan = Auth::guard('karyawan')->user();
         $result = WfhService::approveWfhAtasan($id, $karyawan);
 
+        if ($request->expectsJson()) {
+            return response()->json($result, $result['success'] ? 200 : 422);
+        }
         return redirect()->back()->with($result['success'] ? 'success' : 'error', $result['message']);
     }
 
@@ -217,6 +222,9 @@ class KaryawanPresensiController extends Controller
         $karyawan = Auth::guard('karyawan')->user();
         $result = WfhService::rejectWfhAtasan($id, $request->rejected_reason, $karyawan);
 
+        if ($request->expectsJson()) {
+            return response()->json($result, $result['success'] ? 200 : 422);
+        }
         return redirect()->back()->with($result['success'] ? 'success' : 'error', $result['message']);
     }
 
@@ -255,6 +263,9 @@ class KaryawanPresensiController extends Controller
         $karyawan = Auth::guard('karyawan')->user();
         $result = WfhService::approveLaporanAtasan($id, $karyawan);
 
+        if ($request->expectsJson()) {
+            return response()->json($result, $result['success'] ? 200 : 422);
+        }
         return redirect()->back()->with($result['success'] ? 'success' : 'error', $result['message']);
     }
 
@@ -263,6 +274,9 @@ class KaryawanPresensiController extends Controller
         $karyawan = Auth::guard('karyawan')->user();
         $result = WfhService::rejectLaporanAtasan($id, $request->rejected_reason, $karyawan);
 
+        if ($request->expectsJson()) {
+            return response()->json($result, $result['success'] ? 200 : 422);
+        }
         return redirect()->back()->with($result['success'] ? 'success' : 'error', $result['message']);
     }
 }

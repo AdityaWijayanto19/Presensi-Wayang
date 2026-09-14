@@ -778,6 +778,20 @@
         .flatpickr-input[readonly] {
             background-color: #ffffff !important;
         }
+
+        /* Flatpickr disabled date (hari ini sudah lewat jam masuk) */
+        .flatpickr-day.fp-today-disabled,
+        .flatpickr-day.fp-today-disabled:hover,
+        .flatpickr-day.fp-today-disabled:focus,
+        .flatpickr-day.flatpickr-disabled.today,
+        .flatpickr-day.flatpickr-disabled.today:hover {
+            background: #fee2e2 !important;
+            border-color: #fca5a5 !important;
+            color: #991b1b !important;
+            text-decoration: line-through;
+            opacity: 0.7;
+            cursor: not-allowed !important;
+        }
     </style>
 
 </head>

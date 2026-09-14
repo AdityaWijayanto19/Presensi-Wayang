@@ -1,6 +1,6 @@
 @forelse ($datawfh as $d)
     @php
-        $status = $d->status ?? 'pending_atasan';
+        $status = $d->status instanceof \App\Enums\WfhStatus ? $d->status->value : ($d->status ?? 'pending_atasan');
         $badgeClass = match ($status) {
             'pending_atasan' => 'bg-yellow-500 text-white',
             'pending_admin' => 'bg-cyan-500 text-white',
@@ -27,6 +27,15 @@
             default => 'bg-slate-100 text-slate-600',
         };
         $pdfUrl = !empty($d->pdf_form_path) ? Storage::url($d->pdf_form_path) : null;
+        $karyawanData = $d->karyawan;
+        $atasanData = $d->atasan;
+        $namaKaryawan = $karyawanData->nama_lengkap ?? '-';
+        $jabatanKaryawan = $karyawanData->jabatan ?? '-';
+        $posisiKaryawan = $karyawanData->posisi ?? '-';
+        $unitKaryawan = $karyawanData->unit ?? '-';
+        $perusahaanKaryawan = $karyawanData->unitperusahaan->perusahaan ?? '-';
+        $atasanNama = $atasanData->nama_lengkap ?? '—';
+        $jabatanAtasan = $atasanData->jabatan instanceof \App\Enums\Jabatan ? $atasanData->jabatan->value : ($atasanData->jabatan ?? '—');
     @endphp
     <tr class="hover:bg-slate-50">
         <td class="px-2 py-1.5 text-xs text-slate-600">{{ ($datawfh->currentPage() - 1) * $datawfh->perPage() + $loop->iteration }}</td>
@@ -36,18 +45,18 @@
         </td>
         <td class="px-2 py-1.5 text-xs">
             <span class="text-xs text-slate-500">{{ $d->nik }}</span><br>
-            {{ $d->nama_lengkap }}
+            {{ $namaKaryawan }}
         </td>
         <td class="px-2 py-1.5 text-xs">
-            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $jabatanBadge }}">{{ $d->jabatan ?? '-' }}</span>
-            <br>{{ $d->posisi }}
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $jabatanBadge }}">{{ $jabatanKaryawan }}</span>
+            <br>{{ $posisiKaryawan }}
         </td>
         <td class="px-2 py-1.5 text-xs">
-            {{ $d->perusahaan }}<br><span class="text-xs text-slate-500">{{ $d->unit }}</span>
+            {{ $perusahaanKaryawan }}<br><span class="text-xs text-slate-500">{{ $unitKaryawan }}</span>
         </td>
         <td class="px-2 py-1.5 text-xs">
-            {{ $d->atasan_nama ?? '—' }}<br>
-            <span class="text-xs text-slate-500">{{ $d->atasan_jabatan ?? ($d->atasan_nik ? $d->atasan_nik : 'Langsung Admin') }}</span>
+            {{ $atasanNama }}<br>
+            <span class="text-xs text-slate-500">{{ $d->atasan_nik ? $jabatanAtasan : 'Langsung Admin' }}</span>
         </td>
         <td class="px-2 py-1.5 text-xs">
             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $badgeClass }}">{{ $label }}</span>
@@ -63,7 +72,7 @@
             @if ($pdfUrl)
                 <x-admin.button variant="primary" size="sm" class="js-preview-admin"
                     data-url="{{ $pdfUrl }}" data-filename="{{ basename($pdfUrl) }}"
-                    data-label="Form WFH — {{ $d->nama_lengkap }} {{ date('d-m-Y', strtotime($d->tgl_wfh)) }}">Preview</x-admin.button>
+                    data-label="Form WFH — {{ $namaKaryawan }} {{ date('d-m-Y', strtotime($d->tgl_wfh)) }}">Preview</x-admin.button>
             @else
                 <span class="text-slate-400">—</span>
             @endif
@@ -72,7 +81,7 @@
             @if (!empty($d->laporan_file))
                 <x-admin.button variant="success" size="sm" class="js-preview-admin"
                     data-url="{{ Storage::url($d->laporan_file) }}" data-filename="{{ basename($d->laporan_file) }}"
-                    data-label="Laporan — {{ $d->nama_lengkap }}">Preview</x-admin.button>
+                    data-label="Laporan — {{ $namaKaryawan }}">Preview</x-admin.button>
             @elseif(!empty($d->laporan_deskripsi))
                 <span class="text-xs text-slate-500">{{ Str::limit($d->laporan_deskripsi, 30) }}</span>
             @else

@@ -62,13 +62,13 @@ class WfhService
     public static function canApproveAtasan(Wfh $wfh, Karyawan $karyawan): bool
     {
         return $wfh->atasan_nik === $karyawan->nik
-            && $wfh->status === WfhStatus::PendingAtasan->value
+            && $wfh->status === WfhStatus::PendingAtasan
             && $wfh->atasan_status === 'pending';
     }
 
     public static function canApproveAdmin(Wfh $wfh): bool
     {
-        return $wfh->status === WfhStatus::PendingAdmin->value
+        return $wfh->status === WfhStatus::PendingAdmin
             && $wfh->admin_status === 'pending';
     }
 
@@ -132,7 +132,9 @@ class WfhService
         if ($request->tgl_wfh === date('Y-m-d')) {
             $karyawanFresh = Karyawan::with('unitperusahaan')->where('nik', $nik)->first();
             $unitKerja = $karyawanFresh?->unitperusahaan;
-            $jamMasuk = $unitKerja?->jam_masuk ?? '08:00:00';
+            $jamMasuk = $unitKerja?->jam_masuk instanceof \Carbon\Carbon
+                ? $unitKerja->jam_masuk->format('H:i:s')
+                : ($unitKerja?->jam_masuk ?? '08:00:00');
             if (date('H:i:s') >= $jamMasuk) {
                 return ['success' => false, 'message' => 'Pengajuan WFH untuk hari ini sudah ditutup setelah jam masuk. Silakan pilih tanggal lain.'];
             }
@@ -161,7 +163,6 @@ class WfhService
             'nama_lengkap' => $karyawanFresh->nama_lengkap,
             'jabatan' => $jabatan,
             'posisi' => $posisi ?? '-',
-            'perusahaan' => $perusahaan,
             'tgl_wfh' => $request->tgl_wfh,
             'deskripsi_pekerjaan' => $request->deskripsi_pekerjaan,
             'nama_atasan' => $atasan?->nama_lengkap ?? '-',
@@ -188,7 +189,7 @@ class WfhService
                 'atasan_status' => $atasanStatus,
                 'admin_status' => $adminStatus,
                 'pdf_form_path' => $pdfPath,
-                'dikirim_tanggal' => now(),
+                'dikirim_tanggal' => now('Asia/Jakarta'),
             ]);
 
             if ($atasanNik) {
@@ -221,7 +222,7 @@ class WfhService
             return ['success' => false, 'message' => 'Data tidak ditemukan!'];
         }
 
-        if (!in_array($wfh->status, [WfhStatus::PendingAtasan->value])) {
+        if (!in_array($wfh->status, [WfhStatus::PendingAtasan])) {
             return ['success' => false, 'message' => 'WFH yang sudah disetujui atau masuk ke admin tidak bisa dihapus!'];
         }
 
@@ -236,7 +237,7 @@ class WfhService
         $wfh = Wfh::find($id);
         if (!$wfh) return ['success' => false, 'message' => 'Data tidak ditemukan'];
 
-        if (!in_array($wfh->status, [WfhStatus::PendingAdmin->value, WfhStatus::Rejected->value])) {
+        if (!in_array($wfh->status, [WfhStatus::PendingAdmin, WfhStatus::Rejected])) {
             return ['success' => false, 'message' => 'Hanya data dengan status pending atau ditolak yang bisa dihapus!'];
         }
 
@@ -254,7 +255,7 @@ class WfhService
         $wfh = Wfh::find($id);
         if (!$wfh) return ['success' => false, 'message' => 'Data tidak ditemukan'];
         if ($wfh->atasan_nik !== $karyawan->nik) return ['success' => false, 'message' => 'Anda bukan atasan untuk pengajuan ini'];
-        if ($wfh->status !== WfhStatus::PendingAtasan->value) return ['success' => false, 'message' => 'Status tidak valid'];
+        if ($wfh->status !== WfhStatus::PendingAtasan) return ['success' => false, 'message' => 'Status tidak valid'];
 
         $wfh->update([
             'atasan_status' => 'approved',
@@ -281,7 +282,7 @@ class WfhService
         $wfh = Wfh::find($id);
         if (!$wfh) return ['success' => false, 'message' => 'Data tidak ditemukan'];
         if ($wfh->atasan_nik !== $karyawan->nik) return ['success' => false, 'message' => 'Anda bukan atasan untuk pengajuan ini'];
-        if ($wfh->status !== WfhStatus::PendingAtasan->value) return ['success' => false, 'message' => 'Status tidak valid untuk penolakan'];
+        if ($wfh->status !== WfhStatus::PendingAtasan) return ['success' => false, 'message' => 'Status tidak valid untuk penolakan'];
 
         $wfh->update([
             'atasan_status' => 'rejected',
@@ -307,13 +308,13 @@ class WfhService
     {
         $wfh = Wfh::find($id);
         if (!$wfh) return ['success' => false, 'message' => 'Data tidak ditemukan'];
-        if ($wfh->status !== WfhStatus::PendingAdmin->value) return ['success' => false, 'message' => 'Status tidak valid untuk persetujuan'];
+        if ($wfh->status !== WfhStatus::PendingAdmin) return ['success' => false, 'message' => 'Status tidak valid untuk persetujuan'];
         if ($wfh->admin_status !== 'pending') return ['success' => false, 'message' => 'WFH ini sudah diproses'];
 
         $wfh->update([
             'admin_status' => 'approved',
             'status' => WfhStatus::Approved->value,
-            'approved_at' => now(),
+            'approved_at' => now('Asia/Jakarta'),
         ]);
 
         $pengaju = Karyawan::where('nik', $wfh->nik)->first();
@@ -335,7 +336,7 @@ class WfhService
     {
         $wfh = Wfh::find($id);
         if (!$wfh) return ['success' => false, 'message' => 'Data tidak ditemukan'];
-        if ($wfh->status !== WfhStatus::PendingAdmin->value) return ['success' => false, 'message' => 'Status tidak valid untuk penolakan'];
+        if ($wfh->status !== WfhStatus::PendingAdmin) return ['success' => false, 'message' => 'Status tidak valid untuk penolakan'];
         if ($wfh->admin_status !== 'pending') return ['success' => false, 'message' => 'WFH ini sudah diproses'];
 
         $wfh->update([
@@ -421,7 +422,7 @@ class WfhService
             $jabatan = $karyawan->jabatan;
             $perusahaan = Unitperusahaan::where('unit', $unit)->value('perusahaan') ?? '-';
             $weekdayMap = ['Sunday' => 'Minggu', 'Monday' => 'Senin', 'Tuesday' => 'Selasa', 'Wednesday' => 'Rabu', 'Thursday' => 'Kamis', 'Friday' => 'Jumat', 'Saturday' => 'Sabtu'];
-            $hariTanggal = $weekdayMap[now()->format('l')] . ', ' . now()->format('d F Y');
+            $hariTanggal = $weekdayMap[now('Asia/Jakarta')->format('l')] . ', ' . now('Asia/Jakarta')->format('d F Y');
 
             $presensiService = new PresensiService();
             $liveLocation = $presensiService->reverseGeocode($presensiToday->lokasi_in ?? '-');
@@ -546,7 +547,7 @@ class WfhService
         $wfh->update([
             'laporan_admin_status' => 'approved',
             'laporan_status' => 'approved',
-            'laporan_approved_at' => now(),
+            'laporan_approved_at' => now('Asia/Jakarta'),
         ]);
 
         $pengaju = Karyawan::where('nik', $wfh->nik)->first();
@@ -592,8 +593,8 @@ class WfhService
 
     public static function getStempelPath(): ?string
     {
-        if (file_exists(public_path('assets/img/stempel.png'))) {
-            return 'assets/img/stempel.png';
+        if (file_exists(public_path('assets/img/stempel-approved.png'))) {
+            return 'assets/img/stempel-approved.png';
         }
         return null;
     }

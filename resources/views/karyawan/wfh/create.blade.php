@@ -39,18 +39,26 @@
                 {{-- Auto Info --}}
                 <x-admin.card class="p-4 mb-3">
                     <div class="flex items-center gap-3">
-                        <div
-                            class="w-10 h-10 rounded-xl bg-[#fdf8f4] border border-[#f0ece8] flex items-center justify-center text-coklat">
-                            <i data-lucide="user" style="width:18px;height:18px;"></i>
-                        </div>
+                        @php
+                            $pathFoto = \Illuminate\Support\Facades\Storage::url('uploads/karyawan/' . $karyawan->foto);
+                        @endphp
+                        @if ($karyawan->foto && $karyawan->foto !== 'nophoto.png')
+                            <img src="{{ url($pathFoto) }}?v={{ time() }}"
+                                class="w-10 h-10 rounded-xl object-cover border border-[#f0ece8]"
+                                alt="{{ $karyawan->nama_lengkap }}">
+                        @else
+                            <img src="{{ asset('assets/img/sample/avatar/avatar1.jpg') }}"
+                                class="w-10 h-10 rounded-xl object-cover border border-[#f0ece8]"
+                                alt="{{ $karyawan->nama_lengkap }}">
+                        @endif
                         <div class="flex-1 min-w-0">
                             <div class="text-[11px] font-semibold tracking-wide text-[#a8a29e] uppercase">Pengaju</div>
                             <div class="text-[14px] font-bold text-[#1c1917]">{{ $karyawan->nama_lengkap }}</div>
                             <div class="text-[12px] text-[#78716c]">{{ $karyawan->posisi }} • {{ $karyawan->unit }}
                                 ({{ $karyawan->unitperusahaan->perusahaan ?? '' }})</div>
+                        </div>
                     </div>
                 </x-admin.card>
-                </div>
 
                 <div class="mb-4">
                     <label class="text-[12px] font-semibold text-[#44403c] mb-1 block">
@@ -128,14 +136,41 @@
             // ── Flatpickr Initialization ────────────────────────
             var minDateSetting = "{{ $disableToday ? date('Y-m-d', strtotime('+1 day')) : date('Y-m-d') }}";
 
+            var disableToday = {{ $disableToday ? 'true' : 'false' }};
+
             flatpickr("#tgl_wfh", {
                 locale: "id",
                 dateFormat: "Y-m-d",
                 altInput: true,
                 altFormat: "j F Y",
                 allowInput: true,
-                disableMobile: "true",
-                minDate: minDateSetting
+                disableMobile: true,
+                minDate: minDateSetting,
+                disable: [
+                    function(date) {
+                        if (disableToday) {
+                            var today = new Date();
+                            today.setHours(0, 0, 0, 0);
+                            if (date.getTime() === today.getTime()) return true;
+                        }
+                        return false;
+                    }
+                ],
+                onDayCreate: function(dObj, dStr, fp, dayElem) {
+                    if (disableToday) {
+                        var today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        if (dayElem.dateObj.getTime() === today.getTime()) {
+                            dayElem.classList.add('fp-today-disabled', 'flatpickr-disabled');
+                            dayElem.style.setProperty('background', '#fee2e2', 'important');
+                            dayElem.style.setProperty('border-color', '#fca5a5', 'important');
+                            dayElem.style.setProperty('color', '#991b1b', 'important');
+                            dayElem.style.setProperty('text-decoration', 'line-through', 'important');
+                            dayElem.style.setProperty('opacity', '0.7', 'important');
+                            dayElem.style.setProperty('cursor', 'not-allowed', 'important');
+                        }
+                    }
+                }
             });
 
             var el = document.getElementById('deskripsi_pekerjaan');
