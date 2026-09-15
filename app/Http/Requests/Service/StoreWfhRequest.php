@@ -25,7 +25,7 @@ class StoreWfhRequest extends FormRequest
         return [
             'tgl_wfh.required' => 'Tanggal WFH wajib diisi.',
             'tgl_wfh.date' => 'Format tanggal tidak valid.',
-            'tgl_wfh.after_or_equal' => 'Tanggal WFH harus hari ini atau besok.',
+            'tgl_wfh.after_or_equal' => 'Tanggal WFH harus hari ini atau tanggal yang akan datang.',
             'keterangan.required' => 'Keterangan wajib diisi.',
             'keterangan.string' => 'Keterangan harus berupa teks.',
             'keterangan.min' => 'Keterangan minimal 5 karakter.',

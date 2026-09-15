@@ -4,7 +4,6 @@ namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
-use App\Services\WfhService;
 
 class WfhMarkedUnpaid extends Notification
 {
@@ -35,7 +34,7 @@ class WfhMarkedUnpaid extends Notification
 
     public function sendWebPush(object $notifiable): void
     {
-        WfhService::sendWebPush(
+        app(\App\Services\Shared\WebPushService::class)->send(
             $notifiable->nik,
             'WFH Unpaid',
             'WFH tanggal ' . $this->wfh->tgl_wfh->format('Y-m-d') . ' ditandai sebagai Unpaid karena ' . $this->reason,

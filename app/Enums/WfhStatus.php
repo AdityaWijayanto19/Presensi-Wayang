@@ -17,7 +17,7 @@ enum WfhStatus: string
             self::PendingAdmin => 'Menunggu Persetujuan HR',
             self::Approved => 'Disetujui',
             self::Rejected => 'Ditolak',
-            self::Unpaid => 'Unpaid',
+            self::Unpaid => 'Belum Dibayar',
         };
     }
 

@@ -766,8 +766,8 @@
                                             ')</div><div class="text-[11px] text-[#57534e] mt-1 line-clamp-2">' +
                                             esc((p.deskripsi_pekerjaan || '').substring(0, 70)) + '</div>' +
                                             '</div><div class="flex flex-col gap-1.5 shrink-0"><button type="button" class="btn btn-sm bg-emerald-500 text-white rounded-full px-3 py-1 text-[11px] w-full btn-approve-atasan" data-id="' +
-                                            p.id + '">Setujui</button><button type="button" class="btn btn-sm bg-white border border-rose-200 text-rose-700 rounded-full px-3 py-1 text-[11px] w-full btn-reject-atasan-dynamic" data-id="' +
-                                            p.id + '">Tolak</button></div></div>' + (p.pdf_form_path ?
+                                            esc(p.id) + '">Setujui</button><button type="button" class="btn btn-sm bg-white border border-rose-200 text-rose-700 rounded-full px-3 py-1 text-[11px] w-full btn-reject-atasan-dynamic" data-id="' +
+                                            esc(p.id) + '">Tolak</button></div></div>' + (p.pdf_form_path ?
                                                 '<div class="flex"><button type="button" class="text-[11px] text-sky-700 hover:underline cursor-pointer" onclick="window.open(\'/storage/' +
                                                 esc(p.pdf_form_path) +
                                                 '\',\'_blank\')">Form Pengajuan</button></div>' : '') +
@@ -826,8 +826,8 @@
                                             ')</div><div class="text-[11px] text-[#57534e] mt-1">Laporan WFH menunggu persetujuan Anda</div>' +
                                             previewBtn +
                                             '</div><div class="flex flex-col gap-1.5 shrink-0"><button type="button" class="btn btn-sm bg-emerald-500 text-white rounded-full px-3 py-1 text-[11px] w-full btn-approve-laporan-atasan" data-id="' +
-                                            p.id + '">Setujui</button><button type="button" class="btn btn-sm bg-white border border-rose-200 text-rose-700 rounded-full px-3 py-1 text-[11px] w-full btn-reject-laporan-atasan-dynamic" data-id="' +
-                                            p.id + '">Tolak</button></div></div></div></div>';
+                                            esc(p.id) + '">Setujui</button><button type="button" class="btn btn-sm bg-white border border-rose-200 text-rose-700 rounded-full px-3 py-1 text-[11px] w-full btn-reject-laporan-atasan-dynamic" data-id="' +
+                                            esc(p.id) + '">Tolak</button></div></div></div></div>';
                                     });
                                     html += '</div>';
                                     updateSection(section, html, 'pendingLaporan');

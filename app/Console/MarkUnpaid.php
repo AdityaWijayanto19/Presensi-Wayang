@@ -63,7 +63,7 @@ class MarkUnpaid extends Command
 
             if ($karyawan) {
                 $karyawan->notify(new WfhMarkedUnpaid($wfh, $reason));
-                \App\Services\WfhService::sendWebPush(
+                app(\App\Services\Shared\WebPushService::class)->send(
                     $wfh->nik,
                     'WFH Unpaid',
                     'WFH tanggal ' . $wfh->tgl_wfh . ' ditandai sebagai Unpaid karena ' . $reason,

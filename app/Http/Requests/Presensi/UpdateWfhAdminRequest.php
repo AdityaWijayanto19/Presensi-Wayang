@@ -15,8 +15,8 @@ class UpdateWfhAdminRequest extends FormRequest
     {
         return [
             'tgl_wfh' => 'required|date',
-            'deskripsi_pekerjaan' => 'required|string|min:5',
-            'keterangan' => 'nullable|string',
+            'deskripsi_pekerjaan' => 'required|string|min:5|max:2000',
+            'keterangan' => 'nullable|string|max:1000',
         ];
     }
 
@@ -28,7 +28,9 @@ class UpdateWfhAdminRequest extends FormRequest
             'deskripsi_pekerjaan.required' => 'Deskripsi pekerjaan wajib diisi.',
             'deskripsi_pekerjaan.string' => 'Deskripsi pekerjaan harus berupa teks.',
             'deskripsi_pekerjaan.min' => 'Deskripsi pekerjaan minimal 5 karakter.',
+            'deskripsi_pekerjaan.max' => 'Deskripsi pekerjaan maksimal 2000 karakter.',
             'keterangan.string' => 'Keterangan harus berupa teks.',
+            'keterangan.max' => 'Keterangan maksimal 1000 karakter.',
         ];
     }
 }

@@ -12,6 +12,7 @@ use App\Services\LemburService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use App\Services\Shared\LocationService;
 use App\Http\Requests\RejectRequest;
 use App\Http\Requests\Presensi\GetHistoriRequest;
 use App\Http\Requests\Service\StoreIzinRequest;
@@ -30,9 +31,8 @@ class KaryawanPresensiController extends Controller
         return view('karyawan.presensi.create', compact('cek'));
     }
 
-    public function store(Request $request)
+    public function store(Request $request, PresensiService $presensiService)
     {
-        $presensiService = new PresensiService();
         $result = $presensiService->processPresensi($request);
 
         echo $result['success'] ? "success|{$result['message']}|{$result['type']}" : "error|{$result['message']}|{$result['type']}";
@@ -149,10 +149,10 @@ class KaryawanPresensiController extends Controller
         return redirect()->back()->with($result['success'] ? 'success' : 'error', $result['message']);
     }
 
-    public function wfh()
+    public function wfh(WfhService $wfhService)
     {
         $nik = Auth::guard('karyawan')->user()->nik;
-        $datawfh = WfhService::getWfhHistory($nik);
+        $datawfh = $wfhService->getWfhHistory($nik);
 
         return view('karyawan.wfh.index', compact('datawfh'));
     }
@@ -188,10 +188,10 @@ class KaryawanPresensiController extends Controller
         abort(404);
     }
 
-    public function storewfh(StoreWfhRequest $request)
+    public function storewfh(StoreWfhRequest $request, WfhService $wfhService)
     {
         $karyawan = Auth::guard('karyawan')->user();
-        $result = WfhService::storeWfh($request, $karyawan);
+        $result = $wfhService->storeWfh($request, $karyawan);
 
         if ($result['success']) {
             return redirect('/wfh')->with('success', $result['message']);
@@ -199,18 +199,18 @@ class KaryawanPresensiController extends Controller
         return redirect()->back()->with('error', $result['message'])->withInput();
     }
 
-    public function deletewfh(int $id)
+    public function deletewfh(int $id, WfhService $wfhService)
     {
         $nik = Auth::guard('karyawan')->user()->nik;
-        $result = WfhService::deleteWfh($id, $nik);
+        $result = $wfhService->deleteWfh($id, $nik);
 
         return redirect()->back()->with($result['success'] ? 'success' : 'error', $result['message']);
     }
 
-    public function approveWfhAtasan(Request $request, int $id)
+    public function approveWfhAtasan(Request $request, int $id, WfhService $wfhService)
     {
         $karyawan = Auth::guard('karyawan')->user();
-        $result = WfhService::approveWfhAtasan($id, $karyawan);
+        $result = $wfhService->approveWfhAtasan($id, $karyawan);
 
         if ($request->expectsJson()) {
             return response()->json($result, $result['success'] ? 200 : 422);
@@ -218,10 +218,10 @@ class KaryawanPresensiController extends Controller
         return redirect()->back()->with($result['success'] ? 'success' : 'error', $result['message']);
     }
 
-    public function rejectWfhAtasan(RejectRequest $request, int $id)
+    public function rejectWfhAtasan(RejectRequest $request, int $id, WfhService $wfhService)
     {
         $karyawan = Auth::guard('karyawan')->user();
-        $result = WfhService::rejectWfhAtasan($id, $request->rejected_reason, $karyawan);
+        $result = $wfhService->rejectWfhAtasan($id, $request->rejected_reason, $karyawan);
 
         if ($request->expectsJson()) {
             return response()->json($result, $result['success'] ? 200 : 422);
@@ -229,10 +229,10 @@ class KaryawanPresensiController extends Controller
         return redirect()->back()->with($result['success'] ? 'success' : 'error', $result['message']);
     }
 
-    public function buatLaporanWfh(int $id)
+    public function buatLaporanWfh(int $id, WfhService $wfhService, LocationService $locationService)
     {
         $nik = Auth::guard('karyawan')->user()->nik;
-        $wfh = WfhService::getLaporanData($id, $nik);
+        $wfh = $wfhService->getLaporanData($id, $nik);
 
         if (!$wfh || isset($wfh->error)) {
             $msg = $wfh->error ?? 'Data tidak ditemukan';
@@ -242,16 +242,15 @@ class KaryawanPresensiController extends Controller
         $presensiToday = Presensi::where('nik', $nik)
             ->where('tgl_presensi', now('Asia/Jakarta')->format('Y-m-d'))
             ->first();
-        $presensiService = new PresensiService();
-        $liveLocation = $presensiService->reverseGeocode($presensiToday?->lokasi_in ?? '');
+        $liveLocation = $locationService->reverseGeocode($presensiToday?->lokasi_in ?? '');
 
         return view('karyawan.wfh.laporan', compact('wfh', 'liveLocation'));
     }
 
-    public function storeLaporanWfh(StoreLaporanWfhRequest $request, int $id)
+    public function storeLaporanWfh(StoreLaporanWfhRequest $request, int $id, WfhService $wfhService)
     {
         $nik = Auth::guard('karyawan')->user()->nik;
-        $result = WfhService::storeLaporanWfh($request, $id, $nik);
+        $result = $wfhService->storeLaporanWfh($request, $id, $nik);
 
         if ($result['success']) {
             return redirect('/wfh')->with('success', $result['message']);
@@ -259,10 +258,10 @@ class KaryawanPresensiController extends Controller
         return redirect()->back()->with('error', $result['message'])->withInput();
     }
 
-    public function approveLaporanAtasan(Request $request, int $id)
+    public function approveLaporanAtasan(Request $request, int $id, WfhService $wfhService)
     {
         $karyawan = Auth::guard('karyawan')->user();
-        $result = WfhService::approveLaporanAtasan($id, $karyawan);
+        $result = $wfhService->approveLaporanAtasan($id, $karyawan);
 
         if ($request->expectsJson()) {
             return response()->json($result, $result['success'] ? 200 : 422);
@@ -270,10 +269,10 @@ class KaryawanPresensiController extends Controller
         return redirect()->back()->with($result['success'] ? 'success' : 'error', $result['message']);
     }
 
-    public function rejectLaporanAtasan(RejectRequest $request, int $id)
+    public function rejectLaporanAtasan(RejectRequest $request, int $id, WfhService $wfhService)
     {
         $karyawan = Auth::guard('karyawan')->user();
-        $result = WfhService::rejectLaporanAtasan($id, $request->rejected_reason, $karyawan);
+        $result = $wfhService->rejectLaporanAtasan($id, $request->rejected_reason, $karyawan);
 
         if ($request->expectsJson()) {
             return response()->json($result, $result['success'] ? 200 : 422);

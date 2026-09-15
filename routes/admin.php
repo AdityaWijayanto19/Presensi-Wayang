@@ -104,5 +104,5 @@ Route::group(['middleware' => 'permission:presensi-edit,user'], function () {
 
 // Realtime API
 Route::get('/api/realtime/admin', [RealtimeController::class, 'admin']);
-Route::get('/api/realtime/admin/wfh-check', [RealtimeController::class, 'adminWfhCheck']);
-Route::get('/api/realtime/admin/wfh-data', [RealtimeController::class, 'adminWfhData']);
+Route::get('/api/realtime/admin/wfh-check', [RealtimeController::class, 'adminWfhCheck'])->middleware('permission:wfh-view,user');
+Route::get('/api/realtime/admin/wfh-data', [RealtimeController::class, 'adminWfhData'])->middleware('permission:wfh-view,user');

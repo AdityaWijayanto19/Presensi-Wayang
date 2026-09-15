@@ -41,6 +41,7 @@ class Wfh extends Model
         'approved_at' => 'datetime',
         'laporan_approved_at' => 'datetime',
         'status' => \App\Enums\WfhStatus::class,
+        'laporan_status' => \App\Enums\WfhStatus::class,
         'laporan_images' => 'array',
     ];
 

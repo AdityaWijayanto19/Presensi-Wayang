@@ -6,12 +6,19 @@ use App\Models\Karyawan;
 use App\Models\Presensi;
 use App\Models\Unitperusahaan;
 use App\Models\Wfh;
+use App\Services\Shared\LocationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class PresensiService
 {
+    private LocationService $location;
+
+    public function __construct(LocationService $location)
+    {
+        $this->location = $location;
+    }
     private const JAM_BUKA_PRESENSI = '07:00:00';
     private const MINIMAL_JAM_KERJA = 8;
     private const UNIT_TANPA_KETERLAMBATAN = 'Arthama';
@@ -150,49 +157,6 @@ class PresensiService
 
     public function reverseGeocode(string $coordinates): string
     {
-        if (empty($coordinates) || $coordinates === '-') {
-            return '-';
-        }
-
-        $parts = array_map('floatval', explode(',', $coordinates));
-        if (count($parts) !== 2) {
-            return $coordinates;
-        }
-
-        $lat = $parts[0];
-        $lng = $parts[1];
-
-        try {
-            $url = sprintf(
-                'https://nominatim.openstreetmap.org/reverse?lat=%s&lon=%s&format=json&addressdetails=1&accept-language=id',
-                urlencode($lat),
-                urlencode($lng)
-            );
-
-            $ch = curl_init();
-            curl_setopt_array($ch, [
-                CURLOPT_URL => $url,
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_TIMEOUT => 5,
-                CURLOPT_HTTPHEADER => ['User-Agent: PresensiDigital/1.0'],
-            ]);
-
-            $response = curl_exec($ch);
-            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            curl_close($ch);
-
-            if ($httpCode !== 200 || !$response) {
-                return $coordinates;
-            }
-
-            $data = json_decode($response, true);
-            if (!isset($data['display_name'])) {
-                return $coordinates;
-            }
-
-            return $data['display_name'];
-        } catch (\Exception $e) {
-            return $coordinates;
-        }
+        return $this->location->reverseGeocode($coordinates);
     }
 }

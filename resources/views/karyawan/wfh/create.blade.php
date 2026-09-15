@@ -96,7 +96,7 @@
                 <div class="form-group mt-3">
                     <label class="text-[12px] font-semibold text-[#44403c] mb-1 block">Keterangan WFH / Alasan WFH <span
                             class="text-red-500">*</span></label>
-                    <textarea name="keterangan" id="keterangan" rows="3" class="w-full rounded-md border border-slate-300 px-2.5 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    <textarea name="keterangan" id="keterangan" rows="3" maxlength="1000" class="w-full rounded-md border border-slate-300 px-2.5 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                         placeholder="Jelaskan alasan mengapa harus WFH hari ini..." required>{{ old('keterangan') }}</textarea>
                     <small class="text-[11px] text-[#a8a29e]">Contoh: kondisi kesehatan, jarak tempuh jauh, dll.</small>
                 </div>

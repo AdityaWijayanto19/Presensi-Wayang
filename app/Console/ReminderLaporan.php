@@ -40,7 +40,7 @@ class ReminderLaporan extends Command
                 $karyawan->notify(new WfhReminderLaporan($wfh));
 
                 // Kirim web push
-                \App\Services\WfhService::sendWebPush(
+                app(\App\Services\Shared\WebPushService::class)->send(
                     $wfh->nik,
                     '⚠️ Reminder Upload Laporan',
                     'WFH tanggal ' . $wfh->tgl_wfh . ' belum upload laporan! Upload sebelum pukul 00:00.',

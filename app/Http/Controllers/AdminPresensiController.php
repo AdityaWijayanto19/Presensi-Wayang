@@ -6,6 +6,7 @@ use App\Models\Presensi;
 use App\Models\Izin;
 use App\Models\Lembur;
 use App\Models\Wfh;
+use App\Enums\WfhStatus;
 use App\Models\Unitperusahaan;
 use App\Services\WfhService;
 use App\Services\IzinService;
@@ -101,41 +102,41 @@ class AdminPresensiController extends Controller
         return redirect()->back()->with($result['success'] ? 'success' : 'error', $result['message']);
     }
 
-    public function datawfh(Request $request)
+    public function datawfh(Request $request, WfhService $wfhService)
     {
-        $data = WfhService::getDataWfhAdmin($request);
+        $data = $wfhService->getDataWfhAdmin($request);
         extract($data);
         return view('admin.wfh.index', compact('datawfh', 'unitperusahaan', 'pendingWfhAdmin', 'pendingLaporanAdmin'));
     }
 
-    public function deletewfhadmin(int $id)
+    public function deletewfhadmin(int $id, WfhService $wfhService)
     {
-        $result = WfhService::deleteWfhAdmin($id);
+        $result = $wfhService->deleteWfhAdmin($id);
         return redirect()->back()->with($result['success'] ? 'success' : 'error', $result['message']);
     }
 
-    public function approveWfhAdmin(int $id)
+    public function approveWfhAdmin(int $id, WfhService $wfhService)
     {
-        $result = WfhService::approveWfhAdmin($id);
+        $result = $wfhService->approveWfhAdmin($id);
         return redirect()->back()->with($result['success'] ? 'success' : 'error', $result['message']);
     }
 
-    public function rejectWfhAdmin(RejectRequest $request, int $id)
+    public function rejectWfhAdmin(RejectRequest $request, int $id, WfhService $wfhService)
     {
-        $result = WfhService::rejectWfhAdmin($id, $request->rejected_reason);
+        $result = $wfhService->rejectWfhAdmin($id, $request->rejected_reason);
 
         return redirect()->back()->with($result['success'] ? 'success' : 'error', $result['message']);
     }
 
-    public function approveLaporanAdmin(int $id)
+    public function approveLaporanAdmin(int $id, WfhService $wfhService)
     {
-        $result = WfhService::approveLaporanAdmin($id);
+        $result = $wfhService->approveLaporanAdmin($id);
         return redirect()->back()->with($result['success'] ? 'success' : 'error', $result['message']);
     }
 
-    public function rejectLaporanAdmin(RejectRequest $request, int $id)
+    public function rejectLaporanAdmin(RejectRequest $request, int $id, WfhService $wfhService)
     {
-        $result = WfhService::rejectLaporanAdmin($id, $request->rejected_reason);
+        $result = $wfhService->rejectLaporanAdmin($id, $request->rejected_reason);
 
         return redirect()->back()->with($result['success'] ? 'success' : 'error', $result['message']);
     }
@@ -213,9 +214,9 @@ class AdminPresensiController extends Controller
     public function updateWfhAdmin(UpdateWfhAdminRequest $request, int $id)
     {
         $wfh = Wfh::findOrFail($id);
-        $editableStatuses = ['pending_atasan', 'pending_admin', 'rejected'];
+        $editableStatuses = [WfhStatus::PendingAtasan, WfhStatus::PendingAdmin, WfhStatus::Rejected];
         if (!in_array($wfh->status, $editableStatuses)) {
-            return redirect()->back()->with('error', 'WFH dengan status "' . $wfh->status . '" tidak dapat diedit.');
+            return redirect()->back()->with('error', 'WFH dengan status "' . $wfh->status->label() . '" tidak dapat diedit.');
         }
         $wfh->update([
             'tgl_wfh' => $request->tgl_wfh,

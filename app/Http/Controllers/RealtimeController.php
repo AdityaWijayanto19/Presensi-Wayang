@@ -26,15 +26,21 @@ class RealtimeController extends Controller
 
     public function adminWfhCheck(Request $request)
     {
-        $lastId = $request->last_id ?? 0;
-        $lastCheck = $request->last_check ?? now('Asia/Jakarta')->subSeconds(10);
+        $lastId = is_numeric($request->last_id) ? (int) $request->last_id : 0;
+        $lastCheck = $request->last_check
+            ? \Carbon\Carbon::parse($request->last_check)->subSecond()
+            : now('Asia/Jakarta')->subSeconds(10);
+
+        $stats = Wfh::selectRaw('
+            MAX(id) as latest_id,
+            SUM(CASE WHEN id > ? THEN 1 ELSE 0 END) as new_count,
+            SUM(CASE WHEN dikirim_tanggal > ? OR updated_at > ? THEN 1 ELSE 0 END) as updated_count
+        ')->setBindings([$lastId, $lastCheck, $lastCheck])->first();
 
         return response()->json([
-            'new_data' => Wfh::where('id', '>', $lastId)->count() > 0,
-            'updated_data' => Wfh::where('dikirim_tanggal', '>', $lastCheck)
-                ->orWhere('updated_at', '>', $lastCheck)
-                ->count() > 0,
-            'latest_id' => Wfh::max('id'),
+            'new_data' => ($stats->new_count ?? 0) > 0,
+            'updated_data' => ($stats->updated_count ?? 0) > 0,
+            'latest_id' => $stats->latest_id ?? 0,
         ]);
     }
 

@@ -4,7 +4,6 @@ namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
-use App\Services\WfhService;
 
 class WfhReminderLaporan extends Notification
 {
@@ -34,7 +33,7 @@ class WfhReminderLaporan extends Notification
 
     public function sendWebPush(object $notifiable): void
     {
-        WfhService::sendWebPush(
+        app(\App\Services\Shared\WebPushService::class)->send(
             $notifiable->nik,
             '⚠️ Reminder Upload Laporan',
             'WFH tanggal ' . $this->wfh->tgl_wfh->format('Y-m-d') . ' belum upload laporan! Upload sebelum pukul 23:59.',
