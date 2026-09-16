@@ -56,6 +56,7 @@ Route::get('/presensi/showfilewfh/{file}', [KaryawanPresensiController::class, '
 Route::get('/notifications', [NotificationController::class, 'index']);
 Route::post('/notifications/{id}/read', [NotificationController::class, 'read']);
 Route::post('/notifications/read-all', [NotificationController::class, 'readAll']);
+Route::post('/notifications/create', [NotificationController::class, 'store']);
 
 // Push subscription
 Route::post('/api/push/subscribe', [PushController::class, 'subscribe']);

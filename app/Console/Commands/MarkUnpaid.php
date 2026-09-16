@@ -39,7 +39,7 @@ class MarkUnpaid extends Command
             ->whereNotNull('wfhs.laporan_deskripsi')
             ->where('wfhs.laporan_deskripsi', '!=', '')
             ->whereNull('presensis.jam_out')
-            ->select('wfhs.*', 'presensis.jam_out')
+            ->select('wfhs.*')
             ->groupBy('wfhs.id')
             ->get();
 

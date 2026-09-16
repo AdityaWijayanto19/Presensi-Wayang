@@ -17,6 +17,7 @@ class UpdateWfhAdminRequest extends FormRequest
             'tgl_wfh' => 'required|date',
             'deskripsi_pekerjaan' => 'required|string|min:5|max:2000',
             'keterangan' => 'nullable|string|max:1000',
+            'status' => 'required|string|in:pending_atasan,pending_admin,approved,rejected,unpaid',
         ];
     }
 
@@ -31,6 +32,8 @@ class UpdateWfhAdminRequest extends FormRequest
             'deskripsi_pekerjaan.max' => 'Deskripsi pekerjaan maksimal 2000 karakter.',
             'keterangan.string' => 'Keterangan harus berupa teks.',
             'keterangan.max' => 'Keterangan maksimal 1000 karakter.',
+            'status.required' => 'Status wajib dipilih.',
+            'status.in' => 'Status tidak valid.',
         ];
     }
 }

@@ -404,13 +404,17 @@
         </div>
 
         {{-- Alert H-1 WFH --}}
-        @if (isset($wfhBesok) && $wfhBesok)
+        @if ((isset($wfhBesok) && $wfhBesok) || (isset($wfhHariIni) && $wfhHariIni))
+            @php
+                $activeWfh = $wfhBesok ?? $wfhHariIni;
+                $isBesok = isset($wfhBesok) && $wfhBesok;
+            @endphp
             <div id="alertH1" class="bg-sky-50 border border-sky-200 rounded-2xl p-3 mt-6 flex gap-3">
                 <div class="w-10 h-10 rounded-xl bg-sky-500 flex items-center justify-center text-white shrink-0"><i
                         data-lucide="alarm-clock" style="width:18px;height:18px;"></i></div>
                 <div class="flex-1">
-                    <div class="text-[13px] font-bold text-sky-900">WFH Besok
-                        ({{ date('d M Y', strtotime($wfhBesok->tgl_wfh)) }}) Sudah Disetujui</div>
+                    <div class="text-[13px] font-bold text-sky-900">WFH {{ $isBesok ? 'Besok' : 'Hari Ini' }}
+                        ({{ date('d M Y', strtotime($activeWfh->tgl_wfh)) }}) Sudah Disetujui</div>
                     <div class="text-[11px] text-sky-700">Jangan lupa absen sesuai jam kerja @if ($jamMasuk)
                             <b>{{ $jamMasuk }}</b>
                         @endif. Alert akan muncul 10 menit sebelum jam masuk.</div>
@@ -1262,12 +1266,13 @@
             });
 
             // === ALERT H-1 : 10 menit sebelum jam masuk ===
-            @if (isset($wfhBesok) && $wfhBesok)
+            @if (isset($tglCountdown) && $tglCountdown)
                 (function() {
                     var countdownEl = document.getElementById('countdownH1');
                     @if (isset($jamMasuk) && $jamMasuk)
                         var jamMasuk = "{{ $jamMasuk }}";
-                        var tglBesok = "{{ date('Y-m-d', strtotime($wfhBesok->tgl_wfh)) }}";
+                        var tglCountdown = "{{ $tglCountdown }}";
+                        var labelWFH = "{{ isset($wfhBesok) && $wfhBesok ? 'besok' : 'hari ini' }}";
 
                         var SERVER_EPOCH_MS = {{ now('Asia/Jakarta')->timestamp * 1000 }};
                         var CLIENT_LOAD_MS = Date.now();
@@ -1279,7 +1284,7 @@
                         function checkH1() {
                             var nowMs = serverNowMs();
                             var jamParts = jamMasuk.split(':');
-                            var tglParts = tglBesok.split('-');
+                            var tglParts = tglCountdown.split('-');
                             var targetMs = new Date(parseInt(tglParts[0]), parseInt(tglParts[1]) - 1, parseInt(tglParts[2]), parseInt(jamParts[0]), parseInt(jamParts[1]), parseInt(jamParts[2] || 0)).getTime();
                             var alertMs = targetMs - 10 * 60 * 1000;
                             var diff = alertMs - nowMs;
@@ -1296,18 +1301,32 @@
                                         Swal.fire({
                                             icon: 'info',
                                             title: 'Pengingat Absen WFH',
-                                            text: 'WFH besok sudah disetujui. Jangan lupa absen 10 menit sebelum jam masuk ({{ $jamMasuk }})!',
+                                            text: 'WFH ' + labelWFH + ' sudah disetujui. Jangan lupa absen 10 menit sebelum jam masuk ({{ $jamMasuk }})!',
                                             confirmButtonColor: '#7a5234'
                                         });
                                         if (Notification.permission === 'granted') {
-                                            new Notification('Pengingat Absen WFH Besok', {
+                                            new Notification('Pengingat Absen WFH', {
                                                 body: 'Jangan lupa absen 10 menit sebelum {{ $jamMasuk }}',
                                                 icon: '/assets/img/login/logo_aplikasi.png'
                                             });
                                         }
+                                        fetch('/notifications/create', {
+                                            method: 'POST',
+                                            headers: {
+                                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                                'Accept': 'application/json',
+                                                'Content-Type': 'application/json'
+                                            },
+                                            credentials: 'same-origin',
+                                            body: JSON.stringify({
+                                                message: 'WFH ' + labelWFH + ' sudah disetujui. Jangan lupa absen 10 menit sebelum jam masuk ({{ $jamMasuk }})!',
+                                                type: 'wfh_h1_reminder'
+                                            })
+                                        });
                                     }
                                 } else {
-                                    countdownEl.textContent = 'Sudah melewati jam masuk.';
+                                    var alertH1Card = document.getElementById('alertH1');
+                                    if (alertH1Card) alertH1Card.style.display = 'none';
                                 }
                             }
                         }

@@ -214,15 +214,38 @@ class AdminPresensiController extends Controller
     public function updateWfhAdmin(UpdateWfhAdminRequest $request, int $id)
     {
         $wfh = Wfh::findOrFail($id);
-        $editableStatuses = [WfhStatus::PendingAtasan, WfhStatus::PendingAdmin, WfhStatus::Rejected];
-        if (!in_array($wfh->status, $editableStatuses)) {
-            return redirect()->back()->with('error', 'WFH dengan status "' . $wfh->status->label() . '" tidak dapat diedit.');
-        }
-        $wfh->update([
+        $oldStatus = $wfh->status instanceof WfhStatus ? $wfh->status->value : $wfh->status;
+        $newStatus = $request->status;
+
+        $updateData = [
             'tgl_wfh' => $request->tgl_wfh,
             'deskripsi_pekerjaan' => $request->deskripsi_pekerjaan,
             'keterangan' => $request->keterangan,
-        ]);
+            'status' => $newStatus,
+        ];
+
+        if ($oldStatus !== $newStatus) {
+            if ($newStatus === 'approved' && empty($wfh->approved_at)) {
+                $updateData['approved_at'] = now();
+            }
+
+            if ($oldStatus === 'unpaid' && $newStatus === 'approved') {
+                $updateData['laporan_status'] = null;
+                $updateData['laporan_deskripsi'] = null;
+                $updateData['laporan_file'] = null;
+                $updateData['laporan_submitted_at'] = null;
+                $updateData['laporan_approved_at'] = null;
+            }
+        }
+
+        $wfh->update($updateData);
+
+        if ($oldStatus !== $newStatus) {
+            $karyawan = \App\Models\Karyawan::where('nik', $wfh->nik)->first();
+            if ($karyawan) {
+                $karyawan->notify(new \App\Notifications\WfhStatusChanged($wfh, $oldStatus, $newStatus));
+            }
+        }
 
         return redirect()->back()->with('success', 'Data WFH berhasil diperbarui');
     }

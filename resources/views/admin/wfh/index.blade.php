@@ -50,24 +50,15 @@
                 <table class="min-w-full divide-y divide-slate-200 border border-slate-200">
                     <thead class="bg-slate-50">
                         <tr>
-                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase">No.</th>
-                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase">Tanggal
-                            </th>
-                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase">NIK /
-                                Nama</th>
-                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase">Jabatan /
-                                Posisi</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase w-10">No.</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase">Tanggal</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase">Karyawan</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase">Jabatan / Posisi</th>
                             <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase">Unit</th>
-                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase">Atasan
-                            </th>
-                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase">Status
-                            </th>
-                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase">Pengajuan
-                            </th>
-                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase">Laporan
-                            </th>
-                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase"
-                                style="min-width:200px">Actions</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase">Atasan</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase">Pengajuan WFH</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase">Laporan WFH</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase w-12">Aksi</th>
                         </tr>
                     </thead>
                     <tbody id="wfhTableBody" class="divide-y divide-slate-100">
@@ -88,6 +79,18 @@
     <form id="formEditWfh" method="POST">
         @csrf
         <input type="hidden" name="wfh_id" id="edit_wfh_id">
+
+        <div class="mb-2">
+            <label class="block text-xs font-medium text-slate-600 mb-1">Status WFH <span class="text-red-500">*</span></label>
+            <select name="status" id="edit_status"
+                class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-colors">
+                <option value="pending_atasan">Menunggu Atasan</option>
+                <option value="pending_admin">Menunggu HR</option>
+                <option value="approved">Disetujui</option>
+                <option value="rejected">Ditolak</option>
+                <option value="unpaid">Unpaid</option>
+            </select>
+        </div>
 
         <x-admin.input type="date" name="tgl_wfh" id="edit_tgl_wfh"
             label="Tanggal WFH <span class='text-red-500'>*</span>" required />
@@ -111,6 +114,113 @@
             <x-admin.button variant="primary" icon="save" type="submit" block>Simpan Perubahan</x-admin.button>
         </div>
     </form>
+</x-admin.modal>
+
+{{-- Modal Detail WFH --}}
+<x-admin.modal id="modal-detailwfh" title="Detail WFH" size="lg">
+    <div id="detailContent" class="space-y-4">
+        <div class="grid grid-cols-2 gap-3">
+            <div>
+                <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Nama Karyawan</div>
+                <div class="text-xs font-medium text-slate-800" id="dt-nama">—</div>
+            </div>
+            <div>
+                <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">NIK</div>
+                <div class="text-xs font-medium text-slate-800" id="dt-nik">—</div>
+            </div>
+            <div>
+                <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Jabatan</div>
+                <div class="text-xs font-medium text-slate-800" id="dt-jabatan">—</div>
+            </div>
+            <div>
+                <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Posisi</div>
+                <div class="text-xs font-medium text-slate-800" id="dt-posisi">—</div>
+            </div>
+            <div>
+                <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Unit</div>
+                <div class="text-xs font-medium text-slate-800" id="dt-unit">—</div>
+            </div>
+            <div>
+                <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Perusahaan</div>
+                <div class="text-xs font-medium text-slate-800" id="dt-perusahaan">—</div>
+            </div>
+            <div>
+                <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Atasan</div>
+                <div class="text-xs font-medium text-slate-800" id="dt-atasan">—</div>
+            </div>
+            <div>
+                <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Jabatan Atasan</div>
+                <div class="text-xs font-medium text-slate-800" id="dt-jabatan-atasan">—</div>
+            </div>
+        </div>
+
+        <div class="h-px bg-slate-100"></div>
+
+        <div class="grid grid-cols-2 gap-3">
+            <div>
+                <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Tanggal WFH</div>
+                <div class="text-xs font-medium text-slate-800" id="dt-tgl-wfh">—</div>
+            </div>
+            <div>
+                <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Live Location</div>
+                <div class="text-xs font-medium text-slate-800" id="dt-location">—</div>
+            </div>
+        </div>
+
+        <div>
+            <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Deskripsi Pekerjaan</div>
+            <div class="text-xs text-slate-700 bg-slate-50 rounded p-2 whitespace-pre-wrap" id="dt-deskripsi">—</div>
+        </div>
+
+        <div>
+            <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Keterangan</div>
+            <div class="text-xs text-slate-700 bg-slate-50 rounded p-2 whitespace-pre-wrap" id="dt-keterangan">—</div>
+        </div>
+
+        <div class="h-px bg-slate-100"></div>
+
+        <div class="grid grid-cols-2 gap-3">
+            <div>
+                <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Status Pengajuan</div>
+                <div id="dt-status"></div>
+            </div>
+            <div>
+                <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Status Laporan</div>
+                <div id="dt-laporan-status"></div>
+            </div>
+        </div>
+
+        <div id="dt-rejected-reason-wrap" class="hidden">
+            <div class="text-[10px] font-semibold text-rose-400 uppercase tracking-wider mb-0.5">Alasan Penolakan</div>
+            <div class="text-xs text-rose-600 bg-rose-50 rounded p-2" id="dt-rejected-reason"></div>
+        </div>
+
+        <div id="dt-laporan-rejected-reason-wrap" class="hidden">
+            <div class="text-[10px] font-semibold text-rose-400 uppercase tracking-wider mb-0.5">Alasan Penolakan Laporan</div>
+            <div class="text-xs text-rose-600 bg-rose-50 rounded p-2" id="dt-laporan-rejected-reason"></div>
+        </div>
+
+        <div class="h-px bg-slate-100"></div>
+
+        <div>
+            <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Dokumen</div>
+            <div class="flex flex-wrap gap-2">
+                <div id="dt-pdf-wrap" class="hidden">
+                    <a id="dt-pdf-link" href="#" target="_blank" rel="noopener"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 text-xs font-medium hover:bg-blue-100 transition-colors">
+                        <i data-lucide="file-text" style="width:12px;height:12px;"></i> Form Pengajuan WFH
+                    </a>
+                </div>
+                <div id="dt-laporan-file-wrap" class="hidden">
+                    <a id="dt-laporan-file-link" href="#" target="_blank" rel="noopener"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-medium hover:bg-emerald-100 transition-colors">
+                        <i data-lucide="clipboard" style="width:12px;height:12px;"></i> Laporan WFH
+                    </a>
+                </div>
+                <div id="dt-no-dokumen" class="text-xs text-slate-400">Tidak ada dokumen</div>
+            </div>
+        </div>
+    </div>
 </x-admin.modal>
 
 @endsection
@@ -162,16 +272,97 @@
                     var tgl = btnEdit.dataset.tgl_wfh;
                     var deskripsi = btnEdit.dataset.deskripsi;
                     var keterangan = btnEdit.dataset.keterangan || '';
+                    var status = btnEdit.dataset.status || 'pending_atasan';
 
                     document.getElementById('edit_wfh_id').value = id;
                     document.getElementById('edit_tgl_wfh').value = tgl;
                     document.getElementById('edit_deskripsi').value = deskripsi;
                     document.getElementById('edit_keterangan').value = keterangan;
+                    document.getElementById('edit_status').value = status;
                     document.getElementById('formEditWfh').action = '/presensi/wfh/' + id + '/update';
                     window.dispatchEvent(new CustomEvent('open-modal-modal-editwfh'));
                 }
             });
         } catch (e) { console.warn('Edit handler error:', e); }
+
+        // Detail WFH Modal
+        try {
+            window.addEventListener('open-modal-modal-detailwfh', function(e) {
+                var btn = e.detail && e.detail.el ? e.detail.el : null;
+                if (!btn) return;
+                var s = function(k) { return btn.dataset[k] || '—'; };
+                var isEmpty = function(v) { return !v || v === '—' || v === ''; };
+
+                document.getElementById('dt-nama').textContent = s('nama');
+                document.getElementById('dt-nik').textContent = s('nik');
+                document.getElementById('dt-jabatan').textContent = s('jabatan');
+                document.getElementById('dt-posisi').textContent = s('posisi');
+                document.getElementById('dt-unit').textContent = s('unit');
+                document.getElementById('dt-perusahaan').textContent = s('perusahaan');
+                document.getElementById('dt-atasan').textContent = s('atasan');
+                document.getElementById('dt-jabatan-atasan').textContent = s('jabatanAtasan');
+                document.getElementById('dt-tgl-wfh').textContent = s('tglWfh');
+                document.getElementById('dt-location').textContent = isEmpty(s('liveLocation')) ? '—' : s('liveLocation');
+                document.getElementById('dt-deskripsi').textContent = isEmpty(s('deskripsi')) ? '—' : s('deskripsi');
+                document.getElementById('dt-keterangan').textContent = isEmpty(s('keterangan')) ? '—' : s('keterangan');
+
+                var statusKey = s('statusKey');
+                var statusLabel = s('status');
+                var statusColors = {
+                    'pending_atasan': 'bg-amber-50 text-amber-700 border border-amber-200',
+                    'pending_admin': 'bg-blue-50 text-blue-700 border border-blue-200',
+                    'approved': 'bg-emerald-50 text-emerald-700 border border-emerald-200',
+                    'rejected': 'bg-rose-50 text-rose-700 border border-rose-200',
+                    'unpaid': 'bg-slate-100 text-slate-600 border border-slate-200',
+                };
+                document.getElementById('dt-status').innerHTML = '<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold ' + (statusColors[statusKey] || 'bg-slate-100 text-slate-600 border border-slate-200') + '">' + statusLabel + '</span>';
+
+                var lStatusKey = s('laporanStatusKey');
+                var lStatusLabel = s('laporanStatus');
+                document.getElementById('dt-laporan-status').innerHTML = (lStatusKey && lStatusLabel && lStatusLabel !== '—')
+                    ? '<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold ' + (statusColors[lStatusKey] || 'bg-slate-100 text-slate-600 border border-slate-200') + '">' + lStatusLabel + '</span>'
+                    : '<span class="text-xs text-slate-400">—</span>';
+
+                var rejWrap = document.getElementById('dt-rejected-reason-wrap');
+                var rejReason = s('rejectedReason');
+                if (!isEmpty(rejReason) && statusKey === 'rejected') {
+                    document.getElementById('dt-rejected-reason').textContent = rejReason;
+                    rejWrap.classList.remove('hidden');
+                } else {
+                    rejWrap.classList.add('hidden');
+                }
+
+                var lRejWrap = document.getElementById('dt-laporan-rejected-reason-wrap');
+                var lRejReason = s('laporanRejectedReason');
+                if (!isEmpty(lRejReason) && lStatusKey === 'rejected') {
+                    document.getElementById('dt-laporan-rejected-reason').textContent = lRejReason;
+                    lRejWrap.classList.remove('hidden');
+                } else {
+                    lRejWrap.classList.add('hidden');
+                }
+
+                var pdfUrl = s('pdfUrl');
+                var laporanUrl = s('laporanUrl');
+                var pdfWrap = document.getElementById('dt-pdf-wrap');
+                var laporanWrap = document.getElementById('dt-laporan-file-wrap');
+                var noDok = document.getElementById('dt-no-dokumen');
+                if (!isEmpty(pdfUrl)) {
+                    document.getElementById('dt-pdf-link').href = pdfUrl;
+                    pdfWrap.classList.remove('hidden');
+                } else {
+                    pdfWrap.classList.add('hidden');
+                }
+                if (!isEmpty(laporanUrl)) {
+                    document.getElementById('dt-laporan-file-link').href = laporanUrl;
+                    laporanWrap.classList.remove('hidden');
+                } else {
+                    laporanWrap.classList.add('hidden');
+                }
+                noDok.classList.toggle('hidden', !isEmpty(pdfUrl) || !isEmpty(laporanUrl));
+
+                if (window.lucide) lucide.createIcons();
+            });
+        } catch (e) { console.warn('Detail handler error:', e); }
 
         // Reject, Reject Laporan, & Delete buttons
         try {
@@ -302,6 +493,7 @@
                             var pagination = document.getElementById('wfhPagination');
                             if (tbody && data.html) tbody.innerHTML = data.html;
                             if (pagination && data.pagination) pagination.innerHTML = data.pagination;
+                            if (window.lucide) lucide.createIcons();
                         }).catch(function() {});
                 }
 
@@ -350,6 +542,7 @@
                                 if (tbody && data.html) tbody.innerHTML = data.html;
                                 if (pag && data.pagination) pag.innerHTML = data.pagination;
                                 window.history.pushState({}, '', link.href);
+                                if (window.lucide) lucide.createIcons();
                             }).catch(function() {});
                     });
                 }

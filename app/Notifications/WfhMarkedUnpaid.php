@@ -18,12 +18,13 @@ class WfhMarkedUnpaid extends Notification
 
     public function toDatabase(object $notifiable): array
     {
+        $tgl = is_string($this->wfh->tgl_wfh) ? $this->wfh->tgl_wfh : $this->wfh->tgl_wfh->format('Y-m-d');
         return [
             'type' => 'wfh_unpaid',
             'wfh_id' => $this->wfh->id,
-            'tgl_wfh' => $this->wfh->tgl_wfh->format('Y-m-d'),
+            'tgl_wfh' => $tgl,
             'reason' => $this->reason,
-            'message' => 'WFH tanggal ' . $this->wfh->tgl_wfh->format('Y-m-d') . ' ditandai sebagai Unpaid karena ' . $this->reason,
+            'message' => 'WFH tanggal ' . $tgl . ' ditandai sebagai Unpaid karena ' . $this->reason,
         ];
     }
 
@@ -34,10 +35,11 @@ class WfhMarkedUnpaid extends Notification
 
     public function sendWebPush(object $notifiable): void
     {
+        $tgl = is_string($this->wfh->tgl_wfh) ? $this->wfh->tgl_wfh : $this->wfh->tgl_wfh->format('Y-m-d');
         app(\App\Services\Shared\WebPushService::class)->send(
             $notifiable->nik,
             'WFH Unpaid',
-            'WFH tanggal ' . $this->wfh->tgl_wfh->format('Y-m-d') . ' ditandai sebagai Unpaid karena ' . $this->reason,
+            'WFH tanggal ' . $tgl . ' ditandai sebagai Unpaid karena ' . $this->reason,
             '/presensi/wfh',
             'wfh-unpaid-' . $this->wfh->id
         );

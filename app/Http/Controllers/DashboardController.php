@@ -132,12 +132,21 @@ class DashboardController extends Controller
 
         $besok = now('Asia/Jakarta')->addDay()->format('Y-m-d');
         $wfhBesok = Wfh::where('nik', $nik)->where('tgl_wfh', $besok)->where('status', 'approved')->first();
+        $wfhHariIni = Wfh::where('nik', $nik)->where('tgl_wfh', $hariini)->where('status', 'approved')->first();
         $jamMasuk = null;
+        $tglCountdown = null;
         if ($wfhBesok) {
             $jamMasuk = Unitperusahaan::where('unit', $karyawan->unit)->value('jam_masuk');
             if ($jamMasuk instanceof \Carbon\Carbon) {
                 $jamMasuk = $jamMasuk->format('H:i:s');
             }
+            $tglCountdown = date('Y-m-d', strtotime($wfhBesok->tgl_wfh));
+        } elseif ($wfhHariIni) {
+            $jamMasuk = Unitperusahaan::where('unit', $karyawan->unit)->value('jam_masuk');
+            if ($jamMasuk instanceof \Carbon\Carbon) {
+                $jamMasuk = $jamMasuk->format('H:i:s');
+            }
+            $tglCountdown = $hariini;
         }
 
         $notifications = $karyawan->notifications()->latest()->take(5)->get();
@@ -146,7 +155,7 @@ class DashboardController extends Controller
             'presensihariini', 'historibulanini', 'namabulan', 'bulanini', 'tahunini',
             'rekappresensi', 'rekapizin', 'rekaplembur', 'rekapwfh',
             'wfhSaya', 'pendingAtasan', 'pendingLaporanAtasan',
-            'wfhBesok', 'jamMasuk', 'notifications'
+            'wfhBesok', 'wfhHariIni', 'jamMasuk', 'tglCountdown', 'notifications'
         ));
     }
 }

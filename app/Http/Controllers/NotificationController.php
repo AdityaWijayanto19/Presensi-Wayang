@@ -49,4 +49,26 @@ class NotificationController extends Controller
         $user->unreadNotifications->markAsRead();
         return response()->json(['ok' => true]);
     }
+
+    public function store(Request $request)
+    {
+        $user = Auth::guard('karyawan')->user();
+        if (!$user) return response()->json(['ok' => false], 401);
+
+        $validated = $request->validate([
+            'message' => 'required|string|max:500',
+            'type' => 'nullable|string|max:100',
+        ]);
+
+        $user->notifications()->create([
+            'id' => \Illuminate\Support\Str::uuid(),
+            'type' => 'App\\Notifications\\AdhocNotification',
+            'data' => [
+                'type' => $validated['type'] ?? 'adhoc',
+                'message' => $validated['message'],
+            ],
+        ]);
+
+        return response()->json(['ok' => true]);
+    }
 }
