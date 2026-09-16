@@ -15,7 +15,8 @@
             @can('user-manage')
                 <div class="grid grid-cols-12 gap-2">
                     <div class="col-span-12">
-                        <x-admin.button variant="primary" icon="user-plus" href="#" id="btnTambahuser">Tambah Data Administrator</x-admin.button>
+                        <x-admin.button variant="primary" icon="user-plus" href="#" id="btnTambahuser">Tambah Data
+                            Administrator</x-admin.button>
                     </div>
                 </div>
             @endcan
@@ -85,7 +86,8 @@
                                             {{-- Edit --}}
                                             {{-- ================================================== --}}
                                             @can('user-manage')
-                                                <x-admin.button variant="edit" icon="square-pen" size="sm" href="#" class="edit" id_user="{{ $d->id }}" />
+                                                <x-admin.button variant="edit" icon="square-pen" size="sm"
+                                                    href="#" class="edit" id_user="{{ $d->id }}" />
 
                                                 {{-- ================================================== --}}
                                                 {{-- Reset Password --}}
@@ -95,7 +97,8 @@
 
                                                     @csrf
 
-                                                    <x-admin.button variant="warning" icon="key-round" size="sm" type="submit" class="reset-password-confirm" />
+                                                    <x-admin.button variant="warning" icon="key-round" size="sm"
+                                                        type="submit" class="reset-password-confirm" />
 
                                                 </form>
 
@@ -108,7 +111,8 @@
 
                                                         @csrf
 
-                                                        <x-admin.button variant="danger" icon="trash-2" size="sm" type="submit" class="delete-confirm" />
+                                                        <x-admin.button variant="danger" icon="trash-2" size="sm"
+                                                            type="submit" class="delete-confirm" />
 
                                                     </form>
                                                 @endif
@@ -146,13 +150,17 @@
 @endsection
 
 @php
-    $usersJson = $users->map(fn($u) => [
-        'id' => $u->id,
-        'name' => $u->name,
-        'email' => $u->email,
-        'unit' => $u->unit,
-        'role' => $u->role,
-    ])->toJson();
+    $usersJson = $users
+        ->map(
+            fn($u) => [
+                'id' => $u->id,
+                'name' => $u->name,
+                'email' => $u->email,
+                'unit' => $u->unit,
+                'role' => $u->role,
+            ],
+        )
+        ->toJson();
 @endphp
 
 @push('myscript')
@@ -183,7 +191,9 @@
         document.querySelectorAll('.edit').forEach(function(el) {
             el.addEventListener('click', function(e) {
                 var id = this.getAttribute('id_user');
-                var user = usersData.find(function(u) { return u.id == id; });
+                var user = usersData.find(function(u) {
+                    return u.id == id;
+                });
                 if (!user) return;
 
                 var clone = formTpl.content.cloneNode(true);
@@ -194,10 +204,15 @@
                 form.querySelector('[name="email"]').value = user.email;
                 form.querySelector('[name="unit"]').value = user.unit;
                 form.querySelector('[name="role"]').value = user.role;
-                form.querySelector('[name="password"]').placeholder = 'Kosongkan jika tidak diubah';
+                form.querySelector('[name="password"]').placeholder =
+                    'Kosongkan jika tidak diubah';
 
-                var btn = form.querySelector('button');
-                btn.innerHTML = '<i data-lucide="save" style="width:16px;height:16px;"></i> Perbarui Data!';
+                var btn = form.querySelector('button[type="submit"]') || form.querySelector(
+                    'button');
+                btn.value = user
+                .id; // Menyimpan current user ID di atribut button jika dibutuhkan
+                btn.innerHTML =
+                    '<i data-lucide="save" style="width:16px;height:16px;"></i> Perbarui Data!';
 
                 formContainer.innerHTML = '';
                 formContainer.appendChild(clone);

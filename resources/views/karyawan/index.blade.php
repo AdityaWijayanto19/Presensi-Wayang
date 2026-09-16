@@ -507,13 +507,8 @@
                 Swal.fire({
                     title: 'Tanggal Belum Sampai',
                     html: '<div style="text-align:left">' +
-                        '<b>Laporan WFH</b> hanya bisa diupload pada <b>tanggal WFH</b> yang diajukan.' +
-                        '<br><br>' +
-                        '<table style="margin:0 auto;font-size:13px">' +
-                        '<tr><td style="padding:2px 12px 2px 0;color:#78716c">Hari ini</td><td><b>' + labelToday + '</b></td></tr>' +
-                        '<tr><td style="padding:2px 12px 2px 0;color:#78716c">Tanggal WFH</td><td><b>' + label + '</b></td></tr>' +
-                        '</table>' +
-                        '<br>Silakan upload laporan pada tanggal <b>' + label + '</b>.' +
+                        '<b>Laporan WFH</b> hanya bisa diupload pada <b>tanggal WFH</b> yang diajukan.'
+                        + ' Silakan upload laporan pada tanggal <b>' + label + '</b>.' +
                         '</div>',
                     icon: 'info',
                     confirmButtonColor: '#7a5344',

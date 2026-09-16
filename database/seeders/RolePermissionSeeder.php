@@ -64,32 +64,5 @@ class RolePermissionSeeder extends Seeder
             'laporan-view',
         ];
         $owner->syncPermissions($ownerPermissions);
-
-        // Update user ID 1 ke super_admin (hapus role lama)
-        $user1 = User::find(1);
-        if ($user1) {
-            $user1->removeRole('administrator');
-            $user1->assignRole('super_admin');
-        }
-
-        // Update user lainnya ke admin (hapus role lama)
-        User::where('id', '!=', 1)->each(function ($user) {
-            $user->removeRole('administrator');
-            $user->removeRole('user');
-            $user->assignRole('admin');
-        });
-
-        // Hapus role lama 'administrator' dan 'user' jika sudah tidak dipakai
-        Role::where('name', 'administrator')->delete();
-        Role::where('name', 'user')->delete();
-
-        // Buat unit default untuk admin jika belum ada
-        if (\App\Models\Unitperusahaan::count() === 0) {
-            \App\Models\Unitperusahaan::create([
-                'unit' => 'Admin',
-                'perusahaan' => 'Admin Utama',
-                'jam_masuk' => '08:00:00',
-            ]);
-        }
     }
 }
