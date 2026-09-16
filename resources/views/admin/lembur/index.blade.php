@@ -1,224 +1,343 @@
 @extends('layouts.admin.app')
 
 @section('content')
+
 @section('page_title', 'Data Lembur Karyawan')
 
-    <x-admin.page-body>
+<x-admin.page-body>
+    <x-admin.card>
+        <div class="p-3">
 
-        <x-admin.card>
+            {{-- Filter --}}
+            <form action="/panel/lembur" method="GET">
+                <x-admin.input type="text" name="tanggal" id="tanggal" placeholder="Cari Tanggal Lembur"
+                    value="{{ request('tanggal') }}" autocomplete="off" icon="calendar" />
 
-            <div class="p-3">
-
-                {{-- ================================================== --}}
-                {{-- Filter --}}
-                {{-- ================================================== --}}
-                <form action="/panel/lembur" method="GET">
-
-                    {{-- Tanggal --}}
-                    <x-admin.input
-                        type="text"
-                        name="tanggal"
-                        id="tanggal"
-                        placeholder="Cari Tanggal Lembur"
-                        value="{{ Request('tanggal') ?? date('Y-m-d') }}"
-                        autocomplete="off"
-                        icon="calendar"
-                    />
-
-                    {{-- Filter Nama & Unit --}}
-                    <div class="grid grid-cols-12 gap-2">
-                        <div class="col-span-12 sm:col-span-4">
-                            <x-admin.input
-                                name="nama_karyawan"
-                                placeholder="Cari Nama Karyawan"
-                                value="{{ Request('nama_karyawan') }}"
-                                autocomplete="off"
-                            />
-                        </div>
-                        <div class="col-span-12 sm:col-span-3">
-                            <x-admin.select name="unit" placeholder="Semua Unit">
-                                @foreach ($unitperusahaan as $u)
-                                    <option value="{{ $u->unit }}" {{ Request('unit') == $u->unit ? 'selected' : '' }}>{{ $u->perusahaan }}</option>
-                                @endforeach
-                            </x-admin.select>
-                        </div>
-                        <div class="col-span-12 sm:col-span-5">
-                            <x-admin.button variant="primary" icon="search" type="submit" block>Cari Data</x-admin.button>
-                        </div>
+                <div class="grid grid-cols-12 gap-2">
+                    <div class="col-span-12 sm:col-span-3">
+                        <x-admin.input name="nama_karyawan" placeholder="Cari Nama"
+                            value="{{ Request('nama_karyawan') }}" autocomplete="off" />
                     </div>
-
-                </form>
-
-                {{-- ================================================== --}}
-                {{-- Tabel Data Lembur --}}
-                {{-- ================================================== --}}
-                <div class="overflow-x-auto mt-2">
-                    <table class="min-w-full divide-y divide-slate-200">
-                        <thead>
-                            <tr>
-                                <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">No.</th>
-                                <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Tanggal Lembur</th>
-                                <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">NIK</th>
-                                <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Nama Karyawan</th>
-                                <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Jabatan</th>
-                                <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Unit Perusahaan</th>
-                                <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Durasi</th>
-                                <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Form Lembur</th>
-                                <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Laporan Lembur</th>
-                                <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Actions</th>
-                            </tr>
-                        </thead>
-
-                        <tbody class="divide-y divide-slate-200">
-                            @forelse ($datalembur as $d)
-                                <tr class="hover:bg-slate-50 transition-colors">
-                                    <td class="px-2 py-1.5 text-xs text-slate-700">
-                                        {{ ($datalembur->currentPage() - 1) * $datalembur->perPage() + $loop->iteration }}
-                                    </td>
-                                    <td class="px-2 py-1.5 text-xs text-slate-700">
-                                        {{ date('d-m-Y', strtotime($d->tgl_lembur)) }}
-                                    </td>
-                                    <td class="px-2 py-1.5 text-xs text-slate-700">{{ $d->nik }}</td>
-                                    <td class="px-2 py-1.5 text-xs text-slate-700 truncate-cell">{{ $d->nama_lengkap }}</td>
-                                    <td class="px-2 py-1.5 text-xs text-slate-700 truncate-cell">{{ $d->jabatan }}</td>
-                                    <td class="px-2 py-1.5 text-xs text-slate-700 truncate-cell">{{ $d->perusahaan }}</td>
-                                    <td class="px-2 py-1.5 text-xs text-slate-700">{{ $d->durasi }}</td>
-                                    <td class="px-2 py-1.5 text-xs">
-                                        <x-admin.button variant="primary" icon="file-text" size="sm" href="/presensi/showfilelembur/{{ $d->file_form }}" target="_blank" />
-                                    </td>
-                                    <td class="px-2 py-1.5 text-xs">
-                                        <x-admin.button variant="success" icon="file-check" size="sm" href="/presensi/showfilelembur/{{ $d->file_laporan }}" target="_blank" />
-                                    </td>
-                                    <td class="px-2 py-1.5 text-xs">
-                                        <div class="flex flex-wrap gap-1">
-                                            @can('presensi-edit')
-                                                <x-admin.button variant="edit" icon="square-pen" size="sm" class="edit-lembur"
-                                                    data-id="{{ $d->id }}" data-tgl_lembur="{{ $d->tgl_lembur }}" data-durasi="{{ $d->durasi }}" />
-                                            @endcan
-                                            @can('lembur-delete')
-                                                <form action="/presensi/datalembur/{{ $d->id }}/delete" method="POST" class="inline">
-                                                    @csrf
-                                                    <x-admin.button variant="danger" icon="trash-2" size="sm" type="submit" class="delete-confirm" />
-                                                </form>
-                                            @endcan
-                                        </div>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="10" class="text-center text-slate-500 px-2 py-1.5 text-xs">
-                                        Data lembur tidak ditemukan
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                    <div class="col-span-12 md:col-span-2">
+                        <x-admin.select name="unit" id="unit" searchable placeholder="Semua Unit">
+                            @foreach ($unitperusahaan as $u)
+                                <option value="{{ $u->unit }}" {{ Request('unit') == $u->unit ? 'selected' : '' }}>
+                                    {{ $u->unit }}</option>
+                            @endforeach
+                        </x-admin.select>
+                    </div>
+                    <div class="col-span-12 sm:col-span-2">
+                        <x-admin.select name="status" placeholder="Semua Status">
+                            <option value="pending_atasan"
+                                {{ Request('status') == 'pending_atasan' ? 'selected' : '' }}>Menunggu Atasan</option>
+                            <option value="pending_admin" {{ Request('status') == 'pending_admin' ? 'selected' : '' }}>
+                                Menunggu HR</option>
+                            <option value="approved" {{ Request('status') == 'approved' ? 'selected' : '' }}>Disetujui
+                            </option>
+                            <option value="rejected" {{ Request('status') == 'rejected' ? 'selected' : '' }}>Ditolak
+                            </option>
+                        </x-admin.select>
+                    </div>
+                    <div class="col-span-12 sm:col-span-5">
+                        <x-admin.button variant="primary" icon="search" type="submit" block>Cari Data</x-admin.button>
+                    </div>
                 </div>
+            </form>
 
-                {{-- Pagination --}}
-                <div class="mt-2">
-                    {{ $datalembur->appends(request()->all())->links() }}
-                </div>
-
+            {{-- Table --}}
+            <div class="overflow-x-auto mt-2">
+                <table class="min-w-full divide-y divide-slate-200 border border-slate-200">
+                    <thead class="bg-slate-50">
+                        <tr>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase w-10">No.</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase">Tanggal</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase">NIK</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase">Nama Karyawan</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase">Jabatan</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase">Unit</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase">Status</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase">Durasi</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase">Pengajuan PDF</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase">Laporan PDF</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase w-12">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lemburTableBody" class="divide-y divide-slate-100">
+                        @include('admin.lembur._rows')
+                    </tbody>
+                </table>
             </div>
 
-        </x-admin.card>
-
-    </x-admin.page-body>
-
-    {{-- ================================================== --}}
-    {{-- Modal Edit Lembur --}}
-    {{-- ================================================== --}}
-    <x-admin.modal id="modal-editlembur" title="Edit Data Lembur">
-        <form id="formEditLembur" method="POST">
-            @csrf
-            <input type="hidden" name="lembur_id" id="edit_lembur_id">
-
-            <x-admin.input
-                type="date"
-                name="tgl_lembur"
-                id="edit_tgl_lembur"
-                label="Tanggal Lembur <span class='text-red-500'>*</span>"
-                required
-            />
-
-            <x-admin.select name="durasi" id="edit_durasi" label="Durasi (Jam) <span class='text-red-500'>*</span>" required>
-                <option value="1">1 Jam</option>
-                <option value="2">2 Jam</option>
-                <option value="3">3 Jam</option>
-                <option value="4">4 Jam</option>
-                <option value="5">5 Jam</option>
-            </x-admin.select>
-
-            <div class="mt-2">
-                <x-admin.button variant="primary" icon="save" type="submit" block>Simpan Perubahan</x-admin.button>
+            <div id="lemburPagination" class="mt-2">
+                {{ $datalembur->appends(request()->all())->links() }}
             </div>
-        </form>
-    </x-admin.modal>
+        </div>
+    </x-admin.card>
+</x-admin.page-body>
+
+{{-- Modal Edit Lembur --}}
+<x-admin.modal id="modal-editlembur" title="Edit Data Lembur">
+    <form id="formEditLembur" method="POST">
+        @csrf
+        <input type="hidden" name="lembur_id" id="edit_lembur_id">
+
+        <x-admin.input type="date" name="tgl_lembur" id="edit_tgl_lembur"
+            label="Tanggal Lembur <span class='text-red-500'>*</span>" required />
+
+        <x-admin.select name="durasi" id="edit_durasi" label="Durasi (Jam) <span class='text-red-500'>*</span>" required>
+            <option value="1">1 Jam</option>
+            <option value="2">2 Jam</option>
+            <option value="3">3 Jam</option>
+            <option value="4">4 Jam</option>
+            <option value="5">5 Jam</option>
+        </x-admin.select>
+
+        <div class="mt-2">
+            <x-admin.button variant="primary" icon="save" type="submit" block>Simpan Perubahan</x-admin.button>
+        </div>
+    </form>
+</x-admin.modal>
+
 @endsection
 
 @push('myscript')
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
 
+        try {
             flatpickr("#tanggal", {
                 locale: "id",
                 dateFormat: "Y-m-d",
                 altInput: true,
                 altFormat: "j F Y",
                 allowInput: true,
-                disableMobile: "true"
+                disableMobile: true
             });
-
-            document.querySelector('input[name="tanggal"]').addEventListener('change', function() {
+            var tanggalInput = document.querySelector('input[name="tanggal"]');
+            if (tanggalInput) tanggalInput.addEventListener('change', function() {
                 this.closest('form').submit();
             });
-
-            document.querySelector('select[name="unit"]').addEventListener('change', function() {
+            var unitSelect = document.querySelector('select[name="unit"]');
+            if (unitSelect) unitSelect.addEventListener('change', function() {
                 this.closest('form').submit();
             });
+            var statusSelect = document.querySelector('select[name="status"]');
+            if (statusSelect) statusSelect.addEventListener('change', function() {
+                this.closest('form').submit();
+            });
+        } catch (e) { console.warn('Filter init error:', e); }
 
-            // Edit Lembur Modal
+        // Edit Lembur Modal
+        try {
             document.addEventListener('click', function(e) {
                 var btn = e.target.closest('.edit-lembur');
-                if (!btn) return;
+                if (btn) {
+                    var id = btn.dataset.id;
+                    var tgl = btn.dataset.tgl_lembur;
+                    var durasi = btn.dataset.durasi;
 
-                var id = btn.dataset.id;
-                var tgl = btn.dataset.tgl_lembur;
-                var durasi = btn.dataset.durasi;
-
-                document.getElementById('edit_lembur_id').value = id;
-                document.getElementById('edit_tgl_lembur').value = tgl;
-                document.getElementById('edit_durasi').value = durasi;
-                document.getElementById('formEditLembur').setAttribute('action', '/presensi/lembur/' + id + '/update');
-                window.dispatchEvent(new CustomEvent('open-modal-modal-editlembur'));
+                    document.getElementById('edit_lembur_id').value = id;
+                    document.getElementById('edit_tgl_lembur').value = tgl;
+                    document.getElementById('edit_durasi').value = durasi;
+                    document.getElementById('formEditLembur').action = '/presensi/lembur/' + id + '/update';
+                    window.dispatchEvent(new CustomEvent('open-modal-modal-editlembur'));
+                }
             });
+        } catch (e) { console.warn('Edit handler error:', e); }
 
-            // Konfirmasi Hapus
-            document.addEventListener('click', function(e) {
-                var btn = e.target.closest('.delete-confirm');
-                if (!btn) return;
-                e.preventDefault();
+        // Reject, Reject Laporan, & Delete buttons
+        try {
+            var lemburTableBody = document.getElementById('lemburTableBody');
+            if (lemburTableBody) {
+                lemburTableBody.addEventListener('click', function(e) {
+                    var btnReject = e.target.closest('.btn-reject-admin');
+                    if (btnReject) {
+                        e.preventDefault();
+                        var id = btnReject.dataset.id;
+                        Swal.fire({
+                            title: 'Tolak Lembur?',
+                            input: 'textarea',
+                            inputPlaceholder: 'Alasan penolakan...',
+                            showCancelButton: true,
+                            confirmButtonColor: '#e11d48',
+                            confirmButtonText: 'Tolak',
+                            inputValidator: v => {
+                                if (!v || v.trim().length < 5) return 'Minimal 5 karakter';
+                            }
+                        }).then(res => {
+                            if (res.isConfirmed) {
+                                var form = document.createElement('form');
+                                form.method = 'POST';
+                                form.action = '/presensi/datalembur/' + id + '/reject';
+                                var csrf = document.createElement('input');
+                                csrf.type = 'hidden';
+                                csrf.name = '_token';
+                                csrf.value = '{{ csrf_token() }}';
+                                var reason = document.createElement('input');
+                                reason.type = 'hidden';
+                                reason.name = 'rejected_reason';
+                                reason.value = res.value;
+                                form.appendChild(csrf);
+                                form.appendChild(reason);
+                                document.body.appendChild(form);
+                                form.submit();
+                            }
+                        });
+                        return;
+                    }
 
-                var form = btn.closest('form');
+                    var btnRejectLaporan = e.target.closest('.btn-reject-laporan-admin');
+                    if (btnRejectLaporan) {
+                        e.preventDefault();
+                        var idL = btnRejectLaporan.dataset.id;
+                        Swal.fire({
+                            title: 'Tolak Laporan Lembur?',
+                            input: 'textarea',
+                            inputPlaceholder: 'Alasan penolakan laporan...',
+                            showCancelButton: true,
+                            confirmButtonColor: '#e11d48',
+                            confirmButtonText: 'Tolak Laporan',
+                            inputValidator: v => {
+                                if (!v || v.trim().length < 5) return 'Minimal 5 karakter';
+                            }
+                        }).then(res => {
+                            if (res.isConfirmed) {
+                                var form = document.createElement('form');
+                                form.method = 'POST';
+                                form.action = '/presensi/datalembur/' + idL + '/reject-laporan-admin';
+                                var csrf = document.createElement('input');
+                                csrf.type = 'hidden';
+                                csrf.name = '_token';
+                                csrf.value = '{{ csrf_token() }}';
+                                var reason = document.createElement('input');
+                                reason.type = 'hidden';
+                                reason.name = 'rejected_reason';
+                                reason.value = res.value;
+                                form.appendChild(csrf);
+                                form.appendChild(reason);
+                                document.body.appendChild(form);
+                                form.submit();
+                            }
+                        });
+                        return;
+                    }
 
-                Swal.fire({
-                    title: 'Yakin data ini akan dihapus?',
-                    text: "Data yang sudah dihapus tidak bisa dikembalikan!",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Hapus Data',
-                    backdrop: false
-                }).then(function(result) {
-                    if (result.isConfirmed) {
-                        form.submit();
+                    var btnDelete = e.target.closest('.delete-confirm');
+                    if (btnDelete) {
+                        e.preventDefault();
+                        var form = btnDelete.closest('form');
+                        Swal.fire({
+                            title: 'Yakin data ini akan dihapus?',
+                            text: "Data lembur yang sudah dihapus tidak bisa dikembalikan!",
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#3085d6',
+                            cancelButtonColor: '#d33',
+                            confirmButtonText: 'Hapus Data',
+                            backdrop: false
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                form.submit();
+                            }
+                        });
+                        return;
                     }
                 });
-            });
+            }
+        } catch (e) { console.warn('Action buttons error:', e); }
 
-            if (window.lucide) lucide.createIcons();
-        });
-    </script>
+        // Realtime Polling
+        try {
+            (function() {
+                let lastCheck = new Date().toISOString();
+
+                function getCurrentFilters() {
+                    var params = new URLSearchParams(window.location.search);
+                    var filters = {};
+                    if (params.get('nama_karyawan')) filters.nama_karyawan = params.get('nama_karyawan');
+                    if (params.get('unit')) filters.unit = params.get('unit');
+                    if (params.get('tanggal')) filters.tanggal = params.get('tanggal');
+                    if (params.get('status')) filters.status = params.get('status');
+                    if (params.get('page')) filters.page = params.get('page');
+                    return filters;
+                }
+
+                function fetchTableData() {
+                    var filters = getCurrentFilters();
+                    var qs = new URLSearchParams(filters).toString();
+                    fetch('/api/realtime/admin/lembur-data' + (qs ? '?' + qs : ''), {
+                            credentials: 'same-origin'
+                        })
+                        .then(function(r) { return r.json(); })
+                        .then(function(data) {
+                            var tbody = document.getElementById('lemburTableBody');
+                            var pagination = document.getElementById('lemburPagination');
+                            if (tbody && data.html) tbody.innerHTML = data.html;
+                            if (pagination && data.pagination) pagination.innerHTML = data.pagination;
+                            if (window.lucide) lucide.createIcons();
+                        }).catch(function() {});
+                }
+
+                var adminPollInterval = 5000;
+
+                function pollAdminData() {
+                    return fetch('/api/realtime/admin/lembur-check?last_check=' + encodeURIComponent(lastCheck), {
+                            credentials: 'same-origin'
+                        })
+                        .then(function(r) { return r.json(); })
+                        .then(function(check) {
+                            if (check.updated_data) {
+                                lastCheck = new Date().toISOString();
+                                fetchTableData();
+                            }
+                            adminPollInterval = 5000;
+                        }).catch(function() {
+                            adminPollInterval = Math.min(adminPollInterval * 2, 30000);
+                        });
+                }
+
+                function startAdminPoll() {
+                    setTimeout(function() {
+                        pollAdminData().then(function() {
+                            startAdminPoll();
+                        }).catch(function() {
+                            startAdminPoll();
+                        });
+                    }, adminPollInterval);
+                }
+
+                pollAdminData().then(function() {
+                    startAdminPoll();
+                }).catch(function() {
+                    startAdminPoll();
+                });
+
+                var pagination = document.getElementById('lemburPagination');
+                if (pagination) {
+                    pagination.addEventListener('click', function(e) {
+                        var link = e.target.closest('a');
+                        if (!link) return;
+                        e.preventDefault();
+                        var apiUrl = link.href.replace('/panel/lembur', '/api/realtime/admin/lembur-data');
+                        fetch(apiUrl, {
+                                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                                credentials: 'same-origin'
+                            })
+                            .then(function(r) { return r.json(); })
+                            .then(function(data) {
+                                var tbody = document.getElementById('lemburTableBody');
+                                var pag = document.getElementById('lemburPagination');
+                                if (tbody && data.html) tbody.innerHTML = data.html;
+                                if (pag && data.pagination) pag.innerHTML = data.pagination;
+                                window.history.pushState({}, '', link.href);
+                                if (window.lucide) lucide.createIcons();
+                            }).catch(function() {});
+                    });
+                }
+            })();
+        } catch (e) { console.warn('Realtime polling error:', e); }
+
+        if (window.lucide) lucide.createIcons();
+    });
+</script>
 @endpush

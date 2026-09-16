@@ -308,11 +308,88 @@
                                 <div class="flex">
                                     @php $pdfUrl = !empty($p->pdf_form_path) ? Storage::url($p->pdf_form_path) : (!empty($p->file_form) ? "/presensi/showfilewfh/{$p->file_form}" : null); @endphp
                                     @if ($pdfUrl)
-                                        <button type="button"
-                                            class="text-[11px] text-sky-700 hover:underline cursor-pointer"
-                                            onclick="window.open('{{ $pdfUrl }}','_blank')">Form Pengajuan</button>
+                                        <a href="{{ $pdfUrl }}" target="_blank"
+                                           class="text-[11px] text-sky-700 hover:underline">Form Pengajuan</a>
                                     @endif
                                 </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+        </div>
+
+        {{-- LEMBUR SAYA & PERLU PERSETUJUAN --}}
+        {{-- PENDING LAPORAN LEMBUR ATASAN --}}
+        <div id="pendingLaporanLemburSection">
+            @if (isset($pendingLaporanLemburAtasan) && $pendingLaporanLemburAtasan->count() > 0)
+                <div class="mt-6">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-[15px] font-bold text-[#1c1917] flex items-center gap-2">
+                            <span class="w-8 h-8 rounded-xl bg-violet-100 border border-violet-200 flex items-center justify-center text-violet-700"><i data-lucide="file-text"></i></span>
+                            Laporan Lembur Perlu Persetujuan ({{ $pendingLaporanLemburAtasan->count() }})
+                        </h3>
+                    </div>
+                    @foreach ($pendingLaporanLemburAtasan as $p)
+                        <div class="card mb-2 border-l-4 border-l-violet-400 bg-violet-50/50">
+                            <div class="card-body p-3">
+                                <div class="flex items-start justify-between gap-3">
+                                    <div class="flex-1 min-w-0">
+                                        <div class="text-[13px] font-bold text-[#1c1917]">{{ $p->karyawan->nama_lengkap ?? '-' }} <span class="text-[11px] font-normal text-[#78716c]">• {{ $p->karyawan->jabatan ?? '-' }} • {{ $p->karyawan->posisi ?? '-' }}</span></div>
+                                        <div class="text-[11px] text-[#78716c]">{{ date('d M Y', strtotime($p->tgl_lembur)) }} • {{ $p->karyawan->unit ?? '-' }} ({{ $p->karyawan->unitperusahaan->perusahaan ?? '-' }})</div>
+                                        <div class="text-[11px] text-[#57534e] mt-1">Laporan lembur menunggu persetujuan Anda</div>
+                                        @if (!empty($p->laporan_file))
+                                            <div class="mt-1">
+                                                <a href="/presensi/showfilelembur/{{ basename($p->laporan_file) }}" target="_blank" class="text-[11px] text-sky-700 hover:underline">Form Laporan</a>
+                                            </div>
+                                        @elseif(!empty($p->laporan_deskripsi))
+                                            <div class="mt-1">
+                                                <button type="button" class="text-[11px] text-sky-700 hover:underline cursor-pointer js-preview-laporan-lembur" data-deskripsi="{{ $p->laporan_deskripsi }}" data-tgl="{{ date('d M Y', strtotime($p->tgl_lembur)) }}" data-label="Laporan Lembur — {{ $p->karyawan->nama_lengkap ?? '-' }}">Form Laporan</button>
+                                            </div>
+                                        @endif
+                                    </div>
+                                    <div class="flex flex-col gap-1.5 shrink-0">
+                                        <button type="button" class="btn btn-sm bg-emerald-500 text-white rounded-full px-3 py-1 text-[11px] w-full btn-approve-laporan-atasan-lembur" data-id="{{ $p->id }}">Setujui</button>
+                                        <button type="button" class="btn btn-sm bg-white border border-rose-200 text-rose-700 rounded-full px-3 py-1 text-[11px] w-full btn-reject-laporan-atasan-lembur" data-id="{{ $p->id }}">Tolak</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+        </div>
+
+        {{-- PENDING PENGAJUAN LEMBUR ATASAN --}}
+        <div id="pendingAtasanLemburSection">
+            @if (isset($pendingAtasanLembur) && $pendingAtasanLembur->count() > 0)
+                <div class="mt-6">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-[15px] font-bold text-[#1c1917] flex items-center gap-2">
+                            <span class="w-8 h-8 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center text-amber-700"><i data-lucide="shield-check"></i></span>
+                            Pengajuan Lembur Perlu Persetujuan ({{ $pendingAtasanLembur->count() }})
+                        </h3>
+                    </div>
+                    @foreach ($pendingAtasanLembur as $p)
+                        <div class="card mb-2 border-l-4 border-l-amber-400 bg-amber-50/50">
+                            <div class="card-body p-3">
+                                <div class="flex items-start justify-between gap-3">
+                                    <div class="flex-1 min-w-0">
+                                        <div class="text-[13px] font-bold text-[#1c1917]">{{ $p->karyawan->nama_lengkap ?? '-' }} <span class="text-[11px] font-normal text-[#78716c]">• {{ $p->karyawan->jabatan ?? '-' }} • {{ $p->karyawan->posisi ?? '-' }}</span></div>
+                                        <div class="text-[11px] text-[#78716c]">{{ date('d M Y', strtotime($p->tgl_lembur)) }} • {{ $p->karyawan->unit ?? '-' }} ({{ $p->karyawan->unitperusahaan->perusahaan ?? '-' }})</div>
+                                        <div class="text-[11px] text-[#57534e] mt-1 line-clamp-2">{{ Str::limit($p->keterangan ?? '', 70) }}</div>
+                                    </div>
+                                    <div class="flex flex-col gap-1.5 shrink-0">
+                                        <button type="button" class="btn btn-sm bg-emerald-500 text-white rounded-full px-3 py-1 text-[11px] w-full btn-approve-atasan-lembur" data-id="{{ $p->id }}">Setujui</button>
+                                        <button type="button" class="btn btn-sm bg-white border border-rose-200 text-rose-700 rounded-full px-3 py-1 text-[11px] w-full btn-reject-atasan-lembur" data-id="{{ $p->id }}">Tolak</button>
+                                    </div>
+                                </div>
+                                @if (!empty($p->pdf_form_path))
+                                    <div class="flex mt-1">
+                                        <a href="/presensi/showfilelembur/{{ basename($p->pdf_form_path) }}" target="_blank"
+                                           class="text-[11px] text-sky-700 hover:underline">Form Pengajuan</a>
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     @endforeach
@@ -339,7 +416,6 @@
                                 'pending_admin' => 'bg-amber-100 text-amber-700 border-amber-200',
                                 'approved' => 'bg-emerald-100 text-emerald-700 border-emerald-200',
                                 'rejected' => 'bg-rose-100 text-rose-700 border-rose-200',
-                                'unpaid' => 'bg-gray-100 text-gray-700 border-gray-200',
                                 default => 'bg-gray-100 text-gray-700 border-gray-200',
                             };
                             $label = match ($w->status) {
@@ -347,7 +423,6 @@
                                 'pending_admin' => 'Menunggu Persetujuan HR',
                                 'approved' => empty($w->laporan_deskripsi) ? 'Menunggu Laporan' : 'Disetujui',
                                 'rejected' => 'Ditolak',
-                                'unpaid' => 'Unpaid',
                                 default => $w->status,
                             };
                             $lStatus = $w->laporan_status ?? null;
@@ -394,6 +469,86 @@
                                             data-tgl-wfh="{{ date('Y-m-d', strtotime($w->tgl_wfh)) }}">Upload
                                             Laporan</a>
                                     @else
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+        </div>
+
+        {{-- LEMBUR SAYA PERLU TINDAKAN --}}
+        <div id="lemburSayaSection">
+            @if (isset($lemburSaya) && $lemburSaya->count() > 0)
+                <div class="mt-6">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-[15px] font-bold text-[#1c1917] flex items-center gap-2">
+                            <span class="w-8 h-8 rounded-xl bg-orange-100 border border-orange-200 flex items-center justify-center text-orange-700"><i data-lucide="timer"></i></span>
+                            Lembur Saya
+                        </h3>
+                        <a href="/lembur" class="text-[11px] font-semibold text-orange-700">Lihat Semua</a>
+                    </div>
+                    @foreach ($lemburSaya as $l)
+                        @php
+                            $lBadge = match ($l->status) {
+                                'pending_atasan' => 'bg-amber-100 text-amber-700 border-amber-200',
+                                'pending_admin' => 'bg-amber-100 text-amber-700 border-amber-200',
+                                'approved' => 'bg-emerald-100 text-emerald-700 border-emerald-200',
+                                'rejected' => 'bg-rose-100 text-rose-700 border-rose-200',
+                                default => 'bg-gray-100 text-gray-700 border-gray-200',
+                            };
+                            $lLabel = match ($l->status) {
+                                'pending_atasan' => 'Menunggu Persetujuan',
+                                'pending_admin' => 'Menunggu Persetujuan HR',
+                                'approved' => empty($l->laporan_deskripsi) ? 'Menunggu Laporan' : 'Disetujui',
+                                'rejected' => 'Ditolak',
+                                default => $l->status,
+                            };
+                            $llStatus = $l->laporan_status ?? null;
+                        @endphp
+                        <div class="card mb-2">
+                            <div class="card-body p-3 flex items-center justify-between">
+                                <div class="flex-1 min-w-0">
+                                    <div class="text-[13px] font-bold text-[#1c1917]">
+                                        {{ date('d M Y', strtotime($l->tgl_lembur)) }} <span class="ml-1 inline-flex items-center rounded-full border text-[10px] px-2 py-0.5 {{ $lBadge }}">{{ $lLabel }}</span>
+                                    </div>
+                                    @if (!empty($l->keterangan))
+                                        <div class="text-[11px] text-[#78716c] mt-0.5 italic">{{ Str::limit($l->keterangan, 50) }}</div>
+                                    @endif
+                                    @if ($l->durasi_formatted)
+                                        <div class="text-[11px] text-[#78716c] mt-0.5">Durasi: {{ $l->durasi_formatted }}</div>
+                                    @endif
+                                    @if ($llStatus)
+                                        @php
+                                            $llBadge = match ($llStatus) {
+                                                'pending_atasan' => 'bg-amber-100 text-amber-700',
+                                                'pending_admin' => 'bg-blue-100 text-blue-700',
+                                                'approved' => 'bg-emerald-100 text-emerald-700',
+                                                'rejected' => 'bg-rose-100 text-rose-700',
+                                                default => 'bg-gray-100 text-gray-700',
+                                            };
+                                            $llLabel = match ($llStatus) {
+                                                'pending_atasan' => 'Laporan: Menunggu Atasan',
+                                                'pending_admin' => 'Laporan: Menunggu HR',
+                                                'approved' => 'Laporan: Disetujui',
+                                                'rejected' => 'Laporan: Ditolak',
+                                                default => 'Laporan: ' . $llStatus,
+                                            };
+                                        @endphp
+                                        <span class="ml-1 inline-flex items-center rounded-full border text-[10px] px-2 py-0.5 {{ $llBadge }}">{{ $llLabel }}</span>
+                                    @endif
+                                </div>
+                                <div class="flex items-center gap-2 shrink-0 ml-2">
+                                    @if ($l->status === 'approved' && empty($l->foto_mulai))
+                                        <a href="/lembur/{{ $l->id }}/foto"
+                                            class="btn btn-sm bg-blue-500 text-white rounded-full px-3 py-1 text-[11px] font-semibold">Ambil Foto</a>
+                                    @elseif ($l->status === 'approved' && !empty($l->foto_mulai) && empty($l->foto_selesai))
+                                        <a href="/lembur/{{ $l->id }}/foto"
+                                            class="btn btn-sm bg-orange-500 text-white rounded-full px-3 py-1 text-[11px] font-semibold">Foto Selesai</a>
+                                    @elseif ($l->status === 'approved' && !empty($l->foto_mulai) && !empty($l->foto_selesai) && empty($l->laporan_deskripsi))
+                                        <a href="/lembur/{{ $l->id }}/laporan"
+                                            class="btn btn-sm bg-emerald-500 text-white rounded-full px-3 py-1 text-[11px] font-semibold">Upload Laporan</a>
                                     @endif
                                 </div>
                             </div>
@@ -593,9 +748,10 @@
                     willClose: function() {
                         clearInterval(countdownInterval);
                     }
+                            });
+                        }
+                    });
                 });
-            }
-        });
     </script>
 
     {{-- NOTIFIKASI & REALTIME POLLING + WEB PUSH + ALERT H-1 --}}
@@ -660,6 +816,8 @@
             let lastNotifCount = {{ count($notifications ?? []) }};
             let lastPendingAtasan = {{ $pendingAtasan->count() ?? 0 }};
             let lastPendingLaporan = {{ $pendingLaporanAtasan->count() ?? 0 }};
+            let lastPendingAtasanLembur = {{ $pendingAtasanLembur->count() ?? 0 }};
+            let lastPendingLaporanLembur = {{ $pendingLaporanLemburAtasan->count() ?? 0 }};
             let isPolling = false;
             let sectionHashes = {};
             let pollInterval = 5000;
@@ -843,6 +1001,70 @@
                             lastPendingLaporan = count;
                         }
 
+                        // 5b. Update pending pengajuan lembur atasan
+                        if (data.pendingAtasanLembur) {
+                            const count = data.pendingAtasanLembur.length;
+                            const section = document.getElementById('pendingAtasanLemburSection');
+                            if (section) {
+                                if (count === 0) {
+                                    updateSection(section, '', 'pendingAtasanLembur');
+                                } else {
+                                    let html = '<div class="mt-6"><div class="flex items-center justify-between mb-2"><h3 class="text-[15px] font-bold text-[#1c1917] flex items-center gap-2"><span class="w-8 h-8 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center text-amber-700"><i data-lucide="shield-check"></i></span>Pengajuan Lembur Perlu Persetujuan (' + count + ')</h3></div>';
+                                    data.pendingAtasanLembur.forEach(function(p) {
+                                        var k = p.karyawan || {};
+                                        var up = k.unitperusahaan || {};
+                                        html += '<div class="card mb-2 border-l-4 border-l-amber-400 bg-amber-50/50"><div class="card-body p-3"><div class="flex items-start justify-between gap-3"><div class="flex-1 min-w-0"><div class="text-[13px] font-bold text-[#1c1917]">' + esc(k.nama_lengkap || '-') + ' <span class="text-[11px] font-normal text-[#78716c]">• ' + esc(k.jabatan || '-') + ' • ' + esc(k.posisi || '-') + '</span></div><div class="text-[11px] text-[#78716c]">' + esc((p.tgl_lembur || '').substring(0, 10)) + ' • ' + esc(k.unit || '-') + ' (' + esc(up.perusahaan || '-') + ')</div><div class="text-[11px] text-[#57534e] mt-1 line-clamp-2">' + esc((p.keterangan || '').substring(0, 70)) + '</div>' + '</div><div class="flex flex-col gap-1.5 shrink-0"><button type="button" class="btn btn-sm bg-emerald-500 text-white rounded-full px-3 py-1 text-[11px] w-full btn-approve-atasan-lembur" data-id="' + esc(p.id) + '">Setujui</button><button type="button" class="btn btn-sm bg-white border border-rose-200 text-rose-700 rounded-full px-3 py-1 text-[11px] w-full btn-reject-atasan-lembur" data-id="' + esc(p.id) + '">Tolak</button></div></div>' + (p.pdf_form_path ? '<div class="flex mt-1"><a href="/presensi/showfilelembur/' + esc(p.pdf_form_path.split('/').pop()) + '" target="_blank" class="text-[11px] text-sky-700 hover:underline">Form Pengajuan</a></div>' : '') + '</div></div>';
+                                    });
+                                    html += '</div>';
+                                    updateSection(section, html, 'pendingAtasanLembur');
+                                }
+                            }
+                            if (count > lastPendingAtasanLembur && count > 0) {
+                                if (Notification.permission === 'granted') {
+                                    new Notification('Persetujuan Lembur', {
+                                        body: 'Ada ' + count + ' pengajuan lembur menunggu persetujuan Anda',
+                                        icon: '/assets/img/login/logo_aplikasi.png'
+                                    });
+                                }
+                            }
+                            lastPendingAtasanLembur = count;
+                        }
+
+                        // 5c. Update pending laporan lembur atasan
+                        if (data.pendingLaporanLemburAtasan) {
+                            const count = data.pendingLaporanLemburAtasan.length;
+                            const section = document.getElementById('pendingLaporanLemburSection');
+                            if (section) {
+                                if (count === 0) {
+                                    updateSection(section, '', 'pendingLaporanLembur');
+                                } else {
+                                    let html = '<div class="mt-6"><div class="flex items-center justify-between mb-2"><h3 class="text-[15px] font-bold text-[#1c1917] flex items-center gap-2"><span class="w-8 h-8 rounded-xl bg-violet-100 border border-violet-200 flex items-center justify-center text-violet-700"><i data-lucide="file-text"></i></span>Laporan Lembur Perlu Persetujuan (' + count + ')</h3></div>';
+                                    data.pendingLaporanLemburAtasan.forEach(function(p) {
+                                        var k = p.karyawan || {};
+                                        var up = k.unitperusahaan || {};
+                                        var previewBtn = '';
+                                        if (p.laporan_file) {
+                                            previewBtn = '<div class="mt-1"><a href="/presensi/showfilelembur/' + esc(p.laporan_file.split('/').pop()) + '" target="_blank" class="text-[11px] text-sky-700 hover:underline">Form Laporan</a></div>';
+                                        } else if (p.laporan_deskripsi) {
+                                            previewBtn = '<div class="mt-1"><button type="button" class="text-[11px] text-sky-700 hover:underline cursor-pointer js-preview-laporan-lembur" data-deskripsi="' + esc(p.laporan_deskripsi || '') + '" data-tgl="' + esc((p.tgl_lembur || '').substring(0, 10)) + '" data-label="Laporan Lembur — ' + esc(k.nama_lengkap || '-') + '">Form Laporan</button></div>';
+                                        }
+                                        html += '<div class="card mb-2 border-l-4 border-l-violet-400 bg-violet-50/50"><div class="card-body p-3"><div class="flex items-start justify-between gap-3"><div class="flex-1 min-w-0"><div class="text-[13px] font-bold text-[#1c1917]">' + esc(k.nama_lengkap || '-') + ' <span class="text-[11px] font-normal text-[#78716c]">• ' + esc(k.jabatan || '-') + ' • ' + esc(k.posisi || '-') + '</span></div><div class="text-[11px] text-[#78716c]">' + esc((p.tgl_lembur || '').substring(0, 10)) + ' • ' + esc(k.unit || '-') + ' (' + esc(up.perusahaan || '-') + ')</div><div class="text-[11px] text-[#57534e] mt-1">Laporan lembur menunggu persetujuan Anda</div>' + previewBtn + '</div><div class="flex flex-col gap-1.5 shrink-0"><button type="button" class="btn btn-sm bg-emerald-500 text-white rounded-full px-3 py-1 text-[11px] w-full btn-approve-laporan-atasan-lembur" data-id="' + esc(p.id) + '">Setujui</button><button type="button" class="btn btn-sm bg-white border border-rose-200 text-rose-700 rounded-full px-3 py-1 text-[11px] w-full btn-reject-laporan-atasan-lembur" data-id="' + esc(p.id) + '">Tolak</button></div></div></div></div>';
+                                    });
+                                    html += '</div>';
+                                    updateSection(section, html, 'pendingLaporanLembur');
+                                }
+                            }
+                            if (count > lastPendingLaporanLembur && count > 0) {
+                                if (Notification.permission === 'granted') {
+                                    new Notification('Persetujuan Laporan Lembur', {
+                                        body: 'Ada ' + count + ' laporan lembur menunggu persetujuan Anda',
+                                        icon: '/assets/img/login/logo_aplikasi.png'
+                                    });
+                                }
+                            }
+                            lastPendingLaporanLembur = count;
+                        }
+
                         // 6. Update presensi jam in/out + foto
                         if (data.presensi) {
                             var p = data.presensi;
@@ -1002,8 +1224,7 @@
                                         'approved': ['bg-emerald-100 text-emerald-700 border-emerald-200',
                                             ''
                                         ],
-                                        'rejected': ['bg-rose-100 text-rose-700 border-rose-200', 'Ditolak'],
-                                        'unpaid': ['bg-gray-100 text-gray-700 border-gray-200', 'Unpaid']
+                                        'rejected': ['bg-rose-100 text-rose-700 border-rose-200', 'Ditolak']
                                     };
                                     let lBadgeMap = {
                                         'pending_atasan': 'bg-amber-100 text-amber-700',
@@ -1069,6 +1290,66 @@
                                     });
                                     html += '</div>';
                                     updateSection(section, html, 'wfhSaya');
+                                }
+                            }
+                        }
+
+                        // 8. Update Lembur Saya
+                        if (data.lemburSaya) {
+                            const section = document.getElementById('lemburSayaSection');
+                            if (section) {
+                                if (data.lemburSaya.length === 0) {
+                                    section.innerHTML = '';
+                                } else {
+                                    let lBadgeMap = {
+                                        'pending_atasan': ['bg-amber-100 text-amber-700 border-amber-200', 'Menunggu Persetujuan'],
+                                        'pending_admin': ['bg-amber-100 text-amber-700 border-amber-200', 'Menunggu Persetujuan HR'],
+                                        'approved': ['bg-emerald-100 text-emerald-700 border-emerald-200', ''],
+                                        'rejected': ['bg-rose-100 text-rose-700 border-rose-200', 'Ditolak']
+                                    };
+                                    let llBadgeMap = {
+                                        'pending_atasan': 'bg-amber-100 text-amber-700',
+                                        'pending_admin': 'bg-blue-100 text-blue-700',
+                                        'approved': 'bg-emerald-100 text-emerald-700',
+                                        'rejected': 'bg-rose-100 text-rose-700'
+                                    };
+                                    let llLabelMap = {
+                                        'pending_atasan': 'Laporan: Menunggu Atasan',
+                                        'pending_admin': 'Laporan: Menunggu HR',
+                                        'approved': 'Laporan: Disetujui',
+                                        'rejected': 'Laporan: Ditolak'
+                                    };
+                                    let html = '<div class="mt-6"><div class="flex items-center justify-between mb-2"><h3 class="text-[15px] font-bold text-[#1c1917] flex items-center gap-2"><span class="w-8 h-8 rounded-xl bg-orange-100 border border-orange-200 flex items-center justify-center text-orange-700"><i data-lucide="timer"></i></span>Lembur Saya</h3><a href="/lembur" class="text-[11px] font-semibold text-orange-700">Lihat Semua</a></div>';
+                                    data.lemburSaya.forEach(function(l) {
+                                        var b = lBadgeMap[l.status] || ['bg-gray-100 text-gray-700 border-gray-200', l.status];
+                                        if (l.status === 'approved' && !l.laporan_deskripsi) {
+                                            b = [b[0], 'Menunggu Laporan'];
+                                        } else if (l.status === 'approved') {
+                                            b = [b[0], 'Disetujui'];
+                                        }
+                                        var tglParts = (l.tgl_lembur || '').substring(0, 10).split('-');
+                                        var months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+                                        var dateStr = parseInt(tglParts[2]) + ' ' + (months[parseInt(tglParts[1]) - 1] || '') + ' ' + tglParts[0];
+                                        var keterangan = l.keterangan ? '<div class="text-[11px] text-[#78716c] mt-0.5 italic">' + esc((l.keterangan.length > 50 ? l.keterangan.substring(0, 50) + '...' : l.keterangan)) + '</div>' : '';
+                                        var durasi = l.durasi_formatted ? '<div class="text-[11px] text-[#78716c] mt-0.5">Durasi: ' + esc(l.durasi_formatted) + '</div>' : '';
+                                        var laporanBadge = '';
+                                        if (l.laporan_status) {
+                                            var lb = llBadgeMap[l.laporan_status] || 'bg-gray-100 text-gray-700';
+                                            var ll = llLabelMap[l.laporan_status] || 'Laporan: ' + l.laporan_status;
+                                            laporanBadge = '<span class="ml-1 inline-flex items-center rounded-full border text-[10px] px-2 py-0.5 ' + lb + '">' + esc(ll) + '</span>';
+                                        }
+                                        var actionBtn = '';
+                                        if (l.status === 'approved' && !l.foto_mulai) {
+                                            actionBtn = '<a href="/lembur/' + l.id + '/foto" class="btn btn-sm bg-blue-500 text-white rounded-full px-3 py-1 text-[11px] font-semibold">Ambil Foto</a>';
+                                        } else if (l.status === 'approved' && l.foto_mulai && !l.foto_selesai) {
+                                            actionBtn = '<a href="/lembur/' + l.id + '/foto" class="btn btn-sm bg-orange-500 text-white rounded-full px-3 py-1 text-[11px] font-semibold">Foto Selesai</a>';
+                                        } else if (l.status === 'approved' && l.foto_mulai && l.foto_selesai && !l.laporan_deskripsi) {
+                                            actionBtn = '<a href="/lembur/' + l.id + '/laporan" class="btn btn-sm bg-emerald-500 text-white rounded-full px-3 py-1 text-[11px] font-semibold">Upload Laporan</a>';
+                                        }
+                                        html += '<div class="card mb-2"><div class="card-body p-3 flex items-center justify-between"><div class="flex-1 min-w-0"><div class="text-[13px] font-bold text-[#1c1917]">' + dateStr + ' <span class="ml-1 inline-flex items-center rounded-full border text-[10px] px-2 py-0.5 ' + b[0] + '">' + esc(b[1]) + '</span></div>' + keterangan + durasi + laporanBadge + '</div><div class="flex items-center gap-2 shrink-0 ml-2">' + actionBtn + '</div></div></div>';
+                                    });
+                                    html += '</div>';
+                                    updateSection(section, html, 'lemburSaya');
                                 }
                             }
                         }
@@ -1258,6 +1539,171 @@
                             }).catch(function() {
                                 btnL.disabled = false;
                                 btnL.textContent = 'Tolak';
+                                Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan jaringan.' });
+                            });
+                        }
+                    });
+                }
+
+                // Approve Pengajuan Lembur Atasan
+                var btnApproveLembur = e.target.closest('.btn-approve-atasan-lembur');
+                if (btnApproveLembur) {
+                    e.preventDefault();
+                    var idLembur = btnApproveLembur.dataset.id;
+                    Swal.fire({
+                        title: 'Setujui Lembur?',
+                        text: 'Pengajuan lembur akan diteruskan ke HR.',
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#10b981',
+                        confirmButtonText: 'Ya, Setujui',
+                        cancelButtonText: 'Batal'
+                    }).then(function(r) {
+                        if (r.isConfirmed) {
+                            btnApproveLembur.disabled = true;
+                            btnApproveLembur.textContent = 'Memproses...';
+                            fetch('/lembur/' + idLembur + '/approve-atasan', {
+                                method: 'POST',
+                                headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                                credentials: 'same-origin'
+                            }).then(function(resp) { return resp.json(); }).then(function(data) {
+                                if (data.success) {
+                                    Swal.fire({ icon: 'success', title: 'Berhasil', text: data.message, timer: 1500, showConfirmButton: false });
+                                    setTimeout(function() { pollRealtime(); }, 300);
+                                } else {
+                                    btnApproveLembur.disabled = false;
+                                    btnApproveLembur.textContent = 'Setujui';
+                                    Swal.fire({ icon: 'error', title: 'Gagal', text: data.message });
+                                }
+                            }).catch(function() {
+                                btnApproveLembur.disabled = false;
+                                btnApproveLembur.textContent = 'Setujui';
+                                Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan jaringan.' });
+                            });
+                        }
+                    });
+                    return;
+                }
+
+                // Reject Pengajuan Lembur Atasan
+                var btnRejectLembur = e.target.closest('.btn-reject-atasan-lembur');
+                if (btnRejectLembur) {
+                    e.preventDefault();
+                    var idRL = btnRejectLembur.dataset.id;
+                    Swal.fire({
+                        title: 'Tolak Lembur?',
+                        input: 'textarea',
+                        inputPlaceholder: 'Alasan penolakan...',
+                        showCancelButton: true,
+                        confirmButtonColor: '#e11d48',
+                        confirmButtonText: 'Tolak',
+                        inputValidator: function(v) {
+                            if (!v || v.trim().length < 5) return 'Minimal 5 karakter';
+                        }
+                    }).then(function(r) {
+                        if (r.isConfirmed) {
+                            btnRejectLembur.disabled = true;
+                            btnRejectLembur.textContent = 'Memproses...';
+                            fetch('/lembur/' + idRL + '/reject-atasan', {
+                                method: 'POST',
+                                headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' },
+                                credentials: 'same-origin',
+                                body: JSON.stringify({ rejected_reason: r.value })
+                            }).then(function(resp) { return resp.json(); }).then(function(data) {
+                                if (data.success) {
+                                    Swal.fire({ icon: 'success', title: 'Berhasil', text: data.message, timer: 1500, showConfirmButton: false });
+                                    setTimeout(function() { pollRealtime(); }, 300);
+                                } else {
+                                    btnRejectLembur.disabled = false;
+                                    btnRejectLembur.textContent = 'Tolak';
+                                    Swal.fire({ icon: 'error', title: 'Gagal', text: data.message });
+                                }
+                            }).catch(function() {
+                                btnRejectLembur.disabled = false;
+                                btnRejectLembur.textContent = 'Tolak';
+                                Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan jaringan.' });
+                            });
+                        }
+                    });
+                    return;
+                }
+
+                // Approve Laporan Lembur Atasan
+                var btnApproveLapLembur = e.target.closest('.btn-approve-laporan-atasan-lembur');
+                if (btnApproveLapLembur) {
+                    e.preventDefault();
+                    var idAL = btnApproveLapLembur.dataset.id;
+                    Swal.fire({
+                        title: 'Setujui Laporan Lembur?',
+                        text: 'Laporan lembur akan diteruskan ke Admin.',
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#10b981',
+                        confirmButtonText: 'Ya, Setujui',
+                        cancelButtonText: 'Batal'
+                    }).then(function(r) {
+                        if (r.isConfirmed) {
+                            btnApproveLapLembur.disabled = true;
+                            btnApproveLapLembur.textContent = 'Memproses...';
+                            fetch('/lembur/' + idAL + '/approve-laporan-atasan', {
+                                method: 'POST',
+                                headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                                credentials: 'same-origin'
+                            }).then(function(resp) { return resp.json(); }).then(function(data) {
+                                if (data.success) {
+                                    Swal.fire({ icon: 'success', title: 'Berhasil', text: data.message, timer: 1500, showConfirmButton: false });
+                                    setTimeout(function() { pollRealtime(); }, 300);
+                                } else {
+                                    btnApproveLapLembur.disabled = false;
+                                    btnApproveLapLembur.textContent = 'Setujui';
+                                    Swal.fire({ icon: 'error', title: 'Gagal', text: data.message });
+                                }
+                            }).catch(function() {
+                                btnApproveLapLembur.disabled = false;
+                                btnApproveLapLembur.textContent = 'Setujui';
+                                Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan jaringan.' });
+                            });
+                        }
+                    });
+                    return;
+                }
+
+                // Reject Laporan Lembur Atasan
+                var btnRejectLapLembur = e.target.closest('.btn-reject-laporan-atasan-lembur');
+                if (btnRejectLapLembur) {
+                    e.preventDefault();
+                    var idRLap = btnRejectLapLembur.dataset.id;
+                    Swal.fire({
+                        title: 'Tolak Laporan Lembur?',
+                        input: 'textarea',
+                        inputPlaceholder: 'Alasan penolakan...',
+                        showCancelButton: true,
+                        confirmButtonColor: '#e11d48',
+                        confirmButtonText: 'Tolak',
+                        inputValidator: function(v) {
+                            if (!v || v.trim().length < 5) return 'Minimal 5 karakter';
+                        }
+                    }).then(function(r) {
+                        if (r.isConfirmed) {
+                            btnRejectLapLembur.disabled = true;
+                            btnRejectLapLembur.textContent = 'Memproses...';
+                            fetch('/lembur/' + idRLap + '/reject-laporan-atasan', {
+                                method: 'POST',
+                                headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' },
+                                credentials: 'same-origin',
+                                body: JSON.stringify({ rejected_reason: r.value })
+                            }).then(function(resp) { return resp.json(); }).then(function(data) {
+                                if (data.success) {
+                                    Swal.fire({ icon: 'success', title: 'Berhasil', text: data.message, timer: 1500, showConfirmButton: false });
+                                    setTimeout(function() { pollRealtime(); }, 300);
+                                } else {
+                                    btnRejectLapLembur.disabled = false;
+                                    btnRejectLapLembur.textContent = 'Tolak';
+                                    Swal.fire({ icon: 'error', title: 'Gagal', text: data.message });
+                                }
+                            }).catch(function() {
+                                btnRejectLapLembur.disabled = false;
+                                btnRejectLapLembur.textContent = 'Tolak';
                                 Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan jaringan.' });
                             });
                         }

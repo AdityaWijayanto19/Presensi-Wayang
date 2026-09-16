@@ -37,6 +37,14 @@ Route::get('/lembur', [KaryawanPresensiController::class, 'lembur']);
 Route::get('/lembur/create', [KaryawanPresensiController::class, 'buatlembur']);
 Route::post('/lembur/store', [KaryawanPresensiController::class, 'storelembur']);
 Route::delete('/lembur/{id}', [KaryawanPresensiController::class, 'deletelembur']);
+Route::get('/lembur/{id}/foto', [KaryawanPresensiController::class, 'fotoLembur']);
+Route::post('/lembur/{id}/foto', [KaryawanPresensiController::class, 'storeFotoLembur']);
+Route::get('/lembur/{id}/laporan', [KaryawanPresensiController::class, 'buatLaporanLembur']);
+Route::post('/lembur/{id}/laporan', [KaryawanPresensiController::class, 'storeLaporanLembur']);
+Route::post('/lembur/{id}/approve-atasan', [KaryawanPresensiController::class, 'approveLemburAtasan']);
+Route::post('/lembur/{id}/reject-atasan', [KaryawanPresensiController::class, 'rejectLemburAtasan']);
+Route::post('/lembur/{id}/approve-laporan-atasan', [KaryawanPresensiController::class, 'approveLaporanLemburAtasan']);
+Route::post('/lembur/{id}/reject-laporan-atasan', [KaryawanPresensiController::class, 'rejectLaporanLemburAtasan']);
 Route::get('/presensi/showfilelembur/{file}', [KaryawanPresensiController::class, 'showfilelembur']);
 
 // WFH

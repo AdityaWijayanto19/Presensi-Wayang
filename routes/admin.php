@@ -77,6 +77,12 @@ Route::get('/panel/lembur', [AdminPresensiController::class, 'datalembur'])->mid
 Route::group(['middleware' => 'permission:lembur-delete,user'], function () {
     Route::post('/presensi/datalembur/{id}/delete', [AdminPresensiController::class, 'deletelemburadmin']);
 });
+Route::group(['middleware' => 'permission:lembur-approve,user'], function () {
+    Route::post('/presensi/datalembur/{id}/approve', [AdminPresensiController::class, 'approveLemburAdmin']);
+    Route::post('/presensi/datalembur/{id}/reject', [AdminPresensiController::class, 'rejectLemburAdmin']);
+    Route::post('/presensi/datalembur/{id}/approve-laporan-admin', [AdminPresensiController::class, 'approveLaporanLemburAdmin']);
+    Route::post('/presensi/datalembur/{id}/reject-laporan-admin', [AdminPresensiController::class, 'rejectLaporanLemburAdmin']);
+});
 
 // Data WFH
 Route::get('/panel/wfh', [AdminPresensiController::class, 'datawfh'])->middleware('permission:wfh-view,user');
@@ -106,3 +112,5 @@ Route::group(['middleware' => 'permission:presensi-edit,user'], function () {
 Route::get('/api/realtime/admin', [RealtimeController::class, 'admin']);
 Route::get('/api/realtime/admin/wfh-check', [RealtimeController::class, 'adminWfhCheck'])->middleware('permission:wfh-view,user');
 Route::get('/api/realtime/admin/wfh-data', [RealtimeController::class, 'adminWfhData'])->middleware('permission:wfh-view,user');
+Route::get('/api/realtime/admin/lembur-check', [RealtimeController::class, 'adminLemburCheck'])->middleware('permission:lembur-view,user');
+Route::get('/api/realtime/admin/lembur-data', [RealtimeController::class, 'adminLemburData'])->middleware('permission:lembur-view,user');

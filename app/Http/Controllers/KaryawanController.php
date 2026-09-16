@@ -205,11 +205,17 @@ class KaryawanController extends Controller
 
             // Hapus dokumen lembur
             foreach ($karyawan->lembur as $l) {
-                if (!empty($l->file_form)) {
-                    Storage::delete('public/uploads/lembur/' . $l->file_form);
+                if (!empty($l->pdf_form_path)) {
+                    Storage::disk('public')->delete($l->pdf_form_path);
                 }
-                if (!empty($l->file_laporan)) {
-                    Storage::delete('public/uploads/lembur/' . $l->file_laporan);
+                if (!empty($l->foto_mulai)) {
+                    Storage::disk('public')->delete($l->foto_mulai);
+                }
+                if (!empty($l->foto_selesai)) {
+                    Storage::disk('public')->delete($l->foto_selesai);
+                }
+                if (!empty($l->laporan_file)) {
+                    Storage::disk('public')->delete($l->laporan_file);
                 }
             }
             $karyawan->lembur()->delete();
@@ -237,6 +243,22 @@ class KaryawanController extends Controller
 
             // Update laporan yang menunggu approval atasan ini
             Wfh::where('laporan_atasan_nik', $nik)
+                ->where('laporan_status', 'pending_atasan')
+                ->update([
+                    'laporan_atasan_nik' => null,
+                    'laporan_status' => 'pending_admin',
+                    'laporan_atasan_status' => 'pending',
+                ]);
+
+            // Null-kan atasan di Lembur yang menunggu approval
+            \App\Models\Lembur::where('atasan_nik', $nik)->update([
+                'atasan_nik' => null,
+                'status' => 'pending_admin',
+                'atasan_status' => 'pending',
+            ]);
+
+            // Update laporan lembur yang menunggu approval atasan ini
+            \App\Models\Lembur::where('laporan_atasan_nik', $nik)
                 ->where('laporan_status', 'pending_atasan')
                 ->update([
                     'laporan_atasan_nik' => null,

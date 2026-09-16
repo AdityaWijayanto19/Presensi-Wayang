@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Karyawan;
+use App\Models\Lembur;
 use App\Models\Presensi;
 use App\Models\Unitperusahaan;
 use App\Models\Wfh;
@@ -72,6 +73,14 @@ class PresensiService
                     ->first();
                 if ($wfhToday && empty($wfhToday->laporan_deskripsi)) {
                     return ['success' => false, 'message' => 'Anda harus mengupload laporan WFH terlebih dahulu sebelum presensi pulang.', 'type' => 'out'];
+                }
+
+                $lemburToday = Lembur::where('nik', $nik)
+                    ->where('tgl_lembur', $tglPresensi)
+                    ->where('status', 'approved')
+                    ->first();
+                if ($lemburToday && empty($lemburToday->laporan_deskripsi)) {
+                    return ['success' => false, 'message' => 'Anda harus mengupload laporan lembur terlebih dahulu sebelum presensi pulang.', 'type' => 'out'];
                 }
             }
 

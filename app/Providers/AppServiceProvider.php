@@ -41,6 +41,31 @@ class AppServiceProvider extends ServiceProvider
             $view->with('pendingWfhCount', $pending);
             $view->with('pendingWfhAdminCount', $pendingAdmin);
             $view->with('pendingLaporanAdminCount', $pendingLaporanAdmin);
+
+            $pendingLembur = cache()->remember('pending_lembur_count', 30, function () {
+                try {
+                    return DB::table('lemburs')->whereIn('status', ['pending_atasan','pending_admin'])->count();
+                } catch (\Exception $e) {
+                    return 0;
+                }
+            });
+            $pendingLemburAdmin = cache()->remember('pending_lembur_admin_count', 30, function () {
+                try {
+                    return DB::table('lemburs')->where('status', 'pending_admin')->count();
+                } catch (\Exception $e) {
+                    return 0;
+                }
+            });
+            $pendingLaporanLemburAdmin = cache()->remember('pending_laporan_lembur_admin_count', 30, function () {
+                try {
+                    return DB::table('lemburs')->where('laporan_status', 'pending_admin')->count();
+                } catch (\Exception $e) {
+                    return 0;
+                }
+            });
+            $view->with('pendingLemburCount', $pendingLembur);
+            $view->with('pendingLemburAdminCount', $pendingLemburAdmin);
+            $view->with('pendingLaporanLemburAdminCount', $pendingLaporanLemburAdmin);
         });
 
         View::composer('layouts.admin.tabler', function ($view) {

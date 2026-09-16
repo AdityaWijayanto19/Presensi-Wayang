@@ -124,6 +124,11 @@
                 <i data-lucide="clock" style="width:16px;height:16px;"></i>
             </span>
             <span>Data Lembur Karyawan</span>
+            @php
+                $totalPendingLembur = ($pendingLemburAdminCount ?? 0) + ($pendingLaporanLemburAdminCount ?? 0);
+            @endphp
+            <span id="adminLemburBadge" class="ml-auto inline-flex items-center justify-center min-w-[16px] h-4 px-1 rounded bg-red-500 text-white text-[10px] font-bold"
+                  style="{{ $totalPendingLembur > 0 ? '' : 'display:none;' }}">{{ $totalPendingLembur }}</span>
         </a>
         @endcan
 

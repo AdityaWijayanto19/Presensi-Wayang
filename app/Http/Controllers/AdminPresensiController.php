@@ -68,6 +68,8 @@ class AdminPresensiController extends Controller
         return LaporanService::previewLaporan($request);
     }
 
+    // ==================== DATA IZIN ====================
+
     public function dataizin(Request $request)
     {
         $izinService = new IzinService();
@@ -85,22 +87,95 @@ class AdminPresensiController extends Controller
         return redirect()->back()->with($result['success'] ? 'success' : 'error', $result['message']);
     }
 
-    public function datalembur(Request $request)
-    {
-        $lemburService = new LemburService();
-        $datalembur = $lemburService->getDataLemburAdmin($request);
-        $unitperusahaan = Unitperusahaan::orderBy('unit')->get();
+    // ==================== DATA LEMBUR ====================
 
-        return view('admin.lembur.index', compact('datalembur', 'unitperusahaan'));
+    public function datalembur(Request $request, LemburService $lemburService)
+    {
+        $data = $lemburService->getDataLemburAdmin($request);
+        extract($data);
+        return view('admin.lembur.index', compact('datalembur', 'unitperusahaan', 'pendingLemburAdmin', 'pendingLaporanAdmin'));
     }
 
-    public function deletelemburadmin(int $id)
+    public function deletelemburadmin(int $id, LemburService $lemburService)
     {
-        $lemburService = new LemburService();
         $result = $lemburService->deleteLemburAdmin($id);
-
         return redirect()->back()->with($result['success'] ? 'success' : 'error', $result['message']);
     }
+
+    public function approveLemburAdmin(int $id, LemburService $lemburService)
+    {
+        $result = $lemburService->approveLemburAdmin($id);
+        return redirect()->back()->with($result['success'] ? 'success' : 'error', $result['message']);
+    }
+
+    public function rejectLemburAdmin(RejectRequest $request, int $id, LemburService $lemburService)
+    {
+        $result = $lemburService->rejectLemburAdmin($id, $request->rejected_reason);
+        return redirect()->back()->with($result['success'] ? 'success' : 'error', $result['message']);
+    }
+
+    public function approveLaporanLemburAdmin(int $id, LemburService $lemburService)
+    {
+        $result = $lemburService->approveLaporanAdmin($id);
+        return redirect()->back()->with($result['success'] ? 'success' : 'error', $result['message']);
+    }
+
+    public function rejectLaporanLemburAdmin(RejectRequest $request, int $id, LemburService $lemburService)
+    {
+        $result = $lemburService->rejectLaporanAdmin($id, $request->rejected_reason);
+        return redirect()->back()->with($result['success'] ? 'success' : 'error', $result['message']);
+    }
+
+    public function editLemburAdmin(int $id)
+    {
+        $lembur = Lembur::with(['karyawan', 'atasan'])->findOrFail($id);
+        $arr = $lembur->toArray();
+        $arr['tgl_lembur'] = $lembur->tgl_lembur instanceof \Carbon\Carbon
+            ? $lembur->tgl_lembur->format('Y-m-d')
+            : $lembur->tgl_lembur;
+        $arr['dikirim_tanggal'] = $lembur->dikirim_tanggal instanceof \Carbon\Carbon
+            ? $lembur->dikirim_tanggal->format('Y-m-d H:i')
+            : $lembur->dikirim_tanggal;
+        $arr['approved_at'] = $lembur->approved_at instanceof \Carbon\Carbon
+            ? $lembur->approved_at->format('Y-m-d H:i')
+            : $lembur->approved_at;
+        $arr['laporan_approved_at'] = $lembur->laporan_approved_at instanceof \Carbon\Carbon
+            ? $lembur->laporan_approved_at->format('Y-m-d H:i')
+            : $lembur->laporan_approved_at;
+        return response()->json($arr);
+    }
+
+    public function updateLemburAdmin(UpdateLemburAdminRequest $request, int $id)
+    {
+        $lembur = Lembur::findOrFail($id);
+        $oldStatus = $lembur->status instanceof \App\Enums\LemburStatus ? $lembur->status->value : $lembur->status;
+        $newStatus = $request->status;
+
+        $updateData = [
+            'tgl_lembur' => $request->tgl_lembur,
+            'keterangan' => $request->keterangan,
+            'status' => $newStatus,
+        ];
+
+        if ($oldStatus !== $newStatus) {
+            if ($newStatus === 'approved' && empty($lembur->approved_at)) {
+                $updateData['approved_at'] = now();
+            }
+        }
+
+        $lembur->update($updateData);
+
+        if ($oldStatus !== $newStatus) {
+            $karyawan = \App\Models\Karyawan::where('nik', $lembur->nik)->first();
+            if ($karyawan) {
+                $karyawan->notify(new \App\Notifications\LemburStatusChanged($lembur, $oldStatus, $newStatus));
+            }
+        }
+
+        return redirect()->back()->with('success', 'Data lembur berhasil diperbarui');
+    }
+
+    // ==================== DATA WFH ====================
 
     public function datawfh(Request $request, WfhService $wfhService)
     {
@@ -141,6 +216,8 @@ class AdminPresensiController extends Controller
         return redirect()->back()->with($result['success'] ? 'success' : 'error', $result['message']);
     }
 
+    // ==================== EDIT DATA ====================
+
     public function editPresensiAdmin(int $id)
     {
         $presensi = Presensi::with('karyawan')->findOrFail($id);
@@ -173,23 +250,6 @@ class AdminPresensiController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Data izin berhasil diperbarui');
-    }
-
-    public function editLemburAdmin(int $id)
-    {
-        $lembur = Lembur::with('karyawan')->findOrFail($id);
-        return response()->json($lembur);
-    }
-
-    public function updateLemburAdmin(UpdateLemburAdminRequest $request, int $id)
-    {
-        $lembur = Lembur::findOrFail($id);
-        $lembur->update([
-            'tgl_lembur' => $request->tgl_lembur,
-            'durasi' => $request->durasi,
-        ]);
-
-        return redirect()->back()->with('success', 'Data lembur berhasil diperbarui');
     }
 
     public function editWfhAdmin(int $id)

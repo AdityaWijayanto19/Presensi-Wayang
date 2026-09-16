@@ -38,11 +38,14 @@ class DashboardController extends Controller
         $pendingWfh = Wfh::whereIn('status', ['pending_admin', 'pending_atasan'])->count();
         $pendingWfhAdmin = Wfh::where('status', 'pending_admin')->count();
         $pendingLaporanAdmin = Wfh::where('laporan_status', 'pending_admin')->count();
+        $pendingLemburAdmin = Lembur::where('status', 'pending_admin')->count();
+        $pendingLaporanLemburAdmin = Lembur::where('laporan_status', 'pending_admin')->count();
         $jmlkaryawan = Karyawan::count();
 
         return view('admin.index', compact(
             'rekappresensi', 'rekapizin', 'rekaplembur', 'rekapwfh',
-            'jmlkaryawan', 'pendingWfh', 'pendingWfhAdmin', 'pendingLaporanAdmin'
+            'jmlkaryawan', 'pendingWfh', 'pendingWfhAdmin', 'pendingLaporanAdmin',
+            'pendingLemburAdmin', 'pendingLaporanLemburAdmin'
         ));
     }
 
@@ -149,12 +152,53 @@ class DashboardController extends Controller
             $tglCountdown = $hariini;
         }
 
+        $lemburSaya = \App\Models\Lembur::where('nik', $nik)
+            ->where(function ($q) {
+                $q->whereIn('status', ['pending_atasan', 'pending_admin'])
+                    ->orWhere(function ($q2) {
+                        $q2->where('status', 'approved')
+                            ->where(function ($q3) {
+                                $q3->whereNull('laporan_deskripsi')
+                                    ->orWhere('laporan_deskripsi', '')
+                                    ->orWhere('laporan_status', '!=', 'approved');
+                            });
+                    });
+            })
+            ->orderBy('tgl_lembur', 'desc')
+            ->limit(5)
+            ->get()
+            ->map(function ($l) use ($hariini) {
+                $tgl = $l->tgl_lembur instanceof \Carbon\Carbon
+                    ? $l->tgl_lembur->format('Y-m-d')
+                    : $l->tgl_lembur;
+                $l->is_today = ($tgl === $hariini);
+                return $l;
+            });
+
+        $pendingAtasanLembur = collect();
+        $pendingLaporanLemburAtasan = collect();
+
+        if (!empty($karyawan->role_approved)) {
+            $pendingAtasanLembur = \App\Models\Lembur::with(['karyawan.unitperusahaan'])
+                ->where('atasan_nik', $nik)
+                ->where('status', 'pending_atasan')
+                ->orderBy('tgl_lembur', 'desc')
+                ->get();
+
+            $pendingLaporanLemburAtasan = \App\Models\Lembur::with(['karyawan.unitperusahaan'])
+                ->where('laporan_atasan_nik', $nik)
+                ->where('laporan_status', 'pending_atasan')
+                ->orderBy('tgl_lembur', 'desc')
+                ->get();
+        }
+
         $notifications = $karyawan->notifications()->latest()->take(5)->get();
 
         return view('karyawan.index', compact(
             'presensihariini', 'historibulanini', 'namabulan', 'bulanini', 'tahunini',
             'rekappresensi', 'rekapizin', 'rekaplembur', 'rekapwfh',
             'wfhSaya', 'pendingAtasan', 'pendingLaporanAtasan',
+            'lemburSaya', 'pendingAtasanLembur', 'pendingLaporanLemburAtasan',
             'wfhBesok', 'wfhHariIni', 'jamMasuk', 'tglCountdown', 'notifications'
         ));
     }

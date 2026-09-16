@@ -16,11 +16,15 @@ class RealtimeController extends Controller
     {
         $pendingWfh = Wfh::where('status', 'pending_admin')->count();
         $pendingLaporan = Wfh::where('laporan_status', 'pending_admin')->count();
+        $pendingLembur = \App\Models\Lembur::where('status', 'pending_admin')->count();
+        $pendingLaporanLembur = \App\Models\Lembur::where('laporan_status', 'pending_admin')->count();
 
         return response()->json([
             'pending_wfh' => $pendingWfh,
             'pending_laporan' => $pendingLaporan,
-            'total_pending' => $pendingWfh + $pendingLaporan,
+            'pending_lembur' => $pendingLembur,
+            'pending_laporan_lembur' => $pendingLaporanLembur,
+            'total_pending' => $pendingWfh + $pendingLaporan + $pendingLembur + $pendingLaporanLembur,
         ]);
     }
 
@@ -73,6 +77,55 @@ class RealtimeController extends Controller
             'html' => $html,
             'pagination' => $pagination,
             'total' => $datawfh->total(),
+        ]);
+    }
+
+    public function adminLemburCheck(Request $request)
+    {
+        $lastCheck = $request->last_check
+            ? \Carbon\Carbon::parse($request->last_check)->subSecond()
+            : now('Asia/Jakarta')->subSeconds(10);
+
+        $stats = \App\Models\Lembur::selectRaw('
+            MAX(id) as latest_id,
+            SUM(CASE WHEN updated_at > ? THEN 1 ELSE 0 END) as updated_count
+        ')->setBindings([$lastCheck])->first();
+
+        return response()->json([
+            'updated_data' => ($stats->updated_count ?? 0) > 0,
+            'latest_id' => $stats->latest_id ?? 0,
+        ]);
+    }
+
+    public function adminLemburData(Request $request)
+    {
+        $query = \App\Models\Lembur::with(['karyawan.unitperusahaan', 'atasan']);
+
+        if (!empty($request->nama_karyawan)) {
+            $query->whereHas('karyawan', function ($q) use ($request) {
+                $q->where('nama_lengkap', 'like', '%' . $request->nama_karyawan . '%');
+            });
+        }
+        if (!empty($request->unit)) {
+            $query->whereHas('karyawan', function ($q) use ($request) {
+                $q->where('unit', $request->unit);
+            });
+        }
+        if (!empty($request->tanggal)) {
+            $query->where('tgl_lembur', $request->tanggal);
+        }
+        if (!empty($request->status)) {
+            $query->where('status', $request->status);
+        }
+
+        $datalembur = $query->orderBy('tgl_lembur', 'desc')->paginate(5)->withQueryString();
+        $html = view('admin.lembur._rows', compact('datalembur'))->render();
+        $pagination = $datalembur->setPath('/panel/lembur')->appends($request->query())->links('vendor.pagination.bootstrap-5')->render();
+
+        return response()->json([
+            'html' => $html,
+            'pagination' => $pagination,
+            'total' => $datalembur->total(),
         ]);
     }
 
@@ -159,6 +212,8 @@ class RealtimeController extends Controller
         $karyawan = Karyawan::where('nik', $nik)->first();
         $pendingAtasan = collect();
         $pendingLaporanAtasan = collect();
+        $pendingAtasanLembur = collect();
+        $pendingLaporanLemburAtasan = collect();
 
         if (!empty($karyawan->role_approved)) {
             $pendingAtasan = Wfh::with(['karyawan.unitperusahaan'])
@@ -188,7 +243,60 @@ class RealtimeController extends Controller
                     $arr['tgl_wfh'] = $tgl;
                     return $arr;
                 });
+
+            $pendingAtasanLembur = \App\Models\Lembur::with(['karyawan.unitperusahaan'])
+                ->where('atasan_nik', $nik)
+                ->where('status', 'pending_atasan')
+                ->orderBy('tgl_lembur', 'desc')
+                ->get()
+                ->map(function ($l) {
+                    $tgl = $l->tgl_lembur instanceof \Carbon\Carbon
+                        ? $l->tgl_lembur->format('Y-m-d')
+                        : $l->tgl_lembur;
+                    $arr = $l->toArray();
+                    $arr['tgl_lembur'] = $tgl;
+                    return $arr;
+                });
+
+            $pendingLaporanLemburAtasan = \App\Models\Lembur::with(['karyawan.unitperusahaan'])
+                ->where('laporan_atasan_nik', $nik)
+                ->where('laporan_status', 'pending_atasan')
+                ->orderBy('tgl_lembur', 'desc')
+                ->get()
+                ->map(function ($l) {
+                    $tgl = $l->tgl_lembur instanceof \Carbon\Carbon
+                        ? $l->tgl_lembur->format('Y-m-d')
+                        : $l->tgl_lembur;
+                    $arr = $l->toArray();
+                    $arr['tgl_lembur'] = $tgl;
+                    return $arr;
+                });
         }
+
+        $lemburSaya = \App\Models\Lembur::where('nik', $nik)
+            ->where(function ($q) {
+                $q->whereIn('status', ['pending_atasan', 'pending_admin', 'rejected'])
+                    ->orWhere(function ($q2) {
+                        $q2->where('status', 'approved')
+                            ->where(function ($q3) {
+                                $q3->whereNull('laporan_deskripsi')
+                                    ->orWhere('laporan_deskripsi', '')
+                                    ->orWhere('laporan_status', '!=', 'approved');
+                            });
+                    });
+            })
+            ->orderBy('tgl_lembur', 'desc')
+            ->limit(5)
+            ->get()
+            ->map(function ($l) use ($hariini) {
+                $tgl = $l->tgl_lembur instanceof \Carbon\Carbon
+                    ? $l->tgl_lembur->format('Y-m-d')
+                    : $l->tgl_lembur;
+                $arr = $l->toArray();
+                $arr['tgl_lembur'] = $tgl;
+                $arr['is_today'] = ($tgl === $hariini);
+                return $arr;
+            });
 
         $notifications = $karyawan->notifications()->latest()->take(10)->get()->map(fn ($n) => [
             'id' => $n->id,
@@ -203,8 +311,11 @@ class RealtimeController extends Controller
             'rekap' => $rekap,
             'histori' => $histori,
             'wfhSaya' => $wfhSaya,
+            'lemburSaya' => $lemburSaya,
             'pendingAtasan' => $pendingAtasan,
             'pendingLaporanAtasan' => $pendingLaporanAtasan,
+            'pendingAtasanLembur' => $pendingAtasanLembur,
+            'pendingLaporanLemburAtasan' => $pendingLaporanLemburAtasan,
             'notifications' => $notifications,
             'unread_count' => $unreadCount,
         ]);

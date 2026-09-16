@@ -19,6 +19,8 @@ use App\Http\Requests\Service\StoreIzinRequest;
 use App\Http\Requests\Service\StoreLemburRequest;
 use App\Http\Requests\Service\StoreWfhRequest;
 use App\Http\Requests\Service\StoreLaporanWfhRequest;
+use App\Http\Requests\Service\StoreFotoLemburRequest;
+use App\Http\Requests\Service\StoreLaporanLemburRequest;
 
 class KaryawanPresensiController extends Controller
 {
@@ -103,51 +105,159 @@ class KaryawanPresensiController extends Controller
         return redirect()->back()->with($result['success'] ? 'success' : 'error', $result['message']);
     }
 
-    public function lembur()
+    // ==================== LEMBUR ====================
+
+    public function lembur(LemburService $lemburService)
     {
         $nik = Auth::guard('karyawan')->user()->nik;
-        $lemburService = new LemburService();
-        $datalembur = $lemburService->getLemburByKaryawan($nik);
+        $datalembur = $lemburService->getLemburHistory($nik);
 
         return view('karyawan.lembur.index', compact('datalembur'));
     }
 
-    public function buatlembur()
+    public function buatlembur(LemburService $lemburService)
     {
-        return view('karyawan.lembur.create');
-    }
+        $karyawan = Auth::guard('karyawan')->user()->load('unitperusahaan');
+        $canSubmit = $lemburService->canSubmit($karyawan);
 
-    public function showfilelembur(string $file)
-    {
-        $file = basename($file);
-        if (!preg_match('/^[a-zA-Z0-9._-]+$/', $file)) {
-            abort(404);
+        if (!$canSubmit['can']) {
+            return redirect('/lembur')->with('error', $canSubmit['message']);
         }
 
-        $path = storage_path('app/public/uploads/lembur/' . $file);
-        if (!file_exists($path)) abort(404);
-
-        return response()->file($path);
+        return view('karyawan.lembur.create', compact('karyawan'));
     }
 
-    public function storelembur(StoreLemburRequest $request)
+    public function storelembur(StoreLemburRequest $request, LemburService $lemburService)
     {
-        $lemburService = new LemburService();
-        $result = $lemburService->storeLembur($request);
+        $karyawan = Auth::guard('karyawan')->user();
+        $result = $lemburService->storePengajuan($request, $karyawan);
 
         if ($result['success']) {
             return redirect('/lembur')->with('success', $result['message']);
         }
-        return redirect()->back()->with('error', $result['message']);
+        return redirect()->back()->with('error', $result['message'])->withInput();
     }
 
-    public function deletelembur(int $id)
+    public function deletelembur(int $id, LemburService $lemburService)
     {
-        $lemburService = new LemburService();
-        $result = $lemburService->deleteLembur($id);
+        $nik = Auth::guard('karyawan')->user()->nik;
+        $result = $lemburService->deleteLembur($id, $nik);
 
         return redirect()->back()->with($result['success'] ? 'success' : 'error', $result['message']);
     }
+
+    public function showfilelembur(string $file)
+    {
+        $nik = Auth::guard('karyawan')->user()->nik;
+        $path = LemburService::showFileLembur($file, $nik);
+        if (!$path) abort(404);
+
+        $abs = storage_path('app/public/' . $path);
+        if (file_exists($abs)) {
+            return response()->file($abs, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'inline; filename="' . basename($path) . '"',
+            ]);
+        }
+        abort(404);
+    }
+
+    public function fotoLembur(int $id, LemburService $lemburService)
+    {
+        $nik = Auth::guard('karyawan')->user()->nik;
+        $data = $lemburService->getFotoData($id, $nik);
+
+        if (!$data) {
+            return redirect('/lembur')->with('error', 'Data tidak ditemukan atau lembur belum disetujui.');
+        }
+
+        return view('karyawan.lembur.foto', ['data' => $data]);
+    }
+
+    public function storeFotoLembur(StoreFotoLemburRequest $request, int $id, LemburService $lemburService)
+    {
+        $nik = Auth::guard('karyawan')->user()->nik;
+        $result = $lemburService->storeFoto($request, $id, $nik);
+
+        if ($request->expectsJson()) {
+            return response()->json($result, $result['success'] ? 200 : 422);
+        }
+
+        if ($result['success']) {
+            return redirect('/lembur/' . $id . '/foto')->with('success', $result['message']);
+        }
+        return redirect()->back()->with('error', $result['message']);
+    }
+
+    public function buatLaporanLembur(int $id, LemburService $lemburService)
+    {
+        $nik = Auth::guard('karyawan')->user()->nik;
+        $data = $lemburService->getLaporanData($id, $nik);
+
+        if (!$data || isset($data->error)) {
+            $msg = $data->error ?? 'Data tidak ditemukan';
+            return redirect()->back()->with('error', $msg);
+        }
+
+        return view('karyawan.lembur.laporan', ['data' => $data]);
+    }
+
+    public function storeLaporanLembur(StoreLaporanLemburRequest $request, int $id, LemburService $lemburService)
+    {
+        $nik = Auth::guard('karyawan')->user()->nik;
+        $result = $lemburService->storeLaporanLembur($request, $id, $nik);
+
+        if ($result['success']) {
+            return redirect('/lembur')->with('success', $result['message']);
+        }
+        return redirect()->back()->with('error', $result['message'])->withInput();
+    }
+
+    public function approveLemburAtasan(Request $request, int $id, LemburService $lemburService)
+    {
+        $karyawan = Auth::guard('karyawan')->user();
+        $result = $lemburService->approveLemburAtasan($id, $karyawan);
+
+        if ($request->expectsJson()) {
+            return response()->json($result, $result['success'] ? 200 : 422);
+        }
+        return redirect()->back()->with($result['success'] ? 'success' : 'error', $result['message']);
+    }
+
+    public function rejectLemburAtasan(RejectRequest $request, int $id, LemburService $lemburService)
+    {
+        $karyawan = Auth::guard('karyawan')->user();
+        $result = $lemburService->rejectLemburAtasan($id, $request->rejected_reason, $karyawan);
+
+        if ($request->expectsJson()) {
+            return response()->json($result, $result['success'] ? 200 : 422);
+        }
+        return redirect()->back()->with($result['success'] ? 'success' : 'error', $result['message']);
+    }
+
+    public function approveLaporanLemburAtasan(Request $request, int $id, LemburService $lemburService)
+    {
+        $karyawan = Auth::guard('karyawan')->user();
+        $result = $lemburService->approveLaporanAtasan($id, $karyawan);
+
+        if ($request->expectsJson()) {
+            return response()->json($result, $result['success'] ? 200 : 422);
+        }
+        return redirect()->back()->with($result['success'] ? 'success' : 'error', $result['message']);
+    }
+
+    public function rejectLaporanLemburAtasan(RejectRequest $request, int $id, LemburService $lemburService)
+    {
+        $karyawan = Auth::guard('karyawan')->user();
+        $result = $lemburService->rejectLaporanAtasan($id, $request->rejected_reason, $karyawan);
+
+        if ($request->expectsJson()) {
+            return response()->json($result, $result['success'] ? 200 : 422);
+        }
+        return redirect()->back()->with($result['success'] ? 'success' : 'error', $result['message']);
+    }
+
+    // ==================== WFH ====================
 
     public function wfh(WfhService $wfhService)
     {

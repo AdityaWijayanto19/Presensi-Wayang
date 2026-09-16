@@ -15,7 +15,8 @@ class UpdateLemburAdminRequest extends FormRequest
     {
         return [
             'tgl_lembur' => 'required|date',
-            'durasi' => 'required|integer|min:1|max:5',
+            'keterangan' => 'nullable|string|max:1000',
+            'status' => 'required|string|in:pending_atasan,pending_admin,approved,rejected',
         ];
     }
 
@@ -24,10 +25,9 @@ class UpdateLemburAdminRequest extends FormRequest
         return [
             'tgl_lembur.required' => 'Tanggal lembur wajib diisi.',
             'tgl_lembur.date' => 'Format tanggal tidak valid.',
-            'durasi.required' => 'Durasi wajib diisi.',
-            'durasi.integer' => 'Durasi harus berupa angka.',
-            'durasi.min' => 'Durasi minimal 1 jam.',
-            'durasi.max' => 'Durasi maksimal 5 jam.',
+            'keterangan.max' => 'Keterangan maksimal 1000 karakter.',
+            'status.required' => 'Status wajib dipilih.',
+            'status.in' => 'Status tidak valid.',
         ];
     }
 }
