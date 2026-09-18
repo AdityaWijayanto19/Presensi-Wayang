@@ -18,13 +18,15 @@ class RealtimeController extends Controller
         $pendingLaporan = Wfh::where('laporan_status', 'pending_admin')->count();
         $pendingLembur = \App\Models\Lembur::where('status', 'pending_admin')->count();
         $pendingLaporanLembur = \App\Models\Lembur::where('laporan_status', 'pending_admin')->count();
+        $pendingIzin = \App\Models\Izin::where('status', 'pending_admin')->count();
 
         return response()->json([
             'pending_wfh' => $pendingWfh,
             'pending_laporan' => $pendingLaporan,
             'pending_lembur' => $pendingLembur,
             'pending_laporan_lembur' => $pendingLaporanLembur,
-            'total_pending' => $pendingWfh + $pendingLaporan + $pendingLembur + $pendingLaporanLembur,
+            'pending_izin' => $pendingIzin,
+            'total_pending' => $pendingWfh + $pendingLaporan + $pendingLembur + $pendingLaporanLembur + $pendingIzin,
         ]);
     }
 
@@ -132,6 +134,61 @@ class RealtimeController extends Controller
         ]);
     }
 
+    public function adminIzinCheck(Request $request)
+    {
+        $lastId = is_numeric($request->last_id) ? (int) $request->last_id : 0;
+        $lastCheck = $request->last_check
+            ? \Carbon\Carbon::parse($request->last_check)->subSecond()
+            : now('Asia/Jakarta')->subSeconds(10);
+
+        $stats = \App\Models\Izin::selectRaw('
+            MAX(id) as latest_id,
+            SUM(CASE WHEN id > ? THEN 1 ELSE 0 END) as new_count,
+            SUM(CASE WHEN dikirim_tanggal > ? OR updated_at > ? THEN 1 ELSE 0 END) as updated_count
+        ')->setBindings([$lastId, $lastCheck, $lastCheck])->first();
+
+        return response()->json([
+            'new_data' => ($stats->new_count ?? 0) > 0,
+            'updated_data' => ($stats->updated_count ?? 0) > 0,
+            'latest_id' => $stats->latest_id ?? 0,
+        ]);
+    }
+
+    public function adminIzinData(Request $request)
+    {
+        $query = \App\Models\Izin::with(['karyawan.unitperusahaan', 'atasan']);
+
+        if (!empty($request->nama_karyawan)) {
+            $query->whereHas('karyawan', function ($q) use ($request) {
+                $q->where('nama_lengkap', 'like', '%' . $request->nama_karyawan . '%');
+            });
+        }
+        if (!empty($request->unit)) {
+            $query->whereHas('karyawan', function ($q) use ($request) {
+                $q->where('unit', $request->unit);
+            });
+        }
+        if (!empty($request->jenis_izin)) {
+            $query->where('jenis_izin', $request->jenis_izin);
+        }
+        if (!empty($request->status)) {
+            $query->where('status', $request->status);
+        }
+        if (!empty($request->tanggal)) {
+            $query->where('tgl_izin', $request->tanggal);
+        }
+
+        $dataizin = $query->orderBy('tgl_izin', 'desc')->paginate(5)->withQueryString();
+        $html = view('admin.izin._rows', compact('dataizin'))->render();
+        $pagination = $dataizin->setPath('/panel/izin')->appends($request->query())->links('pagination::bootstrap-5')->render();
+
+        return response()->json([
+            'html' => $html,
+            'pagination' => $pagination,
+            'total' => $dataizin->total(),
+        ]);
+    }
+
     public function dashboard()
     {
         $nik = Auth::guard('karyawan')->user()->nik;
@@ -167,7 +224,7 @@ class RealtimeController extends Controller
             'izin' => \App\Models\Izin::where('nik', $nik)
                 ->whereMonth('tgl_izin', $bulanini)
                 ->whereYear('tgl_izin', $tahunini)
-                ->whereIn('jenis_izin', ['i', 's'])
+                ->whereIn('jenis_izin', ['tidak_masuk', 'terlambat', 'pulang_cepat', 'sakit'])
                 ->count(),
         ];
 
@@ -217,6 +274,7 @@ class RealtimeController extends Controller
         $pendingLaporanAtasan = collect();
         $pendingAtasanLembur = collect();
         $pendingLaporanLemburAtasan = collect();
+        $pendingAtasanIzin = collect();
 
         if (!empty($karyawan->role_approved)) {
             $pendingAtasan = Wfh::with(['karyawan.unitperusahaan'])
@@ -274,6 +332,20 @@ class RealtimeController extends Controller
                     $arr['tgl_lembur'] = $tgl;
                     return $arr;
                 });
+
+            $pendingAtasanIzin = \App\Models\Izin::with(['karyawan.unitperusahaan'])
+                ->where('atasan_nik', $nik)
+                ->where('status', 'pending_atasan')
+                ->orderBy('tgl_izin', 'desc')
+                ->get()
+                ->map(function ($i) {
+                    $tgl = $i->tgl_izin instanceof \Carbon\Carbon
+                        ? $i->tgl_izin->format('Y-m-d')
+                        : $i->tgl_izin;
+                    $arr = $i->toArray();
+                    $arr['tgl_izin'] = $tgl;
+                    return $arr;
+                });
         }
 
         $lemburSaya = \App\Models\Lembur::where('nik', $nik)
@@ -301,6 +373,21 @@ class RealtimeController extends Controller
                 return $arr;
             });
 
+        $izinSaya = \App\Models\Izin::where('nik', $nik)
+            ->whereIn('status', ['pending_atasan', 'pending_admin', 'rejected'])
+            ->orderBy('tgl_izin', 'desc')
+            ->limit(5)
+            ->get()
+            ->map(function ($i) use ($hariini) {
+                $tgl = $i->tgl_izin instanceof \Carbon\Carbon
+                    ? $i->tgl_izin->format('Y-m-d')
+                    : $i->tgl_izin;
+                $arr = $i->toArray();
+                $arr['tgl_izin'] = $tgl;
+                $arr['is_today'] = ($tgl === $hariini);
+                return $arr;
+            });
+
         $notifications = $karyawan->notifications()->latest()->take(10)->get()->map(fn ($n) => [
             'id' => $n->id,
             'data' => $n->data,
@@ -315,10 +402,12 @@ class RealtimeController extends Controller
             'histori' => $histori,
             'wfhSaya' => $wfhSaya,
             'lemburSaya' => $lemburSaya,
+            'izinSaya' => $izinSaya,
             'pendingAtasan' => $pendingAtasan,
             'pendingLaporanAtasan' => $pendingLaporanAtasan,
             'pendingAtasanLembur' => $pendingAtasanLembur,
             'pendingLaporanLemburAtasan' => $pendingLaporanLemburAtasan,
+            'pendingAtasanIzin' => $pendingAtasanIzin,
             'notifications' => $notifications,
             'unread_count' => $unreadCount,
         ]);

@@ -70,20 +70,29 @@ class AdminPresensiController extends Controller
 
     // ==================== DATA IZIN ====================
 
-    public function dataizin(Request $request)
+    public function dataizin(Request $request, IzinService $izinService)
     {
-        $izinService = new IzinService();
         $dataizin = $izinService->getDataIzinAdmin($request);
         $unitperusahaan = Unitperusahaan::orderBy('unit')->get();
 
         return view('admin.izin.index', compact('dataizin', 'unitperusahaan'));
     }
 
-    public function deleteizinadmin(int $id)
+    public function approveIzinAdmin(int $id, IzinService $izinService)
     {
-        $izinService = new IzinService();
-        $result = $izinService->deleteIzinAdmin($id);
+        $result = $izinService->approveIzinAdmin($id);
+        return redirect()->back()->with($result['success'] ? 'success' : 'error', $result['message']);
+    }
 
+    public function rejectIzinAdmin(RejectRequest $request, int $id, IzinService $izinService)
+    {
+        $result = $izinService->rejectIzinAdmin($id, $request->rejected_reason);
+        return redirect()->back()->with($result['success'] ? 'success' : 'error', $result['message']);
+    }
+
+    public function deleteizinadmin(int $id, IzinService $izinService)
+    {
+        $result = $izinService->deleteIzinAdmin($id);
         return redirect()->back()->with($result['success'] ? 'success' : 'error', $result['message']);
     }
 
@@ -254,19 +263,24 @@ class AdminPresensiController extends Controller
 
     public function editIzinAdmin(int $id)
     {
-        $izin = Izin::with('karyawan')->findOrFail($id);
-        return response()->json($izin);
+        $izin = Izin::with(['karyawan', 'atasan'])->findOrFail($id);
+        $arr = $izin->toArray();
+        $arr['tgl_izin'] = $izin->tgl_izin instanceof \Carbon\Carbon
+            ? $izin->tgl_izin->format('Y-m-d')
+            : $izin->tgl_izin;
+        $arr['dikirim_tanggal'] = $izin->dikirim_tanggal instanceof \Carbon\Carbon
+            ? $izin->dikirim_tanggal->format('Y-m-d H:i')
+            : $izin->dikirim_tanggal;
+        $arr['approved_at'] = $izin->approved_at instanceof \Carbon\Carbon
+            ? $izin->approved_at->format('Y-m-d H:i')
+            : $izin->approved_at;
+        return response()->json($arr);
     }
 
-    public function updateIzinAdmin(UpdateIzinAdminRequest $request, int $id)
+    public function updateIzinAdmin(UpdateIzinAdminRequest $request, int $id, IzinService $izinService)
     {
-        $izin = Izin::findOrFail($id);
-        $izin->update([
-            'tgl_izin' => $request->tgl_izin,
-            'jenis_izin' => $request->jenis_izin,
-        ]);
-
-        return redirect()->back()->with('success', 'Data izin berhasil diperbarui');
+        $result = $izinService->updateIzinAdmin($id, $request);
+        return redirect()->back()->with($result['success'] ? 'success' : 'error', $result['message']);
     }
 
     public function editWfhAdmin(int $id)

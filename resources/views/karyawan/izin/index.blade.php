@@ -2,7 +2,7 @@
 
 @section('header')
     <div class="appHeader bg-coklat text-light">
-        <div class="pageTitle">Data Izin / Sakit</div>
+        <div class="pageTitle">Data Izin</div>
         <div class="right"></div>
     </div>
 @endsection
@@ -12,6 +12,31 @@
         $messagesuccess = Session::get('success');
         $messageerror = Session::get('error');
         $weekdayMap = ['Sunday'=>'Minggu','Monday'=>'Senin','Tuesday'=>'Selasa','Wednesday'=>'Rabu','Thursday'=>'Kamis','Friday'=>'Jumat','Saturday'=>'Sabtu'];
+
+        $statusLabels = [
+            'pending_atasan' => 'Menunggu Atasan',
+            'pending_admin' => 'Menunggu HR',
+            'approved' => 'Disetujui',
+            'rejected' => 'Ditolak',
+        ];
+        $statusBadgeClasses = [
+            'pending_atasan' => 'bg-amber-100 text-amber-700 border-amber-200',
+            'pending_admin' => 'bg-sky-100 text-sky-700 border-sky-200',
+            'approved' => 'bg-emerald-100 text-emerald-700 border-emerald-200',
+            'rejected' => 'bg-rose-100 text-rose-700 border-rose-200',
+        ];
+        $jenisLabels = [
+            'tidak_masuk' => 'Tidak Masuk',
+            'terlambat' => 'Terlambat',
+            'pulang_cepat' => 'Pulang Cepat',
+            'sakit' => 'Sakit',
+        ];
+        $jenisBadgeClasses = [
+            'tidak_masuk' => 'bg-amber-100 text-amber-700 border-amber-200',
+            'terlambat' => 'bg-orange-100 text-orange-700 border-orange-200',
+            'pulang_cepat' => 'bg-cyan-100 text-cyan-700 border-cyan-200',
+            'sakit' => 'bg-rose-100 text-rose-700 border-rose-200',
+        ];
     @endphp
 
     {{-- Alert --}}
@@ -33,15 +58,33 @@
         </div>
     </div>
 
-    {{-- Header Info --}}
     @if ($dataizin->count() > 0)
+        @php
+            $approvedCount = $dataizin->where('status', 'approved')->count();
+            $pendingCount = $dataizin->whereIn('status', ['pending_atasan','pending_admin'])->count();
+            $rejectedCount = $dataizin->where('status', 'rejected')->count();
+        @endphp
         <div class="flex mt-3">
             <div class="w-full px-3">
                 <div class="flex items-center justify-between">
                     <p class="text-[12px] font-semibold tracking-wide text-[#a8a29e] uppercase">
-                        <span class="inline-flex items-center gap-1.5"><i data-lucide="calendar" style="width:13px;height:13px;"></i> {{ $dataizin->count() }} Data</span>
+                        <span class="inline-flex items-center gap-1.5"><i data-lucide="check-check" class="text-emerald-600" style="width:13px;height:13px;"></i> {{ $dataizin->count() }} Data</span>
                         <span class="mx-1.5 text-[#e7e5e4]">•</span>
-                        <span class="text-[#78716c]">Terbaru di atas</span>
+                        @if ($approvedCount > 0)
+                            <span class="text-emerald-700">{{ $approvedCount }} Disetujui</span>
+                        @endif
+                        @if ($pendingCount > 0)
+                            @if ($approvedCount > 0)
+                                <span class="mx-1.5 text-[#e7e5e4]">•</span>
+                            @endif
+                            <span class="text-amber-600">{{ $pendingCount }} Pending</span>
+                        @endif
+                        @if ($rejectedCount > 0)
+                            @if ($approvedCount > 0 || $pendingCount > 0)
+                                <span class="mx-1.5 text-[#e7e5e4]">•</span>
+                            @endif
+                            <span class="text-rose-600">{{ $rejectedCount }} Ditolak</span>
+                        @endif
                     </p>
                     <span class="text-[11px] font-medium text-[#78716c] bg-white border border-[#f0ece8] rounded-full px-2.5 py-1">{{ date('M Y') }}</span>
                 </div>
@@ -49,7 +92,6 @@
         </div>
     @endif
 
-    {{-- Data Izin — Redesigned Cards --}}
     <div class="flex mt-3">
         <div class="w-full px-3">
             @forelse ($dataizin as $d)
@@ -57,82 +99,77 @@
                     $ts = strtotime($d->tgl_izin);
                     $weekday = $weekdayMap[date('l', $ts)] ?? date('l', $ts);
                     $displayDate = date('d M Y', $ts);
-                    $isIzin = $d->jenis_izin === 'i';
-                    $ext = strtolower(pathinfo($d->file, PATHINFO_EXTENSION));
-                    $label = $isIzin ? 'Izin' : 'Sakit';
+                    $status = $d->status instanceof \App\Enums\IzinStatus ? $d->status->value : ($d->status ?? 'approved');
+                    $statusLabel = $statusLabels[$status] ?? ucfirst($status);
+                    $badgeClass = $statusBadgeClasses[$status] ?? 'bg-gray-100 text-gray-700 border-gray-200';
+                    $jenis = $d->jenis_izin instanceof \App\Enums\JenisIzin ? $d->jenis_izin->value : ($d->jenis_izin ?? '');
+                    $jenisLabel = $jenisLabels[$jenis] ?? $jenis;
+                    $jenisBadge = $jenisBadgeClasses[$jenis] ?? 'bg-gray-100 text-gray-700 border-gray-200';
+                    $pdfUrl = !empty($d->pdf_form_path) ? \Illuminate\Support\Facades\Storage::url($d->pdf_form_path) : "#";
+                    $pdfName = !empty($d->pdf_form_path) ? basename($d->pdf_form_path) : '';
+                    $buktiUrl = !empty($d->bukti_file) ? 'uploads/izin/' . $d->bukti_file : null;
                 @endphp
                 <div class="presensi-card mb-2.5">
-                    {{-- Top Row --}}
                     <div class="flex items-start gap-3">
-                        <div class="presensi-icon-box {{ $isIzin ? 'icon-izin' : 'icon-sakit' }}">
-                            @if ($isIzin)
-                                <i data-lucide="file-text"></i>
-                            @else
-                                <i data-lucide="cross"></i>
-                            @endif
+                        <div class="presensi-icon-box icon-izin">
+                            <i data-lucide="shield"></i>
                         </div>
-
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-2 flex-wrap">
                                 <span class="text-[14.5px] font-bold text-[#1c1917] tracking-tight leading-none">{{ $displayDate }}</span>
-                                <span class="presensi-badge {{ $isIzin ? 'badge-izin' : 'badge-sakit' }}">
-                                    <span class="w-1.5 h-1.5 rounded-full {{ $isIzin ? 'bg-amber-500' : 'bg-rose-500' }}"></span>
-                                    {{ $label }}
-                                </span>
+                                <span class="presensi-badge {{ $badgeClass }}">{{ $statusLabel }}</span>
                             </div>
-                            <div class="flex items-center gap-1.5 mt-1">
+                            <div class="flex items-center gap-1.5 mt-1.5">
                                 <i data-lucide="calendar" class="text-[#a8a29e]" style="width:12px;height:12px;"></i>
                                 <span class="text-[12px] font-medium text-[#78716c]">{{ $weekday }}</span>
-                                <span class="w-1 h-1 rounded-full bg-[#e7e5e4]"></span>
-                                <span class="text-[11px] text-[#a8a29e]">Diajukan</span>
+                                <span class="presensi-badge {{ $jenisBadge }} text-[10px] py-0 px-1.5">{{ $jenisLabel }}</span>
                             </div>
+                            @if (!empty($d->keterangan))
+                                <div class="text-[12px] text-[#57534e] mt-1.5 leading-snug">{{ Str::limit($d->keterangan, 80) }}</div>
+                            @endif
                         </div>
-
-                        <form action="/izin/{{ $d->id }}" method="POST" class="form-delete shrink-0">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn-delete-card" aria-label="Hapus">
-                                <i data-lucide="trash-2"></i>
-                            </button>
-                        </form>
                     </div>
 
                     <div class="presensi-divider"></div>
 
-                    {{-- Bottom Row --}}
-                    <div class="flex items-center justify-between gap-2 flex-wrap">
-                        <div class="flex items-center gap-2 flex-wrap">
-                            <button type="button"
-                                class="file-pill js-preview"
-                                data-url="/presensi/showfile/{{ $d->file }}"
-                                data-filename="{{ $d->file }}"
-                                data-label="Dokumen {{ $label }} — {{ $displayDate }}">
-                                <i data-lucide="eye"></i>
-                                Dokumen {{ $label }}
-                                <span class="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-[#f5f5f4] border border-[#e7e5e4] text-[9px] font-bold tracking-wide text-[#57534e] uppercase">{{ $ext }}</span>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        @if($pdfUrl !== "#")
+                            <button type="button" class="file-pill js-preview" data-url="{{ $pdfUrl }}" data-filename="{{ $pdfName }}" data-label="Form Izin — {{ $displayDate }}">
+                                <i data-lucide="file"></i> Form
+                                <span class="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-[#f0f9ff] border border-[#bae6fd] text-[9px] font-bold text-[#0369a1] uppercase">{{ strtolower(pathinfo($pdfName, PATHINFO_EXTENSION)) }}</span>
                             </button>
-                        </div>
-                        <span class="presensi-badge badge-uploaded">
-                            <i data-lucide="circle-check" style="width:12px;height:12px;"></i> Uploaded
-                        </span>
+                        @endif
+                        @if($buktiUrl)
+                            <button type="button" class="file-pill js-preview" data-url="{{ $buktiUrl }}" data-filename="{{ basename($buktiUrl) }}" data-label="Bukti Izin — {{ $displayDate }}">
+                                <i data-lucide="paperclip"></i> Bukti
+                            </button>
+                        @endif
+                        @if($status === 'pending_atasan')
+                            <form action="/izin/{{ $d->id }}" method="POST" class="inline" onsubmit="return confirmDelete(event)">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="file-pill text-rose-600 hover:bg-rose-50">
+                                    <i data-lucide="trash-2"></i> Hapus
+                                </button>
+                            </form>
+                        @endif
                     </div>
                 </div>
             @empty
                 <x-admin.card class="p-8 mt-6 text-center">
-                    <div class="w-20 h-20 rounded-2xl bg-[#fdf8f4] border border-[#f0ece8] flex items-center justify-center mx-auto">
-                        <i data-lucide="file-text" class="text-[#d6c7b8]" style="width:40px;height:40px;"></i>
+                    <div class="w-20 h-20 rounded-2xl bg-[#fff1f2] border border-[#fecdd3] flex items-center justify-center mx-auto text-[#e11d48]">
+                        <i data-lucide="shield" class="text-[#e11d48]" style="width:40px;height:40px;"></i>
                     </div>
-                    <h4 class="mt-4 text-[16px] font-bold text-[#1c1917]">Belum Ada Data Izin</h4>
-                    <p class="mt-1.5 text-[13px] leading-relaxed text-[#78716c] max-w-[26ch] mx-auto">Data izin / sakit yang kamu ajukan akan muncul di sini. Tap tombol di bawah untuk mengajukan baru.</p>
+                    <h4 class="mt-4 text-[16px] font-bold text-[#1c1917]">Tidak Ada Data Izin</h4>
+                    <p class="mt-1.5 text-[13px] leading-relaxed text-[#78716c] max-w-[28ch] mx-auto">Ajukan izin jika Anda tidak bisa masuk kerja atau perlu izin khusus lainnya.</p>
                     <a href="/izin/create" class="inline-flex items-center gap-2 mt-5 px-5 py-2.5 rounded-full bg-coklat text-white text-[13px] font-semibold shadow-sm hover:bg-coklat-dark transition">
-                        <i data-lucide="plus" style="width:16px;height:16px;"></i> Ajukan Izin / Sakit
+                        <i data-lucide="plus" style="width:16px;height:16px;"></i> Ajukan Izin
                     </a>
                 </x-admin.card>
             @endforelse
         </div>
     </div>
 
-    {{-- Floating Action Button --}}
     <div class="fab-button bottom-right" style="bottom: 78px; right: 16px;">
         <a href="/izin/create" class="fab bg-coklat text-white shadow-lg" aria-label="Tambah Data">
             <i data-lucide="plus"></i>
@@ -145,22 +182,20 @@
             if (alert) { alert.style.opacity = '0'; alert.style.transition = 'opacity 0.3s'; setTimeout(() => alert.style.display = 'none', 300); }
         }, 3000);
 
-        document.querySelectorAll('.form-delete').forEach(form => {
-            form.addEventListener('submit', function (e) {
-                e.preventDefault();
-                Swal.fire({
-                    title: 'Hapus Data?',
-                    text: 'Data izin / sakit akan dihapus permanen!',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#7a5234',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Ya, Hapus',
-                    cancelButtonText: 'Batal'
-                }).then((result) => {
-                    if (result.isConfirmed) { form.submit(); }
-                });
+        function confirmDelete(e) {
+            e.preventDefault();
+            Swal.fire({
+                title: "Hapus Izin?",
+                text: "Pengajuan izin ini akan dihapus secara permanen.",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#7a5234",
+                confirmButtonText: "Ya, Hapus",
+                cancelButtonText: "Batal"
+            }).then(function(r) {
+                if (r.isConfirmed) e.target.closest('form').submit();
             });
-        });
+        }
     </script>
 @endsection

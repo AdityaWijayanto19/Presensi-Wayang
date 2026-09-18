@@ -28,6 +28,7 @@ class RolePermissionSeeder extends Seeder
             'presensi-edit',
             'izin-view',
             'izin-delete',
+            'izin-approve',
             'lembur-view',
             'lembur-delete',
             'lembur-approve',
@@ -48,7 +49,7 @@ class RolePermissionSeeder extends Seeder
 
         // Admin - semua kecuali approve dan user-manage
         $admin = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'user']);
-        $adminPermissions = array_diff($permissions, ['wfh-approve', 'lembur-approve', 'user-manage', 'presensi-edit']);
+        $adminPermissions = array_diff($permissions, ['wfh-approve', 'lembur-approve', 'izin-approve', 'user-manage', 'presensi-edit']);
         $admin->syncPermissions($adminPermissions);
 
         // Owner - hanya view, tanpa create/edit/delete

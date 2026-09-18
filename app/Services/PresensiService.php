@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Izin;
 use App\Models\Karyawan;
 use App\Models\Lembur;
 use App\Models\Presensi;
@@ -61,7 +62,14 @@ class PresensiService
                 $jamSekarang = strtotime($jam);
                 $selisihJamKerja = ($jamSekarang - $jamMasukTime) / 3600;
 
-                if ($selisihJamKerja < self::MINIMAL_JAM_KERJA) {
+                // Check if approved izin pulang cepat exists for today
+                $izinPulangCepat = Izin::where('nik', $nik)
+                    ->where('tgl_izin', $tglPresensi)
+                    ->where('jenis_izin', 'pulang_cepat')
+                    ->where('status', 'approved')
+                    ->exists();
+
+                if (!$izinPulangCepat && $selisihJamKerja < self::MINIMAL_JAM_KERJA) {
                     return ['success' => false, 'message' => 'Belum bisa presensi pulang! Minimal bekerja 8 jam.', 'type' => 'out'];
                 }
             }

@@ -324,6 +324,104 @@
             @endif
         </div>
 
+        {{-- IZIN SAYA & PERLU PERSETUJUAN --}}
+        {{-- PENDING PENGAJUAN IZIN ATASAN --}}
+        <div id="pendingAtasanIzinSection">
+            @if (isset($pendingAtasanIzin) && $pendingAtasanIzin->count() > 0)
+                <div class="mt-6">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-[15px] font-bold text-[#1c1917] flex items-center gap-2">
+                            <span class="w-8 h-8 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center text-amber-700"><i data-lucide="shield-check"></i></span>
+                            Pengajuan Izin Perlu Persetujuan ({{ $pendingAtasanIzin->count() }})
+                        </h3>
+                    </div>
+                    @foreach ($pendingAtasanIzin as $p)
+                        @php
+                            $jenisLabels = ['tidak_masuk' => 'Tidak Masuk', 'terlambat' => 'Terlambat', 'pulang_cepat' => 'Pulang Cepat', 'sakit' => 'Sakit'];
+                            $jenisBadgeClasses = ['tidak_masuk' => 'bg-amber-100 text-amber-700', 'terlambat' => 'bg-orange-100 text-orange-700', 'pulang_cepat' => 'bg-cyan-100 text-cyan-700', 'sakit' => 'bg-rose-100 text-rose-700'];
+                            $jenis = $p->jenis_izin instanceof \App\Enums\JenisIzin ? $p->jenis_izin->value : ($p->jenis_izin ?? '');
+                        @endphp
+                        <div class="card mb-2 border-l-4 border-l-amber-400 bg-amber-50/50">
+                            <div class="card-body p-3">
+                                <div class="flex items-start justify-between gap-3">
+                                    <div class="flex-1 min-w-0">
+                                        <div class="text-[13px] font-bold text-[#1c1917]">
+                                            {{ $p->karyawan->nama_lengkap ?? '-' }} <span class="text-[11px] font-normal text-[#78716c]">• {{ $p->karyawan->jabatan ?? '-' }} • {{ $p->karyawan->posisi ?? '-' }}</span></div>
+                                        <div class="text-[11px] text-[#78716c]">
+                                            {{ date('d M Y', strtotime($p->tgl_izin)) }} •
+                                            {{ $p->karyawan->unit ?? '-' }} ({{ $p->karyawan->unitperusahaan->perusahaan ?? '-' }})
+                                            <span class="inline-flex items-center rounded-full border text-[10px] px-2 py-0.5 {{ $jenisBadgeClasses[$jenis] ?? 'bg-gray-100 text-gray-700' }}">{{ $jenisLabels[$jenis] ?? $jenis }}</span>
+                                        </div>
+                                        <div class="text-[11px] text-[#57534e] mt-1 line-clamp-2">{{ Str::limit($p->keterangan ?? '', 70) }}</div>
+                                    </div>
+                                    <div class="flex flex-col gap-1.5 shrink-0">
+                                        <button type="button" class="btn btn-sm bg-emerald-500 text-white rounded-full px-3 py-1 text-[11px] w-full btn-approve-atasan-izin" data-id="{{ $p->id }}">Setujui</button>
+                                        <button type="button" class="btn btn-sm bg-white border border-rose-200 text-rose-700 rounded-full px-3 py-1 text-[11px] w-full btn-reject-atasan-izin" data-id="{{ $p->id }}">Tolak</button>
+                                    </div>
+                                </div>
+                                @if (!empty($p->pdf_form_path))
+                                    <div class="flex mt-1">
+                                        <a href="{{ Storage::url($p->pdf_form_path) }}" target="_blank" class="text-[11px] text-sky-700 hover:underline">Form Pengajuan</a>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+        </div>
+
+        {{-- IZIN SAYA PERLU TINDAKAN --}}
+        <div id="izinSayaSection">
+            @if (isset($izinSaya) && $izinSaya->count() > 0)
+                <div class="mt-6">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-[15px] font-bold text-[#1c1917] flex items-center gap-2">
+                            <span class="w-8 h-8 rounded-xl bg-rose-100 border border-rose-200 flex items-center justify-center text-rose-700"><i data-lucide="shield"></i></span>
+                            Izin Saya
+                        </h3>
+                        <a href="/izin" class="text-[11px] font-semibold text-rose-700">Lihat Semua</a>
+                    </div>
+                    @foreach ($izinSaya as $i)
+                        @php
+                            $iBadge = match ($i->status?->value) {
+                                'pending_atasan' => 'bg-amber-100 text-amber-700 border-amber-200',
+                                'pending_admin' => 'bg-sky-100 text-sky-700 border-sky-200',
+                                'approved' => 'bg-emerald-100 text-emerald-700 border-emerald-200',
+                                'rejected' => 'bg-rose-100 text-rose-700 border-rose-200',
+                                default => 'bg-gray-100 text-gray-700 border-gray-200',
+                            };
+                            $iLabel = match ($i->status?->value) {
+                                'pending_atasan' => 'Menunggu Persetujuan',
+                                'pending_admin' => 'Menunggu Persetujuan HR',
+                                'approved' => 'Disetujui',
+                                'rejected' => 'Ditolak',
+                                default => $i->status?->value ?? '',
+                            };
+                            $jenisLabels = ['tidak_masuk' => 'Tidak Masuk', 'terlambat' => 'Terlambat', 'pulang_cepat' => 'Pulang Cepat', 'sakit' => 'Sakit'];
+                            $jenis = $i->jenis_izin instanceof \App\Enums\JenisIzin ? $i->jenis_izin->value : ($i->jenis_izin ?? '');
+                        @endphp
+                        <div class="card mb-2">
+                            <div class="card-body p-3 flex items-center justify-between">
+                                <div class="flex-1 min-w-0">
+                                    <div class="text-[13px] font-bold text-[#1c1917]">
+                                        {{ date('d M Y', strtotime($i->tgl_izin)) }} <span class="ml-1 inline-flex items-center rounded-full border text-[10px] px-2 py-0.5 {{ $iBadge }}">{{ $iLabel }}</span>
+                                        <span class="ml-1 inline-flex items-center rounded-full bg-gray-100 text-gray-700 text-[10px] px-2 py-0.5">{{ $jenisLabels[$jenis] ?? $jenis }}</span>
+                                    </div>
+                                    @if (!empty($i->keterangan))
+                                        <div class="text-[11px] text-[#78716c] mt-0.5 italic">{{ Str::limit($i->keterangan, 50) }}</div>
+                                    @endif
+                                    @if (!empty($i->rejected_reason) && $i->status?->value === 'rejected')
+                                        <div class="text-[11px] text-rose-600 mt-0.5">Alasan tolak: {{ Str::limit($i->rejected_reason, 50) }}</div>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+        </div>
+
         {{-- LEMBUR SAYA & PERLU PERSETUJUAN --}}
         {{-- PENDING LAPORAN LEMBUR ATASAN --}}
         <div id="pendingLaporanLemburSection">
@@ -873,6 +971,7 @@
             let lastPendingLaporan = {{ $pendingLaporanAtasan->count() ?? 0 }};
             let lastPendingAtasanLembur = {{ $pendingAtasanLembur->count() ?? 0 }};
             let lastPendingLaporanLembur = {{ $pendingLaporanLemburAtasan->count() ?? 0 }};
+            let lastPendingAtasanIzin = {{ $pendingAtasanIzin->count() ?? 0 }};
             let isPolling = false;
             let sectionHashes = {};
             let pollInterval = 5000;
@@ -1526,6 +1625,70 @@
                             }
                         }
 
+                        // 8b. Update Izin Saya
+                        if (data.izinSaya) {
+                            const section = document.getElementById('izinSayaSection');
+                            if (section) {
+                                if (data.izinSaya.length === 0) {
+                                    section.innerHTML = '';
+                                } else {
+                                    let iBadgeMap = {
+                                        'pending_atasan': ['bg-amber-100 text-amber-700 border-amber-200', 'Menunggu Persetujuan'],
+                                        'pending_admin': ['bg-sky-100 text-sky-700 border-sky-200', 'Menunggu Persetujuan HR'],
+                                        'approved': ['bg-emerald-100 text-emerald-700 border-emerald-200', 'Disetujui'],
+                                        'rejected': ['bg-rose-100 text-rose-700 border-rose-200', 'Ditolak']
+                                    };
+                                    let jenisLabels = {'tidak_masuk': 'Tidak Masuk', 'terlambat': 'Terlambat', 'pulang_cepat': 'Pulang Cepat', 'sakit': 'Sakit'};
+                                    let html = '<div class="mt-6"><div class="flex items-center justify-between mb-2"><h3 class="text-[15px] font-bold text-[#1c1917] flex items-center gap-2"><span class="w-8 h-8 rounded-xl bg-rose-100 border border-rose-200 flex items-center justify-center text-rose-700"><i data-lucide="shield"></i></span>Izin Saya</h3><a href="/izin" class="text-[11px] font-semibold text-rose-700">Lihat Semua</a></div>';
+                                    data.izinSaya.forEach(function(i) {
+                                        var b = iBadgeMap[i.status] || ['bg-gray-100 text-gray-700 border-gray-200', i.status];
+                                        var jenisLabel = jenisLabels[i.jenis_izin] || i.jenis_izin || '';
+                                        var tglParts = (i.tgl_izin || '').substring(0, 10).split('-');
+                                        var months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+                                        var dateStr = parseInt(tglParts[2]) + ' ' + (months[parseInt(tglParts[1]) - 1] || '') + ' ' + tglParts[0];
+                                        var keterangan = i.keterangan ? '<div class="text-[11px] text-[#78716c] mt-0.5 italic">' + esc((i.keterangan.length > 50 ? i.keterangan.substring(0, 50) + '...' : i.keterangan)) + '</div>' : '';
+                                        var rejectNote = (i.rejected_reason && i.status === 'rejected') ? '<div class="text-[11px] text-rose-600 mt-0.5">Alasan tolak: ' + esc((i.rejected_reason.length > 50 ? i.rejected_reason.substring(0, 50) + '...' : i.rejected_reason)) + '</div>' : '';
+                                        html += '<div class="card mb-2"><div class="card-body p-3 flex items-center justify-between"><div class="flex-1 min-w-0"><div class="text-[13px] font-bold text-[#1c1917]">' + dateStr + ' <span class="ml-1 inline-flex items-center rounded-full border text-[10px] px-2 py-0.5 ' + b[0] + '">' + esc(b[1]) + '</span> <span class="ml-1 inline-flex items-center rounded-full bg-gray-100 text-gray-700 text-[10px] px-2 py-0.5">' + esc(jenisLabel) + '</span></div>' + keterangan + rejectNote + '</div></div></div>';
+                                    });
+                                    html += '</div>';
+                                    updateSection(section, html, 'izinSaya');
+                                }
+                            }
+                        }
+
+                        // 8c. Update Pending Pengajuan Izin Atasan
+                        if (data.pendingAtasanIzin) {
+                            const count = data.pendingAtasanIzin.length;
+                            const section = document.getElementById('pendingAtasanIzinSection');
+                            if (section) {
+                                if (count === 0) {
+                                    updateSection(section, '', 'pendingAtasanIzin');
+                                } else {
+                                    let jenisLabels = {'tidak_masuk': 'Tidak Masuk', 'terlambat': 'Terlambat', 'pulang_cepat': 'Pulang Cepat', 'sakit': 'Sakit'};
+                                    let jenisBadgeClasses = {'tidak_masuk': 'bg-amber-100 text-amber-700', 'terlambat': 'bg-orange-100 text-orange-700', 'pulang_cepat': 'bg-cyan-100 text-cyan-700', 'sakit': 'bg-rose-100 text-rose-700'};
+                                    let html = '<div class="mt-6"><div class="flex items-center justify-between mb-2"><h3 class="text-[15px] font-bold text-[#1c1917] flex items-center gap-2"><span class="w-8 h-8 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center text-amber-700"><i data-lucide="shield-check"></i></span>Pengajuan Izin Perlu Persetujuan (' + count + ')</h3></div>';
+                                    data.pendingAtasanIzin.forEach(function(p) {
+                                        var k = p.karyawan || {};
+                                        var up = k.unitperusahaan || {};
+                                        var jenisLabel = jenisLabels[p.jenis_izin] || p.jenis_izin || '';
+                                        var jenisBadge = jenisBadgeClasses[p.jenis_izin] || 'bg-gray-100 text-gray-700';
+                                        html += '<div class="card mb-2 border-l-4 border-l-amber-400 bg-amber-50/50"><div class="card-body p-3"><div class="flex items-start justify-between gap-3"><div class="flex-1 min-w-0"><div class="text-[13px] font-bold text-[#1c1917]">' + esc(k.nama_lengkap || '-') + ' <span class="text-[11px] font-normal text-[#78716c]">• ' + esc(k.jabatan || '-') + ' • ' + esc(k.posisi || '-') + '</span></div><div class="text-[11px] text-[#78716c]">' + esc((p.tgl_izin || '').substring(0, 10)) + ' • ' + esc(k.unit || '-') + ' (' + esc(up.perusahaan || '-') + ') <span class="inline-flex items-center rounded-full border text-[10px] px-2 py-0.5 ' + jenisBadge + '">' + esc(jenisLabel) + '</span></div><div class="text-[11px] text-[#57534e] mt-1 line-clamp-2">' + esc((p.keterangan || '').substring(0, 70)) + '</div></div><div class="flex flex-col gap-1.5 shrink-0"><button type="button" class="btn btn-sm bg-emerald-500 text-white rounded-full px-3 py-1 text-[11px] w-full btn-approve-atasan-izin" data-id="' + esc(p.id) + '">Setujui</button><button type="button" class="btn btn-sm bg-white border border-rose-200 text-rose-700 rounded-full px-3 py-1 text-[11px] w-full btn-reject-atasan-izin" data-id="' + esc(p.id) + '">Tolak</button></div></div>' + (p.pdf_form_path ? '<div class="flex mt-1"><a href="/storage/' + esc(p.pdf_form_path) + '" target="_blank" class="text-[11px] text-sky-700 hover:underline">Form Pengajuan</a></div>' : '') + '</div></div>';
+                                    });
+                                    html += '</div>';
+                                    updateSection(section, html, 'pendingAtasanIzin');
+                                }
+                            }
+                            if (count > lastPendingAtasanIzin && count > 0) {
+                                if (Notification.permission === 'granted') {
+                                    new Notification('Persetujuan Izin', {
+                                        body: 'Ada ' + count + ' pengajuan izin menunggu persetujuan Anda',
+                                        icon: '/assets/img/login/logo_aplikasi.png'
+                                    });
+                                }
+                            }
+                            lastPendingAtasanIzin = count;
+                        }
+
                         isPolling = false;
                         pollInterval = 5000;
                     }).catch(() => {
@@ -2068,6 +2231,114 @@
                             });
                         }
                     });
+                }
+
+                // Approve Izin Atasan
+                var btnApproveIzin = e.target.closest('.btn-approve-atasan-izin');
+                if (btnApproveIzin) {
+                    e.preventDefault();
+                    var idIzin = btnApproveIzin.dataset.id;
+                    Swal.fire({
+                        title: 'Setujui Izin?',
+                        text: 'Pengajuan izin akan diteruskan ke HR.',
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#10b981',
+                        confirmButtonText: 'Ya, Setujui',
+                        cancelButtonText: 'Batal'
+                    }).then(function(r) {
+                        if (r.isConfirmed) {
+                            btnApproveIzin.disabled = true;
+                            btnApproveIzin.textContent = 'Memproses...';
+                            fetch('/izin/' + idIzin + '/approve-atasan', {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRF-TOKEN': CSRF,
+                                    'Accept': 'application/json',
+                                    'X-Requested-With': 'XMLHttpRequest'
+                                },
+                                credentials: 'same-origin'
+                            }).then(function(resp) {
+                                return resp.json();
+                            }).then(function(data) {
+                                if (data.success) {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Berhasil',
+                                        text: data.message,
+                                        timer: 1500,
+                                        showConfirmButton: false
+                                    });
+                                    setTimeout(function() { pollRealtime(); }, 300);
+                                } else {
+                                    btnApproveIzin.disabled = false;
+                                    btnApproveIzin.textContent = 'Setujui';
+                                    Swal.fire({ icon: 'error', title: 'Gagal', text: data.message });
+                                }
+                            }).catch(function() {
+                                btnApproveIzin.disabled = false;
+                                btnApproveIzin.textContent = 'Setujui';
+                                Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan jaringan.' });
+                            });
+                        }
+                    });
+                    return;
+                }
+
+                // Reject Izin Atasan
+                var btnRejectIzin = e.target.closest('.btn-reject-atasan-izin');
+                if (btnRejectIzin) {
+                    e.preventDefault();
+                    var idRIzin = btnRejectIzin.dataset.id;
+                    Swal.fire({
+                        title: 'Tolak Izin?',
+                        input: 'textarea',
+                        inputPlaceholder: 'Alasan penolakan...',
+                        showCancelButton: true,
+                        confirmButtonColor: '#e11d48',
+                        confirmButtonText: 'Tolak',
+                        inputValidator: function(v) {
+                            if (!v || v.trim().length < 5) return 'Minimal 5 karakter';
+                        }
+                    }).then(function(r) {
+                        if (r.isConfirmed) {
+                            btnRejectIzin.disabled = true;
+                            btnRejectIzin.textContent = 'Memproses...';
+                            fetch('/izin/' + idRIzin + '/reject-atasan', {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRF-TOKEN': CSRF,
+                                    'Accept': 'application/json',
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'Content-Type': 'application/json'
+                                },
+                                credentials: 'same-origin',
+                                body: JSON.stringify({ rejected_reason: r.value })
+                            }).then(function(resp) {
+                                return resp.json();
+                            }).then(function(data) {
+                                if (data.success) {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Berhasil',
+                                        text: data.message,
+                                        timer: 1500,
+                                        showConfirmButton: false
+                                    });
+                                    setTimeout(function() { pollRealtime(); }, 300);
+                                } else {
+                                    btnRejectIzin.disabled = false;
+                                    btnRejectIzin.textContent = 'Tolak';
+                                    Swal.fire({ icon: 'error', title: 'Gagal', text: data.message });
+                                }
+                            }).catch(function() {
+                                btnRejectIzin.disabled = false;
+                                btnRejectIzin.textContent = 'Tolak';
+                                Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan jaringan.' });
+                            });
+                        }
+                    });
+                    return;
                 }
             });
 

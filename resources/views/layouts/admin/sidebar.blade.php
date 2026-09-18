@@ -113,6 +113,8 @@
                 <i data-lucide="file-text" style="width:16px;height:16px;"></i>
             </span>
             <span>Data Izin Karyawan</span>
+            <span id="adminIzinBadge" class="ml-auto inline-flex items-center justify-center min-w-[16px] h-4 px-1 rounded bg-red-500 text-white text-[10px] font-bold"
+                  style="{{ ($pendingIzinAdminCount ?? 0) > 0 ? '' : 'display:none;' }}">{{ $pendingIzinAdminCount ?? 0 }}</span>
         </a>
         @endcan
 

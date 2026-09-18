@@ -30,7 +30,9 @@ Route::get('/izin', [KaryawanPresensiController::class, 'izin']);
 Route::get('/izin/create', [KaryawanPresensiController::class, 'buatizin']);
 Route::post('/izin/store', [KaryawanPresensiController::class, 'storeizin']);
 Route::delete('/izin/{id}', [KaryawanPresensiController::class, 'deleteizin']);
-Route::get('/presensi/showfile/{file}', [KaryawanPresensiController::class, 'showfile']);
+Route::post('/izin/{id}/approve-atasan', [KaryawanPresensiController::class, 'approveIzinAtasan']);
+Route::post('/izin/{id}/reject-atasan', [KaryawanPresensiController::class, 'rejectIzinAtasan']);
+Route::get('/presensi/showfileizin/{file}', [KaryawanPresensiController::class, 'showfileizin']);
 
 // Lembur
 Route::get('/lembur', [KaryawanPresensiController::class, 'lembur']);

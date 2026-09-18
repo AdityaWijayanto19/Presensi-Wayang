@@ -228,6 +228,16 @@
                             badgeLembur.style.display = 'none';
                         }
                     }
+                    var badgeIzin = document.getElementById('adminIzinBadge');
+                    var totalIzin = data.pending_izin || 0;
+                    if(badgeIzin){
+                        if(totalIzin > 0){
+                            badgeIzin.textContent = totalIzin;
+                            badgeIzin.style.display = 'inline-flex';
+                        } else {
+                            badgeIzin.style.display = 'none';
+                        }
+                    }
                 }).catch(function(){});
         }
         pollAdminBadge();

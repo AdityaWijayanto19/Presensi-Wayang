@@ -59,49 +59,93 @@ class KaryawanPresensiController extends Controller
         return view('karyawan.presensi._rows', compact('histori'));
     }
 
-    public function izin()
+    public function izin(IzinService $izinService)
     {
         $nik = Auth::guard('karyawan')->user()->nik;
-        $izinService = new IzinService();
-        $dataizin = $izinService->getIzinByKaryawan($nik);
+        $dataizin = $izinService->getIzinHistory($nik);
 
         return view('karyawan.izin.index', compact('dataizin'));
     }
 
     public function buatizin()
     {
-        return view('karyawan.izin.create');
+        $karyawan = Auth::guard('karyawan')->user()->load('unitperusahaan');
+
+        $unitkerja = Unitperusahaan::where('unit', $karyawan->unit)->first();
+        $jamMasuk = $unitkerja?->jam_masuk instanceof \Carbon\Carbon
+            ? $unitkerja->jam_masuk->format('H:i:s')
+            : ($unitkerja?->jam_masuk ?? '08:00:00');
+        $sekarang = now('Asia/Jakarta')->format('H:i:s');
+        $batasSubmit = \Carbon\Carbon::parse($jamMasuk)->addHour()->format('H:i:s');
+        $disableToday = ($sekarang >= $batasSubmit);
+
+        return view('karyawan.izin.create', compact('karyawan', 'disableToday'));
     }
 
-    public function showfile(string $file)
+    public function showfileizin(string $file)
     {
-        $file = basename($file);
-        if (!preg_match('/^[a-zA-Z0-9._-]+$/', $file)) {
-            abort(404);
+        $nik = Auth::guard('karyawan')->user()->nik;
+        $path = IzinService::showFileIzin($file, $nik);
+        if (!$path) abort(404);
+
+        $abs = storage_path('app/public/' . $path);
+        if (file_exists($abs)) {
+            $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+            $mimeMap = [
+                'pdf' => 'application/pdf',
+                'jpg' => 'image/jpeg',
+                'jpeg' => 'image/jpeg',
+                'png' => 'image/png',
+                'webp' => 'image/webp',
+                'gif' => 'image/gif',
+            ];
+            $contentType = $mimeMap[$ext] ?? 'application/octet-stream';
+            return response()->file($abs, [
+                'Content-Type' => $contentType,
+                'Content-Disposition' => 'inline; filename="' . basename($path) . '"',
+            ]);
         }
-
-        $path = storage_path('app/public/uploads/izin/' . $file);
-        if (!file_exists($path)) abort(404);
-
-        return response()->file($path);
+        abort(404);
     }
 
-    public function storeizin(StoreIzinRequest $request)
+    public function storeizin(StoreIzinRequest $request, IzinService $izinService)
     {
-        $izinService = new IzinService();
-        $result = $izinService->storeIzin($request);
+        $karyawan = Auth::guard('karyawan')->user();
+        $result = $izinService->storeIzin($request, $karyawan);
 
         if ($result['success']) {
             return redirect('/izin')->with('success', $result['message']);
         }
-        return redirect()->back()->with('error', $result['message']);
+        return redirect()->back()->with('error', $result['message'])->withInput();
     }
 
-    public function deleteizin(int $id)
+    public function deleteizin(int $id, IzinService $izinService)
     {
-        $izinService = new IzinService();
-        $result = $izinService->deleteIzin($id);
+        $nik = Auth::guard('karyawan')->user()->nik;
+        $result = $izinService->deleteIzin($id, $nik);
 
+        return redirect()->back()->with($result['success'] ? 'success' : 'error', $result['message']);
+    }
+
+    public function approveIzinAtasan(Request $request, int $id, IzinService $izinService)
+    {
+        $karyawan = Auth::guard('karyawan')->user();
+        $result = $izinService->approveIzinAtasan($id, $karyawan);
+
+        if ($request->expectsJson()) {
+            return response()->json($result, $result['success'] ? 200 : 422);
+        }
+        return redirect()->back()->with($result['success'] ? 'success' : 'error', $result['message']);
+    }
+
+    public function rejectIzinAtasan(RejectRequest $request, int $id, IzinService $izinService)
+    {
+        $karyawan = Auth::guard('karyawan')->user();
+        $result = $izinService->rejectIzinAtasan($id, $request->rejected_reason, $karyawan);
+
+        if ($request->expectsJson()) {
+            return response()->json($result, $result['success'] ? 200 : 422);
+        }
         return redirect()->back()->with($result['success'] ? 'success' : 'error', $result['message']);
     }
 

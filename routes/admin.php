@@ -71,6 +71,10 @@ Route::get('/panel/izin', [AdminPresensiController::class, 'dataizin'])->middlew
 Route::group(['middleware' => 'permission:izin-delete,user'], function () {
     Route::post('/presensi/dataizin/{id}/delete', [AdminPresensiController::class, 'deleteizinadmin']);
 });
+Route::group(['middleware' => 'permission:izin-approve,user'], function () {
+    Route::post('/presensi/dataizin/{id}/approve', [AdminPresensiController::class, 'approveIzinAdmin']);
+    Route::post('/presensi/dataizin/{id}/reject', [AdminPresensiController::class, 'rejectIzinAdmin']);
+});
 
 // Data lembur
 Route::get('/panel/lembur', [AdminPresensiController::class, 'datalembur'])->middleware('permission:lembur-view,user');
@@ -114,3 +118,5 @@ Route::get('/api/realtime/admin/wfh-check', [RealtimeController::class, 'adminWf
 Route::get('/api/realtime/admin/wfh-data', [RealtimeController::class, 'adminWfhData'])->middleware('permission:wfh-view,user');
 Route::get('/api/realtime/admin/lembur-check', [RealtimeController::class, 'adminLemburCheck'])->middleware('permission:lembur-view,user');
 Route::get('/api/realtime/admin/lembur-data', [RealtimeController::class, 'adminLemburData'])->middleware('permission:lembur-view,user');
+Route::get('/api/realtime/admin/izin-check', [RealtimeController::class, 'adminIzinCheck'])->middleware('permission:izin-view,user');
+Route::get('/api/realtime/admin/izin-data', [RealtimeController::class, 'adminIzinData'])->middleware('permission:izin-view,user');

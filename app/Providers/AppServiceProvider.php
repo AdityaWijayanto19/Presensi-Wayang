@@ -66,6 +66,15 @@ class AppServiceProvider extends ServiceProvider
             $view->with('pendingLemburCount', $pendingLembur);
             $view->with('pendingLemburAdminCount', $pendingLemburAdmin);
             $view->with('pendingLaporanLemburAdminCount', $pendingLaporanLemburAdmin);
+
+            $pendingIzinAdmin = cache()->remember('pending_izin_admin_count', 30, function () {
+                try {
+                    return DB::table('izins')->where('status', 'pending_admin')->count();
+                } catch (\Exception $e) {
+                    return 0;
+                }
+            });
+            $view->with('pendingIzinAdminCount', $pendingIzinAdmin);
         });
 
         View::composer('layouts.admin.tabler', function ($view) {

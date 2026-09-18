@@ -15,7 +15,7 @@ class UpdateIzinAdminRequest extends FormRequest
     {
         return [
             'tgl_izin' => 'required|date',
-            'jenis_izin' => 'required|in:i,s',
+            'jenis_izin' => 'required|in:tidak_masuk,terlambat,pulang_cepat,sakit',
         ];
     }
 
@@ -24,8 +24,8 @@ class UpdateIzinAdminRequest extends FormRequest
         return [
             'tgl_izin.required' => 'Tanggal izin wajib diisi.',
             'tgl_izin.date' => 'Format tanggal tidak valid.',
-            'jenis_izin.required' => 'Jenis izin wajib dipilih.',
-            'jenis_izin.in' => 'Jenis izin tidak valid.',
+            'jenis_izin.required' => 'Kategori izin wajib dipilih.',
+            'jenis_izin.in' => 'Kategori izin tidak valid.',
         ];
     }
 }
