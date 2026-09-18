@@ -156,8 +156,8 @@
                     <div class="card text-white bg-gradient-to-br from-green-500 to-green-500/80">
                         <div class="p-4 sm:p-6">
                             <div class="flex items-center gap-2.5">
-                                <div
-                                    class="w-[44px] h-[44px] sm:w-[50px] sm:h-[50px] flex-shrink-0 flex items-center justify-center" id="presensi-foto-in-wrap">
+                                <div class="w-[44px] h-[44px] sm:w-[50px] sm:h-[50px] flex-shrink-0 flex items-center justify-center"
+                                    id="presensi-foto-in-wrap">
                                     @if ($presensihariini != null)
                                         @php
                                             $path = Storage::url('uploads/absensi/' . $presensihariini->foto_in);
@@ -166,7 +166,8 @@
                                             id="presensi-foto-in"
                                             class="w-[44px] h-[44px] sm:w-[50px] sm:h-[50px] object-cover rounded-xl">
                                     @else
-                                        <i data-lucide="camera" id="presensi-foto-in-placeholder" class="text-[26px] sm:text-[30px]"></i>
+                                        <i data-lucide="camera" id="presensi-foto-in-placeholder"
+                                            class="text-[26px] sm:text-[30px]"></i>
                                     @endif
                                 </div>
                                 <div class="leading-[1.3] min-w-0">
@@ -185,8 +186,8 @@
                     <div class="card text-white bg-gradient-to-br from-red-600 to-red-600/80">
                         <div class="p-4 sm:p-6">
                             <div class="flex items-center gap-2.5">
-                                <div
-                                    class="w-[44px] h-[44px] sm:w-[50px] sm:h-[50px] flex-shrink-0 flex items-center justify-center" id="presensi-foto-out-wrap">
+                                <div class="w-[44px] h-[44px] sm:w-[50px] sm:h-[50px] flex-shrink-0 flex items-center justify-center"
+                                    id="presensi-foto-out-wrap">
                                     @if ($presensihariini != null && $presensihariini->jam_out != null)
                                         @php
                                             $path = Storage::url('uploads/absensi/' . $presensihariini->foto_out);
@@ -195,7 +196,8 @@
                                             id="presensi-foto-out"
                                             class="w-[44px] h-[44px] sm:w-[50px] sm:h-[50px] object-cover rounded-xl">
                                     @else
-                                        <i data-lucide="camera" id="presensi-foto-out-placeholder" class="text-[26px] sm:text-[30px]"></i>
+                                        <i data-lucide="camera" id="presensi-foto-out-placeholder"
+                                            class="text-[26px] sm:text-[30px]"></i>
                                     @endif
                                 </div>
                                 <div class="leading-[1.3] min-w-0">
@@ -240,8 +242,7 @@
                                         </div>
                                         @if (!empty($p->laporan_file))
                                             <div class="mt-1">
-                                                <a href="{{ Storage::url($p->laporan_file) }}"
-                                                    target="_blank"
+                                                <a href="{{ Storage::url($p->laporan_file) }}" target="_blank"
                                                     class="text-[11px] text-sky-700 hover:underline">Form Laporan</a>
                                             </div>
                                         @elseif(!empty($p->laporan_deskripsi))
@@ -287,12 +288,16 @@
                             <div class="card-body p-3">
                                 <div class="flex items-start justify-between gap-3">
                                     <div class="flex-1 min-w-0">
-                                        <div class="text-[13px] font-bold text-[#1c1917]">{{ $p->karyawan->nama_lengkap ?? '-' }} <span
-                                                class="text-[11px] font-normal text-[#78716c]">• {{ $p->karyawan->jabatan ?? '-' }} •
+                                        <div class="text-[13px] font-bold text-[#1c1917]">
+                                            {{ $p->karyawan->nama_lengkap ?? '-' }} <span
+                                                class="text-[11px] font-normal text-[#78716c]">•
+                                                {{ $p->karyawan->jabatan ?? '-' }} •
                                                 {{ $p->karyawan->posisi ?? '-' }}</span></div>
                                         <div class="text-[11px] text-[#78716c]">
                                             {{ date('d M Y', strtotime($p->tgl_wfh)) }} •
-                                            {{ $p->karyawan->unit ?? '-' }} ({{ $p->karyawan->unitperusahaan->perusahaan ?? '-' }})</div>
+                                            {{ $p->karyawan->unit ?? '-' }}
+                                            ({{ $p->karyawan->unitperusahaan->perusahaan ?? '-' }})
+                                        </div>
                                         <div class="text-[11px] text-[#57534e] mt-1 line-clamp-2">
                                             {{ Str::limit($p->deskripsi_pekerjaan, 70) }}</div>
                                     </div>
@@ -309,7 +314,7 @@
                                     @php $pdfUrl = !empty($p->pdf_form_path) ? Storage::url($p->pdf_form_path) : (!empty($p->file_form) ? "/presensi/showfilewfh/{$p->file_form}" : null); @endphp
                                     @if ($pdfUrl)
                                         <a href="{{ $pdfUrl }}" target="_blank"
-                                           class="text-[11px] text-sky-700 hover:underline">Form Pengajuan</a>
+                                            class="text-[11px] text-sky-700 hover:underline">Form Pengajuan</a>
                                     @endif
                                 </div>
                             </div>
@@ -326,7 +331,9 @@
                 <div class="mt-6">
                     <div class="flex items-center justify-between mb-2">
                         <h3 class="text-[15px] font-bold text-[#1c1917] flex items-center gap-2">
-                            <span class="w-8 h-8 rounded-xl bg-violet-100 border border-violet-200 flex items-center justify-center text-violet-700"><i data-lucide="file-text"></i></span>
+                            <span
+                                class="w-8 h-8 rounded-xl bg-violet-100 border border-violet-200 flex items-center justify-center text-violet-700"><i
+                                    data-lucide="file-text"></i></span>
                             Laporan Lembur Perlu Persetujuan ({{ $pendingLaporanLemburAtasan->count() }})
                         </h3>
                     </div>
@@ -335,22 +342,42 @@
                             <div class="card-body p-3">
                                 <div class="flex items-start justify-between gap-3">
                                     <div class="flex-1 min-w-0">
-                                        <div class="text-[13px] font-bold text-[#1c1917]">{{ $p->karyawan->nama_lengkap ?? '-' }} <span class="text-[11px] font-normal text-[#78716c]">• {{ $p->karyawan->jabatan ?? '-' }} • {{ $p->karyawan->posisi ?? '-' }}</span></div>
-                                        <div class="text-[11px] text-[#78716c]">{{ date('d M Y', strtotime($p->tgl_lembur)) }} • {{ $p->karyawan->unit ?? '-' }} ({{ $p->karyawan->unitperusahaan->perusahaan ?? '-' }})</div>
-                                        <div class="text-[11px] text-[#57534e] mt-1">Laporan lembur menunggu persetujuan Anda</div>
+                                        <div class="text-[13px] font-bold text-[#1c1917]">
+                                            {{ $p->karyawan->nama_lengkap ?? '-' }} <span
+                                                class="text-[11px] font-normal text-[#78716c]">•
+                                                {{ $p->karyawan->jabatan ?? '-' }} •
+                                                {{ $p->karyawan->posisi ?? '-' }}</span></div>
+                                        <div class="text-[11px] text-[#78716c]">
+                                            {{ date('d M Y', strtotime($p->tgl_lembur)) }} •
+                                            {{ $p->karyawan->unit ?? '-' }}
+                                            ({{ $p->karyawan->unitperusahaan->perusahaan ?? '-' }})
+                                        </div>
+                                        <div class="text-[11px] text-[#57534e] mt-1">Laporan lembur menunggu persetujuan
+                                            Anda</div>
                                         @if (!empty($p->laporan_file))
                                             <div class="mt-1">
-                                                <a href="/presensi/showfilelembur/{{ basename($p->laporan_file) }}" target="_blank" class="text-[11px] text-sky-700 hover:underline">Form Laporan</a>
+                                                <a href="/presensi/showfilelembur/{{ basename($p->laporan_file) }}"
+                                                    target="_blank" class="text-[11px] text-sky-700 hover:underline">Form
+                                                    Laporan</a>
                                             </div>
                                         @elseif(!empty($p->laporan_deskripsi))
                                             <div class="mt-1">
-                                                <button type="button" class="text-[11px] text-sky-700 hover:underline cursor-pointer js-preview-laporan-lembur" data-deskripsi="{{ $p->laporan_deskripsi }}" data-tgl="{{ date('d M Y', strtotime($p->tgl_lembur)) }}" data-label="Laporan Lembur — {{ $p->karyawan->nama_lengkap ?? '-' }}">Form Laporan</button>
+                                                <button type="button"
+                                                    class="text-[11px] text-sky-700 hover:underline cursor-pointer js-preview-laporan-lembur"
+                                                    data-deskripsi="{{ $p->laporan_deskripsi }}"
+                                                    data-tgl="{{ date('d M Y', strtotime($p->tgl_lembur)) }}"
+                                                    data-label="Laporan Lembur — {{ $p->karyawan->nama_lengkap ?? '-' }}">Form
+                                                    Laporan</button>
                                             </div>
                                         @endif
                                     </div>
                                     <div class="flex flex-col gap-1.5 shrink-0">
-                                        <button type="button" class="btn btn-sm bg-emerald-500 text-white rounded-full px-3 py-1 text-[11px] w-full btn-approve-laporan-atasan-lembur" data-id="{{ $p->id }}">Setujui</button>
-                                        <button type="button" class="btn btn-sm bg-white border border-rose-200 text-rose-700 rounded-full px-3 py-1 text-[11px] w-full btn-reject-laporan-atasan-lembur" data-id="{{ $p->id }}">Tolak</button>
+                                        <button type="button"
+                                            class="btn btn-sm bg-emerald-500 text-white rounded-full px-3 py-1 text-[11px] w-full btn-approve-laporan-atasan-lembur"
+                                            data-id="{{ $p->id }}">Setujui</button>
+                                        <button type="button"
+                                            class="btn btn-sm bg-white border border-rose-200 text-rose-700 rounded-full px-3 py-1 text-[11px] w-full btn-reject-laporan-atasan-lembur"
+                                            data-id="{{ $p->id }}">Tolak</button>
                                     </div>
                                 </div>
                             </div>
@@ -366,7 +393,9 @@
                 <div class="mt-6">
                     <div class="flex items-center justify-between mb-2">
                         <h3 class="text-[15px] font-bold text-[#1c1917] flex items-center gap-2">
-                            <span class="w-8 h-8 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center text-amber-700"><i data-lucide="shield-check"></i></span>
+                            <span
+                                class="w-8 h-8 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center text-amber-700"><i
+                                    data-lucide="shield-check"></i></span>
                             Pengajuan Lembur Perlu Persetujuan ({{ $pendingAtasanLembur->count() }})
                         </h3>
                     </div>
@@ -375,19 +404,33 @@
                             <div class="card-body p-3">
                                 <div class="flex items-start justify-between gap-3">
                                     <div class="flex-1 min-w-0">
-                                        <div class="text-[13px] font-bold text-[#1c1917]">{{ $p->karyawan->nama_lengkap ?? '-' }} <span class="text-[11px] font-normal text-[#78716c]">• {{ $p->karyawan->jabatan ?? '-' }} • {{ $p->karyawan->posisi ?? '-' }}</span></div>
-                                        <div class="text-[11px] text-[#78716c]">{{ date('d M Y', strtotime($p->tgl_lembur)) }} • {{ $p->karyawan->unit ?? '-' }} ({{ $p->karyawan->unitperusahaan->perusahaan ?? '-' }})</div>
-                                        <div class="text-[11px] text-[#57534e] mt-1 line-clamp-2">{{ Str::limit($p->keterangan ?? '', 70) }}</div>
+                                        <div class="text-[13px] font-bold text-[#1c1917]">
+                                            {{ $p->karyawan->nama_lengkap ?? '-' }} <span
+                                                class="text-[11px] font-normal text-[#78716c]">•
+                                                {{ $p->karyawan->jabatan ?? '-' }} •
+                                                {{ $p->karyawan->posisi ?? '-' }}</span></div>
+                                        <div class="text-[11px] text-[#78716c]">
+                                            {{ date('d M Y', strtotime($p->tgl_lembur)) }} •
+                                            {{ $p->karyawan->unit ?? '-' }}
+                                            ({{ $p->karyawan->unitperusahaan->perusahaan ?? '-' }})
+                                        </div>
+                                        <div class="text-[11px] text-[#57534e] mt-1 line-clamp-2">
+                                            {{ Str::limit($p->keterangan ?? '', 70) }}</div>
                                     </div>
                                     <div class="flex flex-col gap-1.5 shrink-0">
-                                        <button type="button" class="btn btn-sm bg-emerald-500 text-white rounded-full px-3 py-1 text-[11px] w-full btn-approve-atasan-lembur" data-id="{{ $p->id }}">Setujui</button>
-                                        <button type="button" class="btn btn-sm bg-white border border-rose-200 text-rose-700 rounded-full px-3 py-1 text-[11px] w-full btn-reject-atasan-lembur" data-id="{{ $p->id }}">Tolak</button>
+                                        <button type="button"
+                                            class="btn btn-sm bg-emerald-500 text-white rounded-full px-3 py-1 text-[11px] w-full btn-approve-atasan-lembur"
+                                            data-id="{{ $p->id }}">Setujui</button>
+                                        <button type="button"
+                                            class="btn btn-sm bg-white border border-rose-200 text-rose-700 rounded-full px-3 py-1 text-[11px] w-full btn-reject-atasan-lembur"
+                                            data-id="{{ $p->id }}">Tolak</button>
                                     </div>
                                 </div>
                                 @if (!empty($p->pdf_form_path))
                                     <div class="flex mt-1">
-                                        <a href="/presensi/showfilelembur/{{ basename($p->pdf_form_path) }}" target="_blank"
-                                           class="text-[11px] text-sky-700 hover:underline">Form Pengajuan</a>
+                                        <a href="/presensi/showfilelembur/{{ basename($p->pdf_form_path) }}"
+                                            target="_blank" class="text-[11px] text-sky-700 hover:underline">Form
+                                            Pengajuan</a>
                                     </div>
                                 @endif
                             </div>
@@ -411,19 +454,19 @@
                     </div>
                     @foreach ($wfhSaya as $w)
                         @php
-                            $badge = match ($w->status) {
+                            $badge = match ($w->status?->value) {
                                 'pending_atasan' => 'bg-amber-100 text-amber-700 border-amber-200',
                                 'pending_admin' => 'bg-amber-100 text-amber-700 border-amber-200',
                                 'approved' => 'bg-emerald-100 text-emerald-700 border-emerald-200',
                                 'rejected' => 'bg-rose-100 text-rose-700 border-rose-200',
                                 default => 'bg-gray-100 text-gray-700 border-gray-200',
                             };
-                            $label = match ($w->status) {
+                            $label = match ($w->status?->value) {
                                 'pending_atasan' => 'Menunggu Persetujuan',
                                 'pending_admin' => 'Menunggu Persetujuan HR',
                                 'approved' => empty($w->laporan_deskripsi) ? 'Menunggu Laporan' : 'Disetujui',
                                 'rejected' => 'Ditolak',
-                                default => $w->status,
+                                default => $w->status?->value ?? '',
                             };
                             $lStatus = $w->laporan_status ?? null;
                         @endphp
@@ -442,19 +485,19 @@
                                         {{ Str::limit($w->deskripsi_pekerjaan, 50) }}</div>
                                     @if ($lStatus)
                                         @php
-                                            $lBadge = match ($lStatus) {
+                                            $lBadge = match ($lStatus?->value) {
                                                 'pending_atasan' => 'bg-amber-100 text-amber-700',
                                                 'pending_admin' => 'bg-blue-100 text-blue-700',
                                                 'approved' => 'bg-emerald-100 text-emerald-700',
                                                 'rejected' => 'bg-rose-100 text-rose-700',
                                                 default => 'bg-gray-100 text-gray-700',
                                             };
-                                            $lLabel = match ($lStatus) {
+                                            $lLabel = match ($lStatus?->value) {
                                                 'pending_atasan' => 'Laporan: Menunggu Atasan',
                                                 'pending_admin' => 'Laporan: Menunggu HR',
                                                 'approved' => 'Laporan: Disetujui',
                                                 'rejected' => 'Laporan: Ditolak',
-                                                default => 'Laporan: ' . $lStatus,
+                                                default => 'Laporan: ' . ($lStatus?->value ?? ''),
                                             };
                                         @endphp
                                         <span
@@ -462,7 +505,7 @@
                                     @endif
                                 </div>
                                 <div class="flex items-center gap-2 shrink-0 ml-2">
-                                    @if ($w->status === 'approved' && empty($w->laporan_deskripsi))
+                                    @if ($w->status?->value === 'approved' && empty($w->laporan_deskripsi))
                                         <a href="/wfh/{{ $w->id }}/laporan"
                                             class="btn btn-sm bg-emerald-500 text-white rounded-full px-3 py-1 text-[11px] font-semibold btn-laporan"
                                             data-jam-in="{{ $presensihariini->jam_in ?? '' }}"
@@ -484,26 +527,28 @@
                 <div class="mt-6">
                     <div class="flex items-center justify-between mb-2">
                         <h3 class="text-[15px] font-bold text-[#1c1917] flex items-center gap-2">
-                            <span class="w-8 h-8 rounded-xl bg-orange-100 border border-orange-200 flex items-center justify-center text-orange-700"><i data-lucide="timer"></i></span>
+                            <span
+                                class="w-8 h-8 rounded-xl bg-orange-100 border border-orange-200 flex items-center justify-center text-orange-700"><i
+                                    data-lucide="timer"></i></span>
                             Lembur Saya
                         </h3>
                         <a href="/lembur" class="text-[11px] font-semibold text-orange-700">Lihat Semua</a>
                     </div>
                     @foreach ($lemburSaya as $l)
                         @php
-                            $lBadge = match ($l->status) {
+                            $lBadge = match ($l->status?->value) {
                                 'pending_atasan' => 'bg-amber-100 text-amber-700 border-amber-200',
                                 'pending_admin' => 'bg-amber-100 text-amber-700 border-amber-200',
                                 'approved' => 'bg-emerald-100 text-emerald-700 border-emerald-200',
                                 'rejected' => 'bg-rose-100 text-rose-700 border-rose-200',
                                 default => 'bg-gray-100 text-gray-700 border-gray-200',
                             };
-                            $lLabel = match ($l->status) {
+                            $lLabel = match ($l->status?->value) {
                                 'pending_atasan' => 'Menunggu Persetujuan',
                                 'pending_admin' => 'Menunggu Persetujuan HR',
                                 'approved' => empty($l->laporan_deskripsi) ? 'Menunggu Laporan' : 'Disetujui',
                                 'rejected' => 'Ditolak',
-                                default => $l->status,
+                                default => $l->status?->value ?? '',
                             };
                             $llStatus = $l->laporan_status ?? null;
                         @endphp
@@ -511,44 +556,51 @@
                             <div class="card-body p-3 flex items-center justify-between">
                                 <div class="flex-1 min-w-0">
                                     <div class="text-[13px] font-bold text-[#1c1917]">
-                                        {{ date('d M Y', strtotime($l->tgl_lembur)) }} <span class="ml-1 inline-flex items-center rounded-full border text-[10px] px-2 py-0.5 {{ $lBadge }}">{{ $lLabel }}</span>
+                                        {{ date('d M Y', strtotime($l->tgl_lembur)) }} <span
+                                            class="ml-1 inline-flex items-center rounded-full border text-[10px] px-2 py-0.5 {{ $lBadge }}">{{ $lLabel }}</span>
                                     </div>
                                     @if (!empty($l->keterangan))
-                                        <div class="text-[11px] text-[#78716c] mt-0.5 italic">{{ Str::limit($l->keterangan, 50) }}</div>
+                                        <div class="text-[11px] text-[#78716c] mt-0.5 italic">
+                                            {{ Str::limit($l->keterangan, 50) }}</div>
                                     @endif
                                     @if ($l->durasi_formatted)
-                                        <div class="text-[11px] text-[#78716c] mt-0.5">Durasi: {{ $l->durasi_formatted }}</div>
+                                        <div class="text-[11px] text-[#78716c] mt-0.5">Durasi: {{ $l->durasi_formatted }}
+                                        </div>
                                     @endif
                                     @if ($llStatus)
                                         @php
-                                            $llBadge = match ($llStatus) {
+                                            $llBadge = match ($llStatus?->value) {
                                                 'pending_atasan' => 'bg-amber-100 text-amber-700',
                                                 'pending_admin' => 'bg-blue-100 text-blue-700',
                                                 'approved' => 'bg-emerald-100 text-emerald-700',
                                                 'rejected' => 'bg-rose-100 text-rose-700',
                                                 default => 'bg-gray-100 text-gray-700',
                                             };
-                                            $llLabel = match ($llStatus) {
+                                            $llLabel = match ($llStatus?->value) {
                                                 'pending_atasan' => 'Laporan: Menunggu Atasan',
                                                 'pending_admin' => 'Laporan: Menunggu HR',
                                                 'approved' => 'Laporan: Disetujui',
                                                 'rejected' => 'Laporan: Ditolak',
-                                                default => 'Laporan: ' . $llStatus,
+                                                default => 'Laporan: ' . ($llStatus?->value ?? ''),
                                             };
                                         @endphp
-                                        <span class="ml-1 inline-flex items-center rounded-full border text-[10px] px-2 py-0.5 {{ $llBadge }}">{{ $llLabel }}</span>
+                                        <span
+                                            class="ml-1 inline-flex items-center rounded-full border text-[10px] px-2 py-0.5 {{ $llBadge }}">{{ $llLabel }}</span>
                                     @endif
                                 </div>
                                 <div class="flex items-center gap-2 shrink-0 ml-2">
-                                    @if ($l->status === 'approved' && empty($l->foto_mulai))
+                                    @if ($l->status?->value === 'approved' && empty($l->foto_mulai))
                                         <a href="/lembur/{{ $l->id }}/foto"
-                                            class="btn btn-sm bg-blue-500 text-white rounded-full px-3 py-1 text-[11px] font-semibold">Ambil Foto</a>
-                                    @elseif ($l->status === 'approved' && !empty($l->foto_mulai) && empty($l->foto_selesai))
+                                            class="btn btn-sm bg-blue-500 text-white rounded-full px-3 py-1 text-[11px] font-semibold">Ambil
+                                            Foto</a>
+                                    @elseif ($l->status?->value === 'approved' && !empty($l->foto_mulai) && empty($l->foto_selesai))
                                         <a href="/lembur/{{ $l->id }}/foto"
-                                            class="btn btn-sm bg-orange-500 text-white rounded-full px-3 py-1 text-[11px] font-semibold">Foto Selesai</a>
-                                    @elseif ($l->status === 'approved' && !empty($l->foto_mulai) && !empty($l->foto_selesai) && empty($l->laporan_deskripsi))
+                                            class="btn btn-sm bg-orange-500 text-white rounded-full px-3 py-1 text-[11px] font-semibold">Foto
+                                            Selesai</a>
+                                    @elseif ($l->status?->value === 'approved' && !empty($l->foto_mulai) && !empty($l->foto_selesai) && empty($l->laporan_deskripsi))
                                         <a href="/lembur/{{ $l->id }}/laporan"
-                                            class="btn btn-sm bg-emerald-500 text-white rounded-full px-3 py-1 text-[11px] font-semibold">Upload Laporan</a>
+                                            class="btn btn-sm bg-emerald-500 text-white rounded-full px-3 py-1 text-[11px] font-semibold">Upload
+                                            Laporan</a>
                                     @endif
                                 </div>
                             </div>
@@ -644,8 +696,8 @@
 
     {{-- COUNTDOWN ALERT UPLOAD LAPORAN --}}
     <script>
-        var SERVER_TODAY = '{{ now("Asia/Jakarta")->format("Y-m-d") }}';
-        var SERVER_TIME = '{{ now("Asia/Jakarta")->format("H:i:s") }}';
+        var SERVER_TODAY = '{{ now('Asia/Jakarta')->format('Y-m-d') }}';
+        var SERVER_TIME = '{{ now('Asia/Jakarta')->format('H:i:s') }}';
         document.addEventListener('click', function(e) {
             var btn = e.target.closest('.btn-laporan');
             if (!btn) return;
@@ -662,12 +714,13 @@
                 ];
                 var label = parseInt(partsWfh[2]) + ' ' + months[parseInt(partsWfh[1]) - 1] + ' ' + partsWfh[0];
                 var partsToday = todayStr.split('-');
-                var labelToday = parseInt(partsToday[2]) + ' ' + months[parseInt(partsToday[1]) - 1] + ' ' + partsToday[0];
+                var labelToday = parseInt(partsToday[2]) + ' ' + months[parseInt(partsToday[1]) - 1] + ' ' +
+                    partsToday[0];
                 Swal.fire({
                     title: 'Tanggal Belum Sampai',
                     html: '<div style="text-align:left">' +
-                        '<b>Laporan WFH</b> hanya bisa diupload pada <b>tanggal WFH</b> yang diajukan.'
-                        + ' Silakan upload laporan pada tanggal <b>' + label + '</b>.' +
+                        '<b>Laporan WFH</b> hanya bisa diupload pada <b>tanggal WFH</b> yang diajukan.' +
+                        ' Silakan upload laporan pada tanggal <b>' + label + '</b>.' +
                         '</div>',
                     icon: 'info',
                     confirmButtonColor: '#7a5344',
@@ -700,8 +753,10 @@
             // Hitung selisih pakai SERVER_TIME, bukan new Date()
             var partsJamIn = jamIn.split(':');
             var partsServer = SERVER_TIME.split(':');
-            var jamInDetik = parseInt(partsJamIn[0]) * 3600 + parseInt(partsJamIn[1]) * 60 + (parseInt(partsJamIn[2]) || 0);
-            var serverDetik = parseInt(partsServer[0]) * 3600 + parseInt(partsServer[1]) * 60 + (parseInt(partsServer[2]) || 0);
+            var jamInDetik = parseInt(partsJamIn[0]) * 3600 + parseInt(partsJamIn[1]) * 60 + (parseInt(partsJamIn[
+                2]) || 0);
+            var serverDetik = parseInt(partsServer[0]) * 3600 + parseInt(partsServer[1]) * 60 + (parseInt(
+                partsServer[2]) || 0);
             var selisihDetik = serverDetik - jamInDetik;
             var selisihJam = selisihDetik / 3600;
             if (selisihJam < 7) {
@@ -718,7 +773,8 @@
                     title: 'Belum Bisa Upload Laporan',
                     html: '<div style="text-align:left">' +
                         'Laporan WFH hanya bisa diupload setelah <b>7 jam</b> absen masuk.' +
-                        '<br><br><b>Sisa waktu: <span id="sisaWaktu">' + sisaWaktuStr.trim() + '</span></b>' +
+                        '<br><br><b>Sisa waktu: <span id="sisaWaktu">' + sisaWaktuStr.trim() +
+                        '</span></b>' +
                         '<br><br>Silakan tunggu hingga waktu yang tersisa habis.' +
                         '</div>',
                     icon: 'info',
@@ -748,10 +804,9 @@
                     willClose: function() {
                         clearInterval(countdownInterval);
                     }
-                            });
-                        }
-                    });
                 });
+            }
+        });
     </script>
 
     {{-- NOTIFIKASI & REALTIME POLLING + WEB PUSH + ALERT H-1 --}}
@@ -915,15 +970,18 @@
                                         html +=
                                             '<div class="card mb-2 border-l-4 border-l-amber-400 bg-amber-50/50"><div class="card-body p-3"><div class="flex items-start justify-between gap-3"><div class="flex-1 min-w-0"><div class="text-[13px] font-bold text-[#1c1917]">' +
                                             esc(k.nama_lengkap || '-') +
-                                            ' <span class="text-[11px] font-normal text-[#78716c]">• ' + esc(k
+                                            ' <span class="text-[11px] font-normal text-[#78716c]">• ' +
+                                            esc(k
                                                 .jabatan || '-') + ' • ' + esc(k.posisi || '-') +
                                             '</span></div><div class="text-[11px] text-[#78716c]">' + esc((p
-                                                .tgl_wfh || '').substring(0, 10)) + ' • ' + esc(k.unit || '-') + ' (' + esc(up
+                                                .tgl_wfh || '').substring(0, 10)) + ' • ' + esc(k.unit ||
+                                                '-') + ' (' + esc(up
                                                 .perusahaan || '-') +
                                             ')</div><div class="text-[11px] text-[#57534e] mt-1 line-clamp-2">' +
                                             esc((p.deskripsi_pekerjaan || '').substring(0, 70)) + '</div>' +
                                             '</div><div class="flex flex-col gap-1.5 shrink-0"><button type="button" class="btn btn-sm bg-emerald-500 text-white rounded-full px-3 py-1 text-[11px] w-full btn-approve-atasan" data-id="' +
-                                            esc(p.id) + '">Setujui</button><button type="button" class="btn btn-sm bg-white border border-rose-200 text-rose-700 rounded-full px-3 py-1 text-[11px] w-full btn-reject-atasan-dynamic" data-id="' +
+                                            esc(p.id) +
+                                            '">Setujui</button><button type="button" class="btn btn-sm bg-white border border-rose-200 text-rose-700 rounded-full px-3 py-1 text-[11px] w-full btn-reject-atasan-dynamic" data-id="' +
                                             esc(p.id) + '">Tolak</button></div></div>' + (p.pdf_form_path ?
                                                 '<div class="flex"><button type="button" class="text-[11px] text-sky-700 hover:underline cursor-pointer" onclick="window.open(\'/storage/' +
                                                 esc(p.pdf_form_path) +
@@ -963,27 +1021,32 @@
                                         if (p.laporan_file) {
                                             var laporanUrl = '/storage/' + p.laporan_file;
                                             previewBtn =
-                                                '<div class="mt-1"><a href="' + esc(laporanUrl) + '" target="_blank" class="text-[11px] text-sky-700 hover:underline">Form Laporan</a></div>';
+                                                '<div class="mt-1"><a href="' + esc(laporanUrl) +
+                                                '" target="_blank" class="text-[11px] text-sky-700 hover:underline">Form Laporan</a></div>';
                                         } else if (p.laporan_deskripsi) {
                                             previewBtn =
                                                 '<div class="mt-1"><button type="button" class="text-[11px] text-sky-700 hover:underline cursor-pointer js-preview-laporan" data-deskripsi="' +
                                                 esc(p.laporan_deskripsi || '') +
                                                 '" data-tgl="' + esc((p.tgl_wfh || '').substring(0, 10)) +
-                                                '" data-label="Laporan WFH — ' + esc(k.nama_lengkap || '-') +
+                                                '" data-label="Laporan WFH — ' + esc(k.nama_lengkap ||
+                                                    '-') +
                                                 '">Form Laporan</button></div>';
                                         }
                                         html +=
                                             '<div class="card mb-2 border-l-4 border-l-violet-400 bg-violet-50/50"><div class="card-body p-3"><div class="flex items-start justify-between gap-3"><div class="flex-1 min-w-0"><div class="text-[13px] font-bold text-[#1c1917]">' +
                                             esc(k.nama_lengkap || '-') +
-                                            ' <span class="text-[11px] font-normal text-[#78716c]">• ' + esc(k
+                                            ' <span class="text-[11px] font-normal text-[#78716c]">• ' +
+                                            esc(k
                                                 .jabatan || '-') + ' • ' + esc(k.posisi || '-') +
                                             '</span></div><div class="text-[11px] text-[#78716c]">' + esc((p
-                                                .tgl_wfh || '').substring(0, 10)) + ' • ' + esc(k.unit || '-') + ' (' + esc(up
+                                                .tgl_wfh || '').substring(0, 10)) + ' • ' + esc(k.unit ||
+                                                '-') + ' (' + esc(up
                                                 .perusahaan || '-') +
                                             ')</div><div class="text-[11px] text-[#57534e] mt-1">Laporan WFH menunggu persetujuan Anda</div>' +
                                             previewBtn +
                                             '</div><div class="flex flex-col gap-1.5 shrink-0"><button type="button" class="btn btn-sm bg-emerald-500 text-white rounded-full px-3 py-1 text-[11px] w-full btn-approve-laporan-atasan" data-id="' +
-                                            esc(p.id) + '">Setujui</button><button type="button" class="btn btn-sm bg-white border border-rose-200 text-rose-700 rounded-full px-3 py-1 text-[11px] w-full btn-reject-laporan-atasan-dynamic" data-id="' +
+                                            esc(p.id) +
+                                            '">Setujui</button><button type="button" class="btn btn-sm bg-white border border-rose-200 text-rose-700 rounded-full px-3 py-1 text-[11px] w-full btn-reject-laporan-atasan-dynamic" data-id="' +
                                             esc(p.id) + '">Tolak</button></div></div></div></div>';
                                     });
                                     html += '</div>';
@@ -1009,11 +1072,30 @@
                                 if (count === 0) {
                                     updateSection(section, '', 'pendingAtasanLembur');
                                 } else {
-                                    let html = '<div class="mt-6"><div class="flex items-center justify-between mb-2"><h3 class="text-[15px] font-bold text-[#1c1917] flex items-center gap-2"><span class="w-8 h-8 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center text-amber-700"><i data-lucide="shield-check"></i></span>Pengajuan Lembur Perlu Persetujuan (' + count + ')</h3></div>';
+                                    let html =
+                                        '<div class="mt-6"><div class="flex items-center justify-between mb-2"><h3 class="text-[15px] font-bold text-[#1c1917] flex items-center gap-2"><span class="w-8 h-8 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center text-amber-700"><i data-lucide="shield-check"></i></span>Pengajuan Lembur Perlu Persetujuan (' +
+                                        count + ')</h3></div>';
                                     data.pendingAtasanLembur.forEach(function(p) {
                                         var k = p.karyawan || {};
                                         var up = k.unitperusahaan || {};
-                                        html += '<div class="card mb-2 border-l-4 border-l-amber-400 bg-amber-50/50"><div class="card-body p-3"><div class="flex items-start justify-between gap-3"><div class="flex-1 min-w-0"><div class="text-[13px] font-bold text-[#1c1917]">' + esc(k.nama_lengkap || '-') + ' <span class="text-[11px] font-normal text-[#78716c]">• ' + esc(k.jabatan || '-') + ' • ' + esc(k.posisi || '-') + '</span></div><div class="text-[11px] text-[#78716c]">' + esc((p.tgl_lembur || '').substring(0, 10)) + ' • ' + esc(k.unit || '-') + ' (' + esc(up.perusahaan || '-') + ')</div><div class="text-[11px] text-[#57534e] mt-1 line-clamp-2">' + esc((p.keterangan || '').substring(0, 70)) + '</div>' + '</div><div class="flex flex-col gap-1.5 shrink-0"><button type="button" class="btn btn-sm bg-emerald-500 text-white rounded-full px-3 py-1 text-[11px] w-full btn-approve-atasan-lembur" data-id="' + esc(p.id) + '">Setujui</button><button type="button" class="btn btn-sm bg-white border border-rose-200 text-rose-700 rounded-full px-3 py-1 text-[11px] w-full btn-reject-atasan-lembur" data-id="' + esc(p.id) + '">Tolak</button></div></div>' + (p.pdf_form_path ? '<div class="flex mt-1"><a href="/presensi/showfilelembur/' + esc(p.pdf_form_path.split('/').pop()) + '" target="_blank" class="text-[11px] text-sky-700 hover:underline">Form Pengajuan</a></div>' : '') + '</div></div>';
+                                        html +=
+                                            '<div class="card mb-2 border-l-4 border-l-amber-400 bg-amber-50/50"><div class="card-body p-3"><div class="flex items-start justify-between gap-3"><div class="flex-1 min-w-0"><div class="text-[13px] font-bold text-[#1c1917]">' +
+                                            esc(k.nama_lengkap || '-') +
+                                            ' <span class="text-[11px] font-normal text-[#78716c]">• ' +
+                                            esc(k.jabatan || '-') + ' • ' + esc(k.posisi || '-') +
+                                            '</span></div><div class="text-[11px] text-[#78716c]">' + esc((p
+                                                .tgl_lembur || '').substring(0, 10)) + ' • ' + esc(k.unit ||
+                                                '-') + ' (' + esc(up.perusahaan || '-') +
+                                            ')</div><div class="text-[11px] text-[#57534e] mt-1 line-clamp-2">' +
+                                            esc((p.keterangan || '').substring(0, 70)) + '</div>' +
+                                            '</div><div class="flex flex-col gap-1.5 shrink-0"><button type="button" class="btn btn-sm bg-emerald-500 text-white rounded-full px-3 py-1 text-[11px] w-full btn-approve-atasan-lembur" data-id="' +
+                                            esc(p.id) +
+                                            '">Setujui</button><button type="button" class="btn btn-sm bg-white border border-rose-200 text-rose-700 rounded-full px-3 py-1 text-[11px] w-full btn-reject-atasan-lembur" data-id="' +
+                                            esc(p.id) + '">Tolak</button></div></div>' + (p.pdf_form_path ?
+                                                '<div class="flex mt-1"><a href="/presensi/showfilelembur/' +
+                                                esc(p.pdf_form_path.split('/').pop()) +
+                                                '" target="_blank" class="text-[11px] text-sky-700 hover:underline">Form Pengajuan</a></div>' :
+                                                '') + '</div></div>';
                                     });
                                     html += '</div>';
                                     updateSection(section, html, 'pendingAtasanLembur');
@@ -1022,7 +1104,8 @@
                             if (count > lastPendingAtasanLembur && count > 0) {
                                 if (Notification.permission === 'granted') {
                                     new Notification('Persetujuan Lembur', {
-                                        body: 'Ada ' + count + ' pengajuan lembur menunggu persetujuan Anda',
+                                        body: 'Ada ' + count +
+                                            ' pengajuan lembur menunggu persetujuan Anda',
                                         icon: '/assets/img/login/logo_aplikasi.png'
                                     });
                                 }
@@ -1038,17 +1121,40 @@
                                 if (count === 0) {
                                     updateSection(section, '', 'pendingLaporanLembur');
                                 } else {
-                                    let html = '<div class="mt-6"><div class="flex items-center justify-between mb-2"><h3 class="text-[15px] font-bold text-[#1c1917] flex items-center gap-2"><span class="w-8 h-8 rounded-xl bg-violet-100 border border-violet-200 flex items-center justify-center text-violet-700"><i data-lucide="file-text"></i></span>Laporan Lembur Perlu Persetujuan (' + count + ')</h3></div>';
+                                    let html =
+                                        '<div class="mt-6"><div class="flex items-center justify-between mb-2"><h3 class="text-[15px] font-bold text-[#1c1917] flex items-center gap-2"><span class="w-8 h-8 rounded-xl bg-violet-100 border border-violet-200 flex items-center justify-center text-violet-700"><i data-lucide="file-text"></i></span>Laporan Lembur Perlu Persetujuan (' +
+                                        count + ')</h3></div>';
                                     data.pendingLaporanLemburAtasan.forEach(function(p) {
                                         var k = p.karyawan || {};
                                         var up = k.unitperusahaan || {};
                                         var previewBtn = '';
                                         if (p.laporan_file) {
-                                            previewBtn = '<div class="mt-1"><a href="/presensi/showfilelembur/' + esc(p.laporan_file.split('/').pop()) + '" target="_blank" class="text-[11px] text-sky-700 hover:underline">Form Laporan</a></div>';
+                                            previewBtn =
+                                                '<div class="mt-1"><a href="/presensi/showfilelembur/' +
+                                                esc(p.laporan_file.split('/').pop()) +
+                                                '" target="_blank" class="text-[11px] text-sky-700 hover:underline">Form Laporan</a></div>';
                                         } else if (p.laporan_deskripsi) {
-                                            previewBtn = '<div class="mt-1"><button type="button" class="text-[11px] text-sky-700 hover:underline cursor-pointer js-preview-laporan-lembur" data-deskripsi="' + esc(p.laporan_deskripsi || '') + '" data-tgl="' + esc((p.tgl_lembur || '').substring(0, 10)) + '" data-label="Laporan Lembur — ' + esc(k.nama_lengkap || '-') + '">Form Laporan</button></div>';
+                                            previewBtn =
+                                                '<div class="mt-1"><button type="button" class="text-[11px] text-sky-700 hover:underline cursor-pointer js-preview-laporan-lembur" data-deskripsi="' +
+                                                esc(p.laporan_deskripsi || '') + '" data-tgl="' + esc((p
+                                                    .tgl_lembur || '').substring(0, 10)) +
+                                                '" data-label="Laporan Lembur — ' + esc(k.nama_lengkap ||
+                                                    '-') + '">Form Laporan</button></div>';
                                         }
-                                        html += '<div class="card mb-2 border-l-4 border-l-violet-400 bg-violet-50/50"><div class="card-body p-3"><div class="flex items-start justify-between gap-3"><div class="flex-1 min-w-0"><div class="text-[13px] font-bold text-[#1c1917]">' + esc(k.nama_lengkap || '-') + ' <span class="text-[11px] font-normal text-[#78716c]">• ' + esc(k.jabatan || '-') + ' • ' + esc(k.posisi || '-') + '</span></div><div class="text-[11px] text-[#78716c]">' + esc((p.tgl_lembur || '').substring(0, 10)) + ' • ' + esc(k.unit || '-') + ' (' + esc(up.perusahaan || '-') + ')</div><div class="text-[11px] text-[#57534e] mt-1">Laporan lembur menunggu persetujuan Anda</div>' + previewBtn + '</div><div class="flex flex-col gap-1.5 shrink-0"><button type="button" class="btn btn-sm bg-emerald-500 text-white rounded-full px-3 py-1 text-[11px] w-full btn-approve-laporan-atasan-lembur" data-id="' + esc(p.id) + '">Setujui</button><button type="button" class="btn btn-sm bg-white border border-rose-200 text-rose-700 rounded-full px-3 py-1 text-[11px] w-full btn-reject-laporan-atasan-lembur" data-id="' + esc(p.id) + '">Tolak</button></div></div></div></div>';
+                                        html +=
+                                            '<div class="card mb-2 border-l-4 border-l-violet-400 bg-violet-50/50"><div class="card-body p-3"><div class="flex items-start justify-between gap-3"><div class="flex-1 min-w-0"><div class="text-[13px] font-bold text-[#1c1917]">' +
+                                            esc(k.nama_lengkap || '-') +
+                                            ' <span class="text-[11px] font-normal text-[#78716c]">• ' +
+                                            esc(k.jabatan || '-') + ' • ' + esc(k.posisi || '-') +
+                                            '</span></div><div class="text-[11px] text-[#78716c]">' + esc((p
+                                                .tgl_lembur || '').substring(0, 10)) + ' • ' + esc(k.unit ||
+                                                '-') + ' (' + esc(up.perusahaan || '-') +
+                                            ')</div><div class="text-[11px] text-[#57534e] mt-1">Laporan lembur menunggu persetujuan Anda</div>' +
+                                            previewBtn +
+                                            '</div><div class="flex flex-col gap-1.5 shrink-0"><button type="button" class="btn btn-sm bg-emerald-500 text-white rounded-full px-3 py-1 text-[11px] w-full btn-approve-laporan-atasan-lembur" data-id="' +
+                                            esc(p.id) +
+                                            '">Setujui</button><button type="button" class="btn btn-sm bg-white border border-rose-200 text-rose-700 rounded-full px-3 py-1 text-[11px] w-full btn-reject-laporan-atasan-lembur" data-id="' +
+                                            esc(p.id) + '">Tolak</button></div></div></div></div>';
                                     });
                                     html += '</div>';
                                     updateSection(section, html, 'pendingLaporanLembur');
@@ -1082,11 +1188,13 @@
                                     var img = document.createElement('img');
                                     img.id = 'presensi-foto-in';
                                     img.alt = '';
-                                    img.className = 'w-[44px] h-[44px] sm:w-[50px] sm:h-[50px] object-cover rounded-xl';
+                                    img.className =
+                                        'w-[44px] h-[44px] sm:w-[50px] sm:h-[50px] object-cover rounded-xl';
                                     img.src = '/storage/uploads/absensi/' + p.foto_in + '?v=' + Date.now();
                                     fotoInWrap.appendChild(img);
                                 } else if (existingFotoIn.src.indexOf(p.foto_in) === -1) {
-                                    existingFotoIn.src = '/storage/uploads/absensi/' + p.foto_in + '?v=' + Date.now();
+                                    existingFotoIn.src = '/storage/uploads/absensi/' + p.foto_in + '?v=' + Date
+                                        .now();
                                 }
                             }
 
@@ -1099,11 +1207,13 @@
                                     var imgOut = document.createElement('img');
                                     imgOut.id = 'presensi-foto-out';
                                     imgOut.alt = '';
-                                    imgOut.className = 'w-[44px] h-[44px] sm:w-[50px] sm:h-[50px] object-cover rounded-xl';
+                                    imgOut.className =
+                                        'w-[44px] h-[44px] sm:w-[50px] sm:h-[50px] object-cover rounded-xl';
                                     imgOut.src = '/storage/uploads/absensi/' + p.foto_out + '?v=' + Date.now();
                                     fotoOutWrap.appendChild(imgOut);
                                 } else if (existingFotoOut.src.indexOf(p.foto_out) === -1) {
-                                    existingFotoOut.src = '/storage/uploads/absensi/' + p.foto_out + '?v=' + Date.now();
+                                    existingFotoOut.src = '/storage/uploads/absensi/' + p.foto_out + '?v=' + Date
+                                        .now();
                                 }
                             }
                         }
@@ -1113,63 +1223,82 @@
                             var r = data.rekap;
                             var hadirEl = document.getElementById('rekap-hadir');
                             if (r.hadir > 0) {
-                                if (hadirEl) { hadirEl.textContent = r.hadir; }
-                                else {
+                                if (hadirEl) {
+                                    hadirEl.textContent = r.hadir;
+                                } else {
                                     var card = document.querySelector('#rekappresensi .w-1\\/2:first-child .card');
                                     if (card && !document.getElementById('rekap-hadir')) {
                                         var span = document.createElement('span');
                                         span.id = 'rekap-hadir';
-                                        span.className = 'absolute bottom-0 left-0 bg-green-500/90 text-white text-base font-bold px-2.5 py-0.5 rounded-tr-lg';
+                                        span.className =
+                                            'absolute bottom-0 left-0 bg-green-500/90 text-white text-base font-bold px-2.5 py-0.5 rounded-tr-lg';
                                         span.textContent = r.hadir;
                                         card.appendChild(span);
                                     }
                                 }
-                            } else if (hadirEl) { hadirEl.remove(); }
+                            } else if (hadirEl) {
+                                hadirEl.remove();
+                            }
 
                             var wfhEl = document.getElementById('rekap-wfh');
                             if (r.wfh > 0) {
-                                if (wfhEl) { wfhEl.textContent = r.wfh; }
-                                else {
-                                    var cardWfh = document.querySelector('#rekappresensi .w-1\\/2:nth-child(2) .card');
+                                if (wfhEl) {
+                                    wfhEl.textContent = r.wfh;
+                                } else {
+                                    var cardWfh = document.querySelector(
+                                        '#rekappresensi .w-1\\/2:nth-child(2) .card');
                                     if (cardWfh && !document.getElementById('rekap-wfh')) {
                                         var spanWfh = document.createElement('span');
                                         spanWfh.id = 'rekap-wfh';
-                                        spanWfh.className = 'absolute bottom-0 left-0 bg-blue-500/90 text-white text-base font-bold px-2.5 py-0.5 rounded-tr-lg';
+                                        spanWfh.className =
+                                            'absolute bottom-0 left-0 bg-blue-500/90 text-white text-base font-bold px-2.5 py-0.5 rounded-tr-lg';
                                         spanWfh.textContent = r.wfh;
                                         cardWfh.appendChild(spanWfh);
                                     }
                                 }
-                            } else if (wfhEl) { wfhEl.remove(); }
+                            } else if (wfhEl) {
+                                wfhEl.remove();
+                            }
 
                             var lemburEl = document.getElementById('rekap-lembur');
                             if (r.lembur > 0) {
-                                if (lemburEl) { lemburEl.textContent = r.lembur; }
-                                else {
-                                    var cardLembur = document.querySelector('#rekappresensi .w-1\\/2:nth-child(3) .card');
+                                if (lemburEl) {
+                                    lemburEl.textContent = r.lembur;
+                                } else {
+                                    var cardLembur = document.querySelector(
+                                        '#rekappresensi .w-1\\/2:nth-child(3) .card');
                                     if (cardLembur && !document.getElementById('rekap-lembur')) {
                                         var spanLembur = document.createElement('span');
                                         spanLembur.id = 'rekap-lembur';
-                                        spanLembur.className = 'absolute bottom-0 left-0 bg-yellow-500/90 text-white text-base font-bold px-2.5 py-0.5 rounded-tr-lg';
+                                        spanLembur.className =
+                                            'absolute bottom-0 left-0 bg-yellow-500/90 text-white text-base font-bold px-2.5 py-0.5 rounded-tr-lg';
                                         spanLembur.textContent = r.lembur;
                                         cardLembur.appendChild(spanLembur);
                                     }
                                 }
-                            } else if (lemburEl) { lemburEl.remove(); }
+                            } else if (lemburEl) {
+                                lemburEl.remove();
+                            }
 
                             var izinEl = document.getElementById('rekap-izin');
                             if (r.izin > 0) {
-                                if (izinEl) { izinEl.textContent = r.izin; }
-                                else {
-                                    var cardIzin = document.querySelector('#rekappresensi .w-1\\/2:nth-child(4) .card');
+                                if (izinEl) {
+                                    izinEl.textContent = r.izin;
+                                } else {
+                                    var cardIzin = document.querySelector(
+                                        '#rekappresensi .w-1\\/2:nth-child(4) .card');
                                     if (cardIzin && !document.getElementById('rekap-izin')) {
                                         var spanIzin = document.createElement('span');
                                         spanIzin.id = 'rekap-izin';
-                                        spanIzin.className = 'absolute bottom-0 left-0 bg-red-500/90 text-white text-base font-bold px-2.5 py-0.5 rounded-tr-lg';
+                                        spanIzin.className =
+                                            'absolute bottom-0 left-0 bg-red-500/90 text-white text-base font-bold px-2.5 py-0.5 rounded-tr-lg';
                                         spanIzin.textContent = r.izin;
                                         cardIzin.appendChild(spanIzin);
                                     }
                                 }
-                            } else if (izinEl) { izinEl.remove(); }
+                            } else if (izinEl) {
+                                izinEl.remove();
+                            }
                         }
 
                         // 6c. Update histori list
@@ -1183,19 +1312,24 @@
                                     var tglFormatted = tglParts[2] + '-' + tglParts[1] + '-' + tglParts[0];
                                     var terlambat = d.terlambat > 0;
                                     hHtml += '<li><div class="item">' +
-                                        '<img src="/storage/uploads/absensi/' + esc(d.foto_in || '') + '?v=' + Date.now() + '" alt="" ' +
+                                        '<img src="/storage/uploads/absensi/' + esc(d.foto_in || '') +
+                                        '?v=' + Date.now() + '" alt="" ' +
                                         'class="w-[35px] h-[35px] rounded-[10px] object-cover mr-3 border-2 border-white shadow-sm foto-histori-dashboard flex-shrink-0">' +
                                         '<div class="in flex-wrap gap-1">' +
                                         '<div class="w-full text-[13px]">' + tglFormatted + '</div>' +
-                                        '<span class="inline-flex items-center justify-center rounded-full text-white text-[10px] sm:text-xs px-2 py-0.5 ' + (terlambat ? 'bg-red-500' : 'bg-green-500') + '">' + esc(d.jam_in) + '</span>' +
-                                        '<span class="inline-flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] sm:text-xs px-2 py-0.5">' + esc(d.jam_out || 'Belum Presensi') + '</span>' +
+                                        '<span class="inline-flex items-center justify-center rounded-full text-white text-[10px] sm:text-xs px-2 py-0.5 ' +
+                                        (terlambat ? 'bg-red-500' : 'bg-green-500') + '">' + esc(d.jam_in) +
+                                        '</span>' +
+                                        '<span class="inline-flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] sm:text-xs px-2 py-0.5">' +
+                                        esc(d.jam_out || 'Belum Presensi') + '</span>' +
                                         '</div></div></li>';
                                 });
                                 historiList.innerHTML = hHtml;
                                 historiList.querySelectorAll('.foto-histori-dashboard').forEach(function(foto) {
                                     foto.addEventListener('click', function() {
                                         Swal.fire({
-                                            html: '<img src="' + this.src + '" style="width:100%;height:100%;border-radius:12px;display:block;">',
+                                            html: '<img src="' + this.src +
+                                                '" style="width:100%;height:100%;border-radius:12px;display:block;">',
                                             showConfirmButton: false,
                                             showCloseButton: true,
                                             width: '390px',
@@ -1250,11 +1384,16 @@
                                             b = [b[0], 'Disetujui'];
                                         }
                                         var tglParts = (w.tgl_wfh || '').substring(0, 10).split('-');
-                                        var months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-                                        var dateStr = parseInt(tglParts[2]) + ' ' + (months[parseInt(tglParts[1]) - 1] || '') + ' ' + tglParts[0];
+                                        var months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul',
+                                            'Agu', 'Sep', 'Okt', 'Nov', 'Des'
+                                        ];
+                                        var dateStr = parseInt(tglParts[2]) + ' ' + (months[parseInt(
+                                            tglParts[1]) - 1] || '') + ' ' + tglParts[0];
                                         var keterangan = w.keterangan ?
-                                            '<div class="text-[11px] text-[#78716c] mt-0.5 italic">' + esc((w
-                                                .keterangan.length > 50 ? w.keterangan.substring(0, 50) +
+                                            '<div class="text-[11px] text-[#78716c] mt-0.5 italic">' + esc((
+                                                w
+                                                .keterangan.length > 50 ? w.keterangan.substring(0,
+                                                    50) +
                                                 '...' : w.keterangan)) + '</div>' : '';
                                         var deskripsi = w.deskripsi_pekerjaan ?
                                             '<div class="text-[11px] text-[#78716c] mt-0.5">' + esc((w
@@ -1276,14 +1415,16 @@
                                             actionBtn = '<a href="/wfh/' + w.id +
                                                 '/laporan" class="btn btn-sm bg-emerald-500 text-white rounded-full px-3 py-1 text-[11px] font-semibold btn-laporan" data-jam-in="' +
                                                 esc(data.presensi && data.presensi.jam_in ? data.presensi
-                                                    .jam_in : '') + '" data-tgl-wfh="' + esc((w.tgl_wfh || '').substring(0, 10)) +
+                                                    .jam_in : '') + '" data-tgl-wfh="' + esc((w.tgl_wfh ||
+                                                    '').substring(0, 10)) +
                                                 '">Upload Laporan</a>';
                                         }
                                         html +=
                                             '<div class="card mb-2"><div class="card-body p-3 flex items-center justify-between"><div class="flex-1 min-w-0"><div class="text-[13px] font-bold text-[#1c1917]">' +
                                             dateStr +
                                             ' <span class="ml-1 inline-flex items-center rounded-full border text-[10px] px-2 py-0.5 ' +
-                                            b[0] + '">' + esc(b[1]) + '</span></div>' + keterangan + deskripsi +
+                                            b[0] + '">' + esc(b[1]) + '</span></div>' + keterangan +
+                                            deskripsi +
                                             laporanBadge +
                                             '</div><div class="flex items-center gap-2 shrink-0 ml-2">' +
                                             actionBtn + '</div></div></div>';
@@ -1302,8 +1443,12 @@
                                     section.innerHTML = '';
                                 } else {
                                     let lBadgeMap = {
-                                        'pending_atasan': ['bg-amber-100 text-amber-700 border-amber-200', 'Menunggu Persetujuan'],
-                                        'pending_admin': ['bg-amber-100 text-amber-700 border-amber-200', 'Menunggu Persetujuan HR'],
+                                        'pending_atasan': ['bg-amber-100 text-amber-700 border-amber-200',
+                                            'Menunggu Persetujuan'
+                                        ],
+                                        'pending_admin': ['bg-amber-100 text-amber-700 border-amber-200',
+                                            'Menunggu Persetujuan HR'
+                                        ],
                                         'approved': ['bg-emerald-100 text-emerald-700 border-emerald-200', ''],
                                         'rejected': ['bg-rose-100 text-rose-700 border-rose-200', 'Ditolak']
                                     };
@@ -1319,34 +1464,61 @@
                                         'approved': 'Laporan: Disetujui',
                                         'rejected': 'Laporan: Ditolak'
                                     };
-                                    let html = '<div class="mt-6"><div class="flex items-center justify-between mb-2"><h3 class="text-[15px] font-bold text-[#1c1917] flex items-center gap-2"><span class="w-8 h-8 rounded-xl bg-orange-100 border border-orange-200 flex items-center justify-center text-orange-700"><i data-lucide="timer"></i></span>Lembur Saya</h3><a href="/lembur" class="text-[11px] font-semibold text-orange-700">Lihat Semua</a></div>';
+                                    let html =
+                                        '<div class="mt-6"><div class="flex items-center justify-between mb-2"><h3 class="text-[15px] font-bold text-[#1c1917] flex items-center gap-2"><span class="w-8 h-8 rounded-xl bg-orange-100 border border-orange-200 flex items-center justify-center text-orange-700"><i data-lucide="timer"></i></span>Lembur Saya</h3><a href="/lembur" class="text-[11px] font-semibold text-orange-700">Lihat Semua</a></div>';
                                     data.lemburSaya.forEach(function(l) {
-                                        var b = lBadgeMap[l.status] || ['bg-gray-100 text-gray-700 border-gray-200', l.status];
+                                        var b = lBadgeMap[l.status] || [
+                                            'bg-gray-100 text-gray-700 border-gray-200', l.status
+                                        ];
                                         if (l.status === 'approved' && !l.laporan_deskripsi) {
                                             b = [b[0], 'Menunggu Laporan'];
                                         } else if (l.status === 'approved') {
                                             b = [b[0], 'Disetujui'];
                                         }
                                         var tglParts = (l.tgl_lembur || '').substring(0, 10).split('-');
-                                        var months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-                                        var dateStr = parseInt(tglParts[2]) + ' ' + (months[parseInt(tglParts[1]) - 1] || '') + ' ' + tglParts[0];
-                                        var keterangan = l.keterangan ? '<div class="text-[11px] text-[#78716c] mt-0.5 italic">' + esc((l.keterangan.length > 50 ? l.keterangan.substring(0, 50) + '...' : l.keterangan)) + '</div>' : '';
-                                        var durasi = l.durasi_formatted ? '<div class="text-[11px] text-[#78716c] mt-0.5">Durasi: ' + esc(l.durasi_formatted) + '</div>' : '';
+                                        var months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul',
+                                            'Agu', 'Sep', 'Okt', 'Nov', 'Des'
+                                        ];
+                                        var dateStr = parseInt(tglParts[2]) + ' ' + (months[parseInt(
+                                            tglParts[1]) - 1] || '') + ' ' + tglParts[0];
+                                        var keterangan = l.keterangan ?
+                                            '<div class="text-[11px] text-[#78716c] mt-0.5 italic">' + esc((
+                                                l.keterangan.length > 50 ? l.keterangan.substring(0,
+                                                    50) + '...' : l.keterangan)) + '</div>' : '';
+                                        var durasi = l.durasi_formatted ?
+                                            '<div class="text-[11px] text-[#78716c] mt-0.5">Durasi: ' + esc(
+                                                l.durasi_formatted) + '</div>' : '';
                                         var laporanBadge = '';
                                         if (l.laporan_status) {
-                                            var lb = llBadgeMap[l.laporan_status] || 'bg-gray-100 text-gray-700';
-                                            var ll = llLabelMap[l.laporan_status] || 'Laporan: ' + l.laporan_status;
-                                            laporanBadge = '<span class="ml-1 inline-flex items-center rounded-full border text-[10px] px-2 py-0.5 ' + lb + '">' + esc(ll) + '</span>';
+                                            var lb = llBadgeMap[l.laporan_status] ||
+                                                'bg-gray-100 text-gray-700';
+                                            var ll = llLabelMap[l.laporan_status] || 'Laporan: ' + l
+                                                .laporan_status;
+                                            laporanBadge =
+                                                '<span class="ml-1 inline-flex items-center rounded-full border text-[10px] px-2 py-0.5 ' +
+                                                lb + '">' + esc(ll) + '</span>';
                                         }
                                         var actionBtn = '';
                                         if (l.status === 'approved' && !l.foto_mulai) {
-                                            actionBtn = '<a href="/lembur/' + l.id + '/foto" class="btn btn-sm bg-blue-500 text-white rounded-full px-3 py-1 text-[11px] font-semibold">Ambil Foto</a>';
-                                        } else if (l.status === 'approved' && l.foto_mulai && !l.foto_selesai) {
-                                            actionBtn = '<a href="/lembur/' + l.id + '/foto" class="btn btn-sm bg-orange-500 text-white rounded-full px-3 py-1 text-[11px] font-semibold">Foto Selesai</a>';
-                                        } else if (l.status === 'approved' && l.foto_mulai && l.foto_selesai && !l.laporan_deskripsi) {
-                                            actionBtn = '<a href="/lembur/' + l.id + '/laporan" class="btn btn-sm bg-emerald-500 text-white rounded-full px-3 py-1 text-[11px] font-semibold">Upload Laporan</a>';
+                                            actionBtn = '<a href="/lembur/' + l.id +
+                                                '/foto" class="btn btn-sm bg-blue-500 text-white rounded-full px-3 py-1 text-[11px] font-semibold">Ambil Foto</a>';
+                                        } else if (l.status === 'approved' && l.foto_mulai && !l
+                                            .foto_selesai) {
+                                            actionBtn = '<a href="/lembur/' + l.id +
+                                                '/foto" class="btn btn-sm bg-orange-500 text-white rounded-full px-3 py-1 text-[11px] font-semibold">Foto Selesai</a>';
+                                        } else if (l.status === 'approved' && l.foto_mulai && l
+                                            .foto_selesai && !l.laporan_deskripsi) {
+                                            actionBtn = '<a href="/lembur/' + l.id +
+                                                '/laporan" class="btn btn-sm bg-emerald-500 text-white rounded-full px-3 py-1 text-[11px] font-semibold">Upload Laporan</a>';
                                         }
-                                        html += '<div class="card mb-2"><div class="card-body p-3 flex items-center justify-between"><div class="flex-1 min-w-0"><div class="text-[13px] font-bold text-[#1c1917]">' + dateStr + ' <span class="ml-1 inline-flex items-center rounded-full border text-[10px] px-2 py-0.5 ' + b[0] + '">' + esc(b[1]) + '</span></div>' + keterangan + durasi + laporanBadge + '</div><div class="flex items-center gap-2 shrink-0 ml-2">' + actionBtn + '</div></div></div>';
+                                        html +=
+                                            '<div class="card mb-2"><div class="card-body p-3 flex items-center justify-between"><div class="flex-1 min-w-0"><div class="text-[13px] font-bold text-[#1c1917]">' +
+                                            dateStr +
+                                            ' <span class="ml-1 inline-flex items-center rounded-full border text-[10px] px-2 py-0.5 ' +
+                                            b[0] + '">' + esc(b[1]) + '</span></div>' + keterangan +
+                                            durasi + laporanBadge +
+                                            '</div><div class="flex items-center gap-2 shrink-0 ml-2">' +
+                                            actionBtn + '</div></div></div>';
                                     });
                                     html += '</div>';
                                     updateSection(section, html, 'lemburSaya');
@@ -1400,21 +1572,43 @@
                             btnApprove.textContent = 'Memproses...';
                             fetch('/wfh/' + id + '/approve-atasan', {
                                 method: 'POST',
-                                headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                                headers: {
+                                    'X-CSRF-TOKEN': CSRF,
+                                    'Accept': 'application/json',
+                                    'X-Requested-With': 'XMLHttpRequest'
+                                },
                                 credentials: 'same-origin'
-                            }).then(function(resp) { return resp.json(); }).then(function(data) {
+                            }).then(function(resp) {
+                                return resp.json();
+                            }).then(function(data) {
                                 if (data.success) {
-                                    Swal.fire({ icon: 'success', title: 'Berhasil', text: data.message, timer: 1500, showConfirmButton: false });
-                                    setTimeout(function() { pollRealtime(); }, 300);
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Berhasil',
+                                        text: data.message,
+                                        timer: 1500,
+                                        showConfirmButton: false
+                                    });
+                                    setTimeout(function() {
+                                        pollRealtime();
+                                    }, 300);
                                 } else {
                                     btnApprove.disabled = false;
                                     btnApprove.textContent = 'Setujui';
-                                    Swal.fire({ icon: 'error', title: 'Gagal', text: data.message });
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Gagal',
+                                        text: data.message
+                                    });
                                 }
                             }).catch(function() {
                                 btnApprove.disabled = false;
                                 btnApprove.textContent = 'Setujui';
-                                Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan jaringan.' });
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: 'Terjadi kesalahan jaringan.'
+                                });
                             });
                         }
                     });
@@ -1440,21 +1634,43 @@
                             btnApproveLaporan.textContent = 'Memproses...';
                             fetch('/wfh/' + idLap + '/approve-laporan-atasan', {
                                 method: 'POST',
-                                headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                                headers: {
+                                    'X-CSRF-TOKEN': CSRF,
+                                    'Accept': 'application/json',
+                                    'X-Requested-With': 'XMLHttpRequest'
+                                },
                                 credentials: 'same-origin'
-                            }).then(function(resp) { return resp.json(); }).then(function(data) {
+                            }).then(function(resp) {
+                                return resp.json();
+                            }).then(function(data) {
                                 if (data.success) {
-                                    Swal.fire({ icon: 'success', title: 'Berhasil', text: data.message, timer: 1500, showConfirmButton: false });
-                                    setTimeout(function() { pollRealtime(); }, 300);
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Berhasil',
+                                        text: data.message,
+                                        timer: 1500,
+                                        showConfirmButton: false
+                                    });
+                                    setTimeout(function() {
+                                        pollRealtime();
+                                    }, 300);
                                 } else {
                                     btnApproveLaporan.disabled = false;
                                     btnApproveLaporan.textContent = 'Setujui';
-                                    Swal.fire({ icon: 'error', title: 'Gagal', text: data.message });
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Gagal',
+                                        text: data.message
+                                    });
                                 }
                             }).catch(function() {
                                 btnApproveLaporan.disabled = false;
                                 btnApproveLaporan.textContent = 'Setujui';
-                                Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan jaringan.' });
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: 'Terjadi kesalahan jaringan.'
+                                });
                             });
                         }
                     });
@@ -1482,22 +1698,47 @@
                             btn.textContent = 'Memproses...';
                             fetch('/wfh/' + id + '/reject-atasan', {
                                 method: 'POST',
-                                headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' },
+                                headers: {
+                                    'X-CSRF-TOKEN': CSRF,
+                                    'Accept': 'application/json',
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'Content-Type': 'application/json'
+                                },
                                 credentials: 'same-origin',
-                                body: JSON.stringify({ rejected_reason: r.value })
-                            }).then(function(resp) { return resp.json(); }).then(function(data) {
+                                body: JSON.stringify({
+                                    rejected_reason: r.value
+                                })
+                            }).then(function(resp) {
+                                return resp.json();
+                            }).then(function(data) {
                                 if (data.success) {
-                                    Swal.fire({ icon: 'success', title: 'Berhasil', text: data.message, timer: 1500, showConfirmButton: false });
-                                    setTimeout(function() { pollRealtime(); }, 300);
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Berhasil',
+                                        text: data.message,
+                                        timer: 1500,
+                                        showConfirmButton: false
+                                    });
+                                    setTimeout(function() {
+                                        pollRealtime();
+                                    }, 300);
                                 } else {
                                     btn.disabled = false;
                                     btn.textContent = 'Tolak';
-                                    Swal.fire({ icon: 'error', title: 'Gagal', text: data.message });
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Gagal',
+                                        text: data.message
+                                    });
                                 }
                             }).catch(function() {
                                 btn.disabled = false;
                                 btn.textContent = 'Tolak';
-                                Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan jaringan.' });
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: 'Terjadi kesalahan jaringan.'
+                                });
                             });
                         }
                     });
@@ -1524,22 +1765,47 @@
                             btnL.textContent = 'Memproses...';
                             fetch('/wfh/' + idL + '/reject-laporan-atasan', {
                                 method: 'POST',
-                                headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' },
+                                headers: {
+                                    'X-CSRF-TOKEN': CSRF,
+                                    'Accept': 'application/json',
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'Content-Type': 'application/json'
+                                },
                                 credentials: 'same-origin',
-                                body: JSON.stringify({ rejected_reason: r.value })
-                            }).then(function(resp) { return resp.json(); }).then(function(data) {
+                                body: JSON.stringify({
+                                    rejected_reason: r.value
+                                })
+                            }).then(function(resp) {
+                                return resp.json();
+                            }).then(function(data) {
                                 if (data.success) {
-                                    Swal.fire({ icon: 'success', title: 'Berhasil', text: data.message, timer: 1500, showConfirmButton: false });
-                                    setTimeout(function() { pollRealtime(); }, 300);
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Berhasil',
+                                        text: data.message,
+                                        timer: 1500,
+                                        showConfirmButton: false
+                                    });
+                                    setTimeout(function() {
+                                        pollRealtime();
+                                    }, 300);
                                 } else {
                                     btnL.disabled = false;
                                     btnL.textContent = 'Tolak';
-                                    Swal.fire({ icon: 'error', title: 'Gagal', text: data.message });
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Gagal',
+                                        text: data.message
+                                    });
                                 }
                             }).catch(function() {
                                 btnL.disabled = false;
                                 btnL.textContent = 'Tolak';
-                                Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan jaringan.' });
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: 'Terjadi kesalahan jaringan.'
+                                });
                             });
                         }
                     });
@@ -1564,21 +1830,43 @@
                             btnApproveLembur.textContent = 'Memproses...';
                             fetch('/lembur/' + idLembur + '/approve-atasan', {
                                 method: 'POST',
-                                headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                                headers: {
+                                    'X-CSRF-TOKEN': CSRF,
+                                    'Accept': 'application/json',
+                                    'X-Requested-With': 'XMLHttpRequest'
+                                },
                                 credentials: 'same-origin'
-                            }).then(function(resp) { return resp.json(); }).then(function(data) {
+                            }).then(function(resp) {
+                                return resp.json();
+                            }).then(function(data) {
                                 if (data.success) {
-                                    Swal.fire({ icon: 'success', title: 'Berhasil', text: data.message, timer: 1500, showConfirmButton: false });
-                                    setTimeout(function() { pollRealtime(); }, 300);
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Berhasil',
+                                        text: data.message,
+                                        timer: 1500,
+                                        showConfirmButton: false
+                                    });
+                                    setTimeout(function() {
+                                        pollRealtime();
+                                    }, 300);
                                 } else {
                                     btnApproveLembur.disabled = false;
                                     btnApproveLembur.textContent = 'Setujui';
-                                    Swal.fire({ icon: 'error', title: 'Gagal', text: data.message });
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Gagal',
+                                        text: data.message
+                                    });
                                 }
                             }).catch(function() {
                                 btnApproveLembur.disabled = false;
                                 btnApproveLembur.textContent = 'Setujui';
-                                Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan jaringan.' });
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: 'Terjadi kesalahan jaringan.'
+                                });
                             });
                         }
                     });
@@ -1606,22 +1894,47 @@
                             btnRejectLembur.textContent = 'Memproses...';
                             fetch('/lembur/' + idRL + '/reject-atasan', {
                                 method: 'POST',
-                                headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' },
+                                headers: {
+                                    'X-CSRF-TOKEN': CSRF,
+                                    'Accept': 'application/json',
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'Content-Type': 'application/json'
+                                },
                                 credentials: 'same-origin',
-                                body: JSON.stringify({ rejected_reason: r.value })
-                            }).then(function(resp) { return resp.json(); }).then(function(data) {
+                                body: JSON.stringify({
+                                    rejected_reason: r.value
+                                })
+                            }).then(function(resp) {
+                                return resp.json();
+                            }).then(function(data) {
                                 if (data.success) {
-                                    Swal.fire({ icon: 'success', title: 'Berhasil', text: data.message, timer: 1500, showConfirmButton: false });
-                                    setTimeout(function() { pollRealtime(); }, 300);
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Berhasil',
+                                        text: data.message,
+                                        timer: 1500,
+                                        showConfirmButton: false
+                                    });
+                                    setTimeout(function() {
+                                        pollRealtime();
+                                    }, 300);
                                 } else {
                                     btnRejectLembur.disabled = false;
                                     btnRejectLembur.textContent = 'Tolak';
-                                    Swal.fire({ icon: 'error', title: 'Gagal', text: data.message });
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Gagal',
+                                        text: data.message
+                                    });
                                 }
                             }).catch(function() {
                                 btnRejectLembur.disabled = false;
                                 btnRejectLembur.textContent = 'Tolak';
-                                Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan jaringan.' });
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: 'Terjadi kesalahan jaringan.'
+                                });
                             });
                         }
                     });
@@ -1647,21 +1960,43 @@
                             btnApproveLapLembur.textContent = 'Memproses...';
                             fetch('/lembur/' + idAL + '/approve-laporan-atasan', {
                                 method: 'POST',
-                                headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                                headers: {
+                                    'X-CSRF-TOKEN': CSRF,
+                                    'Accept': 'application/json',
+                                    'X-Requested-With': 'XMLHttpRequest'
+                                },
                                 credentials: 'same-origin'
-                            }).then(function(resp) { return resp.json(); }).then(function(data) {
+                            }).then(function(resp) {
+                                return resp.json();
+                            }).then(function(data) {
                                 if (data.success) {
-                                    Swal.fire({ icon: 'success', title: 'Berhasil', text: data.message, timer: 1500, showConfirmButton: false });
-                                    setTimeout(function() { pollRealtime(); }, 300);
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Berhasil',
+                                        text: data.message,
+                                        timer: 1500,
+                                        showConfirmButton: false
+                                    });
+                                    setTimeout(function() {
+                                        pollRealtime();
+                                    }, 300);
                                 } else {
                                     btnApproveLapLembur.disabled = false;
                                     btnApproveLapLembur.textContent = 'Setujui';
-                                    Swal.fire({ icon: 'error', title: 'Gagal', text: data.message });
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Gagal',
+                                        text: data.message
+                                    });
                                 }
                             }).catch(function() {
                                 btnApproveLapLembur.disabled = false;
                                 btnApproveLapLembur.textContent = 'Setujui';
-                                Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan jaringan.' });
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: 'Terjadi kesalahan jaringan.'
+                                });
                             });
                         }
                     });
@@ -1689,22 +2024,47 @@
                             btnRejectLapLembur.textContent = 'Memproses...';
                             fetch('/lembur/' + idRLap + '/reject-laporan-atasan', {
                                 method: 'POST',
-                                headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' },
+                                headers: {
+                                    'X-CSRF-TOKEN': CSRF,
+                                    'Accept': 'application/json',
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'Content-Type': 'application/json'
+                                },
                                 credentials: 'same-origin',
-                                body: JSON.stringify({ rejected_reason: r.value })
-                            }).then(function(resp) { return resp.json(); }).then(function(data) {
+                                body: JSON.stringify({
+                                    rejected_reason: r.value
+                                })
+                            }).then(function(resp) {
+                                return resp.json();
+                            }).then(function(data) {
                                 if (data.success) {
-                                    Swal.fire({ icon: 'success', title: 'Berhasil', text: data.message, timer: 1500, showConfirmButton: false });
-                                    setTimeout(function() { pollRealtime(); }, 300);
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Berhasil',
+                                        text: data.message,
+                                        timer: 1500,
+                                        showConfirmButton: false
+                                    });
+                                    setTimeout(function() {
+                                        pollRealtime();
+                                    }, 300);
                                 } else {
                                     btnRejectLapLembur.disabled = false;
                                     btnRejectLapLembur.textContent = 'Tolak';
-                                    Swal.fire({ icon: 'error', title: 'Gagal', text: data.message });
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Gagal',
+                                        text: data.message
+                                    });
                                 }
                             }).catch(function() {
                                 btnRejectLapLembur.disabled = false;
                                 btnRejectLapLembur.textContent = 'Tolak';
-                                Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan jaringan.' });
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: 'Terjadi kesalahan jaringan.'
+                                });
                             });
                         }
                     });
@@ -1731,7 +2091,9 @@
                             var nowMs = serverNowMs();
                             var jamParts = jamMasuk.split(':');
                             var tglParts = tglCountdown.split('-');
-                            var targetMs = new Date(parseInt(tglParts[0]), parseInt(tglParts[1]) - 1, parseInt(tglParts[2]), parseInt(jamParts[0]), parseInt(jamParts[1]), parseInt(jamParts[2] || 0)).getTime();
+                            var targetMs = new Date(parseInt(tglParts[0]), parseInt(tglParts[1]) - 1, parseInt(
+                                tglParts[2]), parseInt(jamParts[0]), parseInt(jamParts[1]), parseInt(
+                                jamParts[2] || 0)).getTime();
                             var alertMs = targetMs - 10 * 60 * 1000;
                             var diff = alertMs - nowMs;
                             if (countdownEl) {
@@ -1739,7 +2101,8 @@
                                     var hrs = Math.floor(diff / 3600000);
                                     var mins = Math.floor((diff % 3600000) / 60000);
                                     var secs = Math.floor((diff % 60000) / 1000);
-                                    countdownEl.textContent = 'Alert dalam ' + hrs + 'j ' + mins + 'm ' + secs + 's';
+                                    countdownEl.textContent = 'Alert dalam ' + hrs + 'j ' + mins + 'm ' + secs +
+                                        's';
                                 } else if (diff > -600000) {
                                     countdownEl.textContent = 'Waktunya absen!';
                                     if (!window._h1AlertShown) {
@@ -1747,7 +2110,8 @@
                                         Swal.fire({
                                             icon: 'info',
                                             title: 'Pengingat Absen WFH',
-                                            text: 'WFH ' + labelWFH + ' sudah disetujui. Jangan lupa absen 10 menit sebelum jam masuk ({{ $jamMasuk }})!',
+                                            text: 'WFH ' + labelWFH +
+                                                ' sudah disetujui. Jangan lupa absen 10 menit sebelum jam masuk ({{ $jamMasuk }})!',
                                             confirmButtonColor: '#7a5234'
                                         });
                                         if (Notification.permission === 'granted') {
@@ -1765,7 +2129,8 @@
                                             },
                                             credentials: 'same-origin',
                                             body: JSON.stringify({
-                                                message: 'WFH ' + labelWFH + ' sudah disetujui. Jangan lupa absen 10 menit sebelum jam masuk ({{ $jamMasuk }})!',
+                                                message: 'WFH ' + labelWFH +
+                                                    ' sudah disetujui. Jangan lupa absen 10 menit sebelum jam masuk ({{ $jamMasuk }})!',
                                                 type: 'wfh_h1_reminder'
                                             })
                                         });

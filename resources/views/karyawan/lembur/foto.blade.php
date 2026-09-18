@@ -37,67 +37,85 @@
                 </div>
             @endif
 
-            <div class="mt-3">
-                <h3 class="text-[14px] font-bold text-[#1c1917]">Lembur {{ $tglLembur }}</h3>
-                <p class="text-[12px] text-[#78716c] mt-0.5">{{ $lembur->keterangan ?? '-' }}</p>
-            </div>
-
-            {{-- Status Steps --}}
-            <div class="flex items-center gap-2 mt-4">
-                <div class="flex items-center gap-1.5">
-                    <div class="w-6 h-6 rounded-full {{ $hasMulai ? 'bg-emerald-500' : 'bg-gray-300' }} flex items-center justify-center">
+            {{-- Status Steps (Small, Top) --}}
+            <div class="flex items-center justify-center gap-1.5 mt-2">
+                <div class="flex items-center gap-1">
+                    <div class="w-5 h-5 rounded-full {{ $hasMulai ? 'bg-emerald-500' : 'bg-gray-300' }} flex items-center justify-center">
                         @if ($hasMulai)
-                            <i data-lucide="check" class="text-white" style="width:14px;height:14px;"></i>
+                            <i data-lucide="check" class="text-white" style="width:12px;height:12px;"></i>
                         @else
-                            <span class="text-white text-[10px] font-bold">1</span>
+                            <span class="text-white text-[9px] font-bold">1</span>
                         @endif
                     </div>
-                    <span class="text-[11px] {{ $hasMulai ? 'text-emerald-600 font-medium' : 'text-[#78716c]' }}">Foto Mulai</span>
+                    <span class="text-[10px] {{ $hasMulai ? 'text-emerald-600 font-medium' : 'text-[#78716c]' }} hidden sm:inline">Mulai</span>
                 </div>
-                <div class="flex-1 h-0.5 {{ $hasMulai ? 'bg-emerald-300' : 'bg-gray-200' }}"></div>
-                <div class="flex items-center gap-1.5">
-                    <div class="w-6 h-6 rounded-full {{ $hasSelesai ? 'bg-emerald-500' : 'bg-gray-300' }} flex items-center justify-center">
+                <div class="w-8 h-0.5 {{ $hasMulai ? 'bg-emerald-300' : 'bg-gray-200' }} hidden sm:block"></div>
+                <div class="flex items-center gap-1">
+                    <div class="w-5 h-5 rounded-full {{ $hasSelesai ? 'bg-emerald-500' : 'bg-gray-300' }} flex items-center justify-center">
                         @if ($hasSelesai)
-                            <i data-lucide="check" class="text-white" style="width:14px;height:14px;"></i>
+                            <i data-lucide="check" class="text-white" style="width:12px;height:12px;"></i>
                         @else
-                            <span class="text-white text-[10px] font-bold">2</span>
+                            <span class="text-white text-[9px] font-bold">2</span>
                         @endif
                     </div>
-                    <span class="text-[11px] {{ $hasSelesai ? 'text-emerald-600 font-medium' : 'text-[#78716c]' }}">Foto Selesai</span>
+                    <span class="text-[10px] {{ $hasSelesai ? 'text-emerald-600 font-medium' : 'text-[#78716c]' }} hidden sm:inline">Selesai</span>
                 </div>
             </div>
 
             {{-- Webcam Section --}}
-            <div class="mt-4 bg-white rounded-xl border border-[#f0ece8] overflow-hidden">
-                <div class="relative bg-black" style="aspect-ratio: 9/16;">
+            <div class="mt-3 bg-white rounded-xl border border-[#f0ece8] overflow-hidden">
+                <div class="relative bg-black" style="aspect-ratio: 4/5;">
                     <video id="webcam" autoplay playsinline class="w-full h-full object-cover"></video>
                     <canvas id="canvas" class="hidden"></canvas>
 
-                    {{-- Overlay --}}
-                    <div class="absolute bottom-2 left-2 right-2 bg-black/60 text-white text-[10px] px-2 py-1 rounded">
-                        <div class="font-bold">LEMBUR</div>
-                        <div id="clock">{{ now('Asia/Jakarta')->format('H:i:s') }}</div>
-                        <div>{{ $data->karyawan->nama_lengkap }}</div>
-                        <div>{{ $data->karyawan->nik }}</div>
+                    {{-- Camera Switch Button --}}
+                    <button type="button" id="btnSwitchCamera" class="absolute top-1.5 right-1.5 z-10 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm shadow-md flex items-center justify-center text-coklat hover:bg-white transition-colors" aria-label="Ganti Kamera">
+                        <i data-lucide="rotate-ccw" style="width:18px;height:18px;"></i>
+                    </button>
+
+                    {{-- Overlay Card (Compact, Text-only BG) --}}
+                    <div class="absolute bottom-1.5 left-1.5 z-10">
+                        <div class="flex flex-col gap-1.5">
+                            {{-- Line 1: Lembur + Date + Clock --}}
+                            <div class="flex items-center gap-1.5">
+                                <span class="bg-coklat/90 text-white text-[10px] font-semibold px-2 py-0.5 rounded">Lembur</span>
+                                <span class="bg-white/90 text-[#1c1917] text-[10px] font-medium px-2 py-0.5 rounded">{{ $tglLembur }}</span>
+                                <span id="clock" class="bg-white/90 text-[#1c1917] text-[12px] font-bold font-mono tabular-nums px-2 py-0.5 rounded">{{ now('Asia/Jakarta')->format('H:i:s') }}</span>
+                            </div>
+
+                            {{-- Line 2: Nama + NIK --}}
+                            <div class="flex items-center gap-1.5">
+                                <span class="bg-white/90 text-[#78716c] text-[9px] font-medium px-2 py-0.5 rounded">Nama</span>
+                                <span class="bg-white/90 text-[#1c1917] text-[10px] font-semibold px-2 py-0.5 rounded truncate max-w-[140px]">{{ $data->karyawan->nama_lengkap }}</span>
+                                <span class="bg-white/90 text-[#78716c] text-[9px] font-medium px-2 py-0.5 rounded">NIK</span>
+                                <span class="bg-white/90 text-[#1c1917] text-[10px] font-semibold font-mono px-2 py-0.5 rounded">{{ $data->karyawan->nik }}</span>
+                            </div>
+
+                            {{-- Line 3: Location --}}
+                            <div class="flex items-center gap-1.5">
+                                <i data-lucide="map-pin" class="text-white" style="width:11px;height:11px;"></i>
+                                <span class="bg-white/90 text-[#78716c] text-[9px] font-medium px-2 py-0.5 rounded">Lokasi otomatis</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="p-3">
+                <div class="p-2.5">
                     @if (!$hasMulai)
-                        <button id="btnCapture" class="w-full py-2.5 bg-blue-500 text-white text-[13px] font-semibold rounded-lg">
+                        <button id="btnCapture" class="w-full py-2.5 bg-blue-500 text-white text-[12px] font-semibold rounded-lg flex items-center justify-center gap-2">
                             <i data-lucide="camera" class="inline" style="width:16px;height:16px;"></i> Ambil Foto Mulai Lembur
                         </button>
                     @elseif (!$hasSelesai)
-                        <button id="btnCapture" class="w-full py-2.5 bg-orange-500 text-white text-[13px] font-semibold rounded-lg">
+                        <button id="btnCapture" class="w-full py-2.5 bg-orange-500 text-white text-[12px] font-semibold rounded-lg flex items-center justify-center gap-2">
                             <i data-lucide="camera" class="inline" style="width:16px;height:16px;"></i> Ambil Foto Selesai Lembur
                         </button>
                     @else
-                        <div class="text-center py-3">
-                            <div class="text-emerald-500 text-[13px] font-semibold">
-                                <i data-lucide="check-circle" class="inline" style="width:16px;height:16px;"></i> Foto lengkap!
+                        <div class="text-center py-2.5">
+                            <div class="text-emerald-500 text-[12px] font-semibold flex items-center justify-center gap-1">
+                                <i data-lucide="check-circle" class="inline" style="width:14px;height:14px;"></i> Foto lengkap!
                             </div>
-                            <a href="/lembur/{{ $lembur->id }}/laporan" class="mt-2 inline-block px-4 py-2 bg-purple-500 text-white text-[13px] font-semibold rounded-lg">
-                                Isi Laporan →
+                            <a href="/lembur/{{ $lembur->id }}/laporan" class="mt-1.5 inline-block px-3 py-1.5 bg-purple-500 text-white text-[11px] font-semibold rounded-lg">
+                                Isi Laporan &rarr;
                             </a>
                         </div>
                     @endif
@@ -105,12 +123,12 @@
             </div>
 
             {{-- Preview --}}
-            <div id="preview-section" class="mt-4 hidden">
-                <h4 class="text-[13px] font-bold text-[#1c1917] mb-2">Preview Foto</h4>
+            <div id="preview-section" class="mt-3 hidden">
+                <h4 class="text-[12px] font-bold text-[#1c1917] mb-1.5">Preview Foto</h4>
                 <img id="previewImg" class="w-full rounded-lg border border-[#f0ece8]" alt="Preview">
-                <div class="flex gap-2 mt-2">
-                    <button id="btnRetake" class="flex-1 py-2 bg-gray-200 text-[#1c1917] text-[13px] font-medium rounded-lg">Ulangi</button>
-                    <button id="btnConfirm" class="flex-1 py-2 bg-emerald-500 text-white text-[13px] font-semibold rounded-lg">Simpan</button>
+                <div class="flex gap-1.5 mt-1.5">
+                    <button id="btnRetake" class="flex-1 py-1.5 bg-gray-200 text-[#1c1917] text-[11px] font-medium rounded-lg">Ulangi</button>
+                    <button id="btnConfirm" class="flex-1 py-1.5 bg-emerald-500 text-white text-[11px] font-semibold rounded-lg">Simpan</button>
                 </div>
             </div>
 
@@ -122,11 +140,14 @@
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         const btnCapture = document.getElementById('btnCapture');
-        const previewSection = document.getElementById('preview-section');
-        const previewImg = document.getElementById('previewImg');
         const btnRetake = document.getElementById('btnRetake');
         const btnConfirm = document.getElementById('btnConfirm');
+        const btnSwitchCamera = document.getElementById('btnSwitchCamera');
+        const previewSection = document.getElementById('preview-section');
+        const previewImg = document.getElementById('previewImg');
         let currentBlob = null;
+        let currentStream = null;
+        let facingMode = 'environment'; // Default: kamera belakang
 
         // Clock
         setInterval(() => {
@@ -134,24 +155,87 @@
         }, 1000);
 
         // Start webcam
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 720 }, height: { ideal: 1280 } } })
-            .then(stream => { video.srcObject = stream; })
-            .catch(err => {
-                console.error('Webcam error:', err);
-                alert('Tidak bisa mengakses kamera. Pastikan izin kamera diberikan.');
-            });
+        function startCamera(mode) {
+            facingMode = mode;
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+            }
+
+            const constraints = {
+                video: {
+                    facingMode: { ideal: facingMode },
+                    width: { ideal: 1080 },
+                    height: { ideal: 1440 }
+                }
+            };
+
+            navigator.mediaDevices.getUserMedia(constraints)
+                .then(stream => {
+                    currentStream = stream;
+                    video.srcObject = stream;
+                    // Mirror preview for front camera, keep normal for back camera
+                    video.style.transform = facingMode === 'user' ? 'scaleX(-1)' : 'scaleX(1)';
+                })
+                .catch(err => {
+                    console.error('Webcam error:', err);
+                    // Fallback to user if environment not available
+                    if (mode === 'environment') {
+                        startCamera('user');
+                    } else {
+                        alert('Tidak bisa mengakses kamera. Pastikan izin kamera diberikan.');
+                    }
+                });
+        }
+
+        // Initialize with back camera
+        startCamera('environment');
+
+        // Switch camera button
+        btnSwitchCamera.addEventListener('click', function() {
+            startCamera(facingMode === 'environment' ? 'user' : 'environment');
+        });
 
         btnCapture.addEventListener('click', function() {
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            ctx.drawImage(video, 0, 0);
+            // Crop to 4:5 portrait (more natural for ID photos)
+            const videoAspect = video.videoWidth / video.videoHeight;
+            const targetAspect = 4 / 5;
+            let cropWidth, cropHeight, cropX, cropY;
+
+            if (videoAspect > targetAspect) {
+                // Video is wider than 4:5, crop sides
+                cropHeight = video.videoHeight;
+                cropWidth = video.videoHeight * targetAspect;
+                cropX = (video.videoWidth - cropWidth) / 2;
+                cropY = 0;
+            } else {
+                // Video is taller than 4:5, crop top/bottom
+                cropWidth = video.videoWidth;
+                cropHeight = video.videoWidth / targetAspect;
+                cropX = 0;
+                cropY = (video.videoHeight - cropHeight) / 2;
+            }
+
+            canvas.width = cropWidth;
+            canvas.height = cropHeight;
+
+            // Mirror the captured image if using front camera
+            if (facingMode === 'user') {
+                ctx.translate(cropWidth, 0);
+                ctx.scale(-1, 1);
+                ctx.drawImage(video, cropX, cropY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
+                ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform
+            } else {
+                ctx.drawImage(video, cropX, cropY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
+            }
+
             canvas.toBlob(function(blob) {
                 currentBlob = blob;
                 const url = URL.createObjectURL(blob);
                 previewImg.src = url;
+                previewImg.style.transform = facingMode === 'user' ? 'scaleX(-1)' : 'scaleX(1)';
                 previewSection.classList.remove('hidden');
                 btnCapture.classList.add('hidden');
-            }, 'image/jpeg', 0.95);
+            }, 'image/jpeg', 0.92);
         });
 
         btnRetake.addEventListener('click', function() {
@@ -167,7 +251,7 @@
 
             const reader = new FileReader();
             reader.onload = function() {
-                const base64 = reader.result.split(',')[1];
+                const base64 = reader.result; // full data URL with prefix
 
                 navigator.geolocation.getCurrentPosition(function(pos) {
                     const lokasi = pos.coords.latitude + ',' + pos.coords.longitude;
@@ -191,7 +275,12 @@
                 },
                 body: JSON.stringify({ type: type, image: image, lokasi: lokasi })
             })
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) {
+                    return res.json().then(err => { throw new Error(err.message || 'HTTP ' + res.status); });
+                }
+                return res.json();
+            })
             .then(data => {
                 if (data.success) {
                     window.location.reload();
@@ -202,7 +291,7 @@
                 }
             })
             .catch(err => {
-                alert('Terjadi kesalahan. Silakan coba lagi.');
+                alert('Terjadi kesalahan: ' + err.message + '. Silakan coba lagi.');
                 previewSection.classList.add('hidden');
                 btnCapture.classList.remove('hidden');
             });

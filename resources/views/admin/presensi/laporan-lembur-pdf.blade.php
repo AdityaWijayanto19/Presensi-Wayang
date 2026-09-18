@@ -361,9 +361,11 @@
                 {{-- PEMOHON --}}
                 <td class="approval-body">
                     <div class="signature-space">
-                        @if (file_exists(public_path('assets/img/stempel-approved.png')))
-                            <img src="{{ public_path('assets/img/stempel-approved.png') }}" class="stamp" alt="Submission">
+                        @if (file_exists(public_path('assets\img\stempel-pengaju.png')))
+                            <img src="{{ public_path('assets\img\stempel-pengaju.png') }}" class="stamp"
+                                alt="Submission">
                         @endif
+
                     </div>
                     <div class="signature-name">{{ $nama_lengkap }}</div>
                     <div class="signature-role">{{ $jabatan }}</div>
