@@ -84,12 +84,24 @@
         <x-admin.input type="date" name="tgl_lembur" id="edit_tgl_lembur"
             label="Tanggal Lembur <span class='text-red-500'>*</span>" required />
 
-        <x-admin.select name="durasi" id="edit_durasi" label="Durasi (Jam) <span class='text-red-500'>*</span>" required>
+        <x-admin.select name="status" id="edit_status" label="Status <span class='text-red-500'>*</span>" required>
+            <option value="pending_atasan">Menunggu Persetujuan</option>
+            <option value="pending_admin">Menunggu Persetujuan HR</option>
+            <option value="approved">Disetujui</option>
+            <option value="rejected">Ditolak</option>
+        </x-admin.select>
+
+        <x-admin.select name="durasi_jam" id="edit_durasi_jam" label="Durasi (Jam) <span class='text-red-500'>*</span>" required>
             <option value="1">1 Jam</option>
+            <option value="1.5">1.5 Jam</option>
             <option value="2">2 Jam</option>
+            <option value="2.5">2.5 Jam</option>
             <option value="3">3 Jam</option>
+            <option value="3.5">3.5 Jam</option>
             <option value="4">4 Jam</option>
+            <option value="4.5">4.5 Jam</option>
             <option value="5">5 Jam</option>
+            <option value="5.5">Prorate</option>
         </x-admin.select>
 
         <div class="mt-2">
@@ -134,11 +146,17 @@
                 if (btn) {
                     var id = btn.dataset.id;
                     var tgl = btn.dataset.tgl_lembur;
-                    var durasi = btn.dataset.durasi;
+                    var status = btn.dataset.status;
+                    var durasiJam = btn.dataset.durasi_jam;
 
                     document.getElementById('edit_lembur_id').value = id;
                     document.getElementById('edit_tgl_lembur').value = tgl;
-                    document.getElementById('edit_durasi').value = durasi;
+                    document.getElementById('edit_status').value = status || 'pending_atasan';
+                    var durasiSelect = document.getElementById('edit_durasi_jam');
+                    if (durasiSelect) {
+                        var durasiVal = durasiJam && parseFloat(durasiJam) > 5 ? '5.5' : durasiJam;
+                        durasiSelect.value = durasiVal || '1';
+                    }
                     document.getElementById('formEditLembur').action = '/presensi/lembur/' + id + '/update';
                     window.dispatchEvent(new CustomEvent('open-modal-modal-editlembur'));
                 }
@@ -249,7 +267,8 @@
         // Realtime Polling
         try {
             (function() {
-                let lastCheck = new Date().toISOString();
+                var lastHtml = '';
+                var lastPagination = '';
 
                 function getCurrentFilters() {
                     var params = new URLSearchParams(window.location.search);
@@ -268,42 +287,26 @@
                     fetch('/api/realtime/admin/lembur-data' + (qs ? '?' + qs : ''), {
                             credentials: 'same-origin'
                         })
-                        .then(function(r) { return r.json(); })
+                        .then(function(r) {
+                            if (!r.ok) throw new Error('HTTP ' + r.status);
+                            return r.json();
+                        })
                         .then(function(data) {
                             var tbody = document.getElementById('lemburTableBody');
                             var pagination = document.getElementById('lemburPagination');
-                            if (tbody && data.html) tbody.innerHTML = data.html;
-                            if (pagination && data.pagination) pagination.innerHTML = data.pagination;
-                            if (window.lucide) lucide.createIcons();
-                        }).catch(function() {});
-                }
-
-                var adminPollInterval = 5000;
-
-                function pollAdminData() {
-                    fetch('/api/realtime/admin/lembur-check?last_check=' + encodeURIComponent(lastCheck), {
-                            credentials: 'same-origin'
-                        })
-                        .then(function(r) { return r.json(); })
-                        .then(function(check) {
-                            if (check.updated_data) {
-                                lastCheck = new Date().toISOString();
-                                fetchTableData();
+                            if (tbody && data.html && data.html !== lastHtml) {
+                                tbody.innerHTML = data.html;
+                                lastHtml = data.html;
+                                if (window.lucide) lucide.createIcons();
                             }
-                            adminPollInterval = 5000;
-                        }).catch(function() {
-                            adminPollInterval = Math.min(adminPollInterval * 2, 30000);
-                        });
+                            if (pagination && data.pagination && data.pagination !== lastPagination) {
+                                pagination.innerHTML = data.pagination;
+                                lastPagination = data.pagination;
+                            }
+                        }).catch(function(err) { console.error('Lembur table fetch error:', err); });
                 }
 
-                function startAdminPoll() {
-                    setTimeout(function() {
-                        pollAdminData();
-                        startAdminPoll();
-                    }, adminPollInterval);
-                }
-                pollAdminData();
-                startAdminPoll();
+                setInterval(fetchTableData, 5000);
 
                 var pagination = document.getElementById('lemburPagination');
                 if (pagination) {
@@ -316,17 +319,28 @@
                                 headers: { 'X-Requested-With': 'XMLHttpRequest' },
                                 credentials: 'same-origin'
                             })
-                            .then(function(r) { return r.json(); })
+                            .then(function(r) {
+                                if (!r.ok) throw new Error('HTTP ' + r.status);
+                                return r.json();
+                            })
                             .then(function(data) {
                                 var tbody = document.getElementById('lemburTableBody');
                                 var pag = document.getElementById('lemburPagination');
-                                if (tbody && data.html) tbody.innerHTML = data.html;
-                                if (pag && data.pagination) pag.innerHTML = data.pagination;
+                                if (tbody && data.html) {
+                                    tbody.innerHTML = data.html;
+                                    lastHtml = data.html;
+                                }
+                                if (pag && data.pagination) {
+                                    pag.innerHTML = data.pagination;
+                                    lastPagination = data.pagination;
+                                }
                                 window.history.pushState({}, '', link.href);
                                 if (window.lucide) lucide.createIcons();
-                            }).catch(function() {});
+                            }).catch(function(err) { console.error('Lembur pagination fetch error:', err); });
                     });
                 }
+
+                fetchTableData();
             })();
         } catch (e) { console.warn('Realtime polling error:', e); }
 

@@ -151,10 +151,13 @@ class AdminPresensiController extends Controller
         $oldStatus = $lembur->status instanceof \App\Enums\LemburStatus ? $lembur->status->value : $lembur->status;
         $newStatus = $request->status;
 
+        $durasiJam = $request->durasi_jam == '5.5' ? 5.5 : (float) $request->durasi_jam;
+
         $updateData = [
             'tgl_lembur' => $request->tgl_lembur,
             'keterangan' => $request->keterangan,
             'status' => $newStatus,
+            'durasi_jam' => $durasiJam,
         ];
 
         if ($oldStatus !== $newStatus) {

@@ -147,7 +147,8 @@
                     <button type="button" class="w-full text-left px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2 edit-lembur"
                         data-id="{{ $d->id }}"
                         data-tgl_lembur="{{ $d->tgl_lembur instanceof \Carbon\Carbon ? $d->tgl_lembur->format('Y-m-d') : $d->tgl_lembur }}"
-                        data-durasi="{{ $d->durasi_formatted ?? '' }}"
+                        data-status="{{ $status }}"
+                        data-durasi_jam="{{ $d->durasi_jam ?? '' }}"
                         @click="open = false">
                         <i data-lucide="pencil" style="width:12px;height:12px;"></i> Edit
                     </button>

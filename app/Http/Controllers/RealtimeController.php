@@ -71,7 +71,7 @@ class RealtimeController extends Controller
 
         $datawfh = $query->orderBy('tgl_wfh', 'desc')->paginate(5)->withQueryString();
         $html = view('admin.wfh._rows', compact('datawfh'))->render();
-        $pagination = $datawfh->setPath('/panel/wfh')->appends($request->query())->links('vendor.pagination.bootstrap-5')->render();
+        $pagination = $datawfh->setPath('/panel/wfh')->appends($request->query())->links('pagination::bootstrap-5')->render();
 
         return response()->json([
             'html' => $html,
@@ -82,16 +82,19 @@ class RealtimeController extends Controller
 
     public function adminLemburCheck(Request $request)
     {
+        $lastId = is_numeric($request->last_id) ? (int) $request->last_id : 0;
         $lastCheck = $request->last_check
             ? \Carbon\Carbon::parse($request->last_check)->subSecond()
             : now('Asia/Jakarta')->subSeconds(10);
 
         $stats = \App\Models\Lembur::selectRaw('
             MAX(id) as latest_id,
-            SUM(CASE WHEN updated_at > ? THEN 1 ELSE 0 END) as updated_count
-        ')->setBindings([$lastCheck])->first();
+            SUM(CASE WHEN id > ? THEN 1 ELSE 0 END) as new_count,
+            SUM(CASE WHEN dikirim_tanggal > ? OR updated_at > ? THEN 1 ELSE 0 END) as updated_count
+        ')->setBindings([$lastId, $lastCheck, $lastCheck])->first();
 
         return response()->json([
+            'new_data' => ($stats->new_count ?? 0) > 0,
             'updated_data' => ($stats->updated_count ?? 0) > 0,
             'latest_id' => $stats->latest_id ?? 0,
         ]);
@@ -120,7 +123,7 @@ class RealtimeController extends Controller
 
         $datalembur = $query->orderBy('tgl_lembur', 'desc')->paginate(5)->withQueryString();
         $html = view('admin.lembur._rows', compact('datalembur'))->render();
-        $pagination = $datalembur->setPath('/panel/lembur')->appends($request->query())->links('vendor.pagination.bootstrap-5')->render();
+        $pagination = $datalembur->setPath('/panel/lembur')->appends($request->query())->links('pagination::bootstrap-5')->render();
 
         return response()->json([
             'html' => $html,

@@ -426,6 +426,22 @@ class LemburService
             return ['success' => false, 'message' => 'Foto ' . $type . ' lembur sudah ada!'];
         }
 
+        if ($type === 'selesai') {
+            if (empty($lembur->waktu_mulai)) {
+                return ['success' => false, 'message' => 'Foto mulai belum diambil. Silakan ambil foto mulai terlebih dahulu.'];
+            }
+            $selisih = \Carbon\Carbon::parse($lembur->waktu_mulai)->diffInMinutes(now('Asia/Jakarta'));
+            if ($selisih < 60) {
+                $sisa = 60 - $selisih;
+                $sisaJam = floor($sisa / 60);
+                $sisaMenit = $sisa % 60;
+                $sisaStr = '';
+                if ($sisaJam > 0) $sisaStr .= $sisaJam . ' jam ';
+                if ($sisaMenit > 0) $sisaStr .= $sisaMenit . ' menit';
+                return ['success' => false, 'message' => 'Foto selesai baru bisa diambil setelah 1 jam foto mulai. Sisa waktu: ' . trim($sisaStr) . '.'];
+            }
+        }
+
         $imageService = app(ImageService::class);
         $path = $imageService->processBase64($request->image, $nik, 'lembur_' . $type, 'lembur');
         if (!$path) {
@@ -778,6 +794,7 @@ class LemburService
 
         $candidates = [
             'lembur/' . $file,
+            'lembur/laporan/' . $file,
             'uploads/lembur/' . $file,
             'uploads/lembur/laporan/' . $file,
         ];
@@ -813,7 +830,19 @@ class LemburService
             if ($nik === null || ($lembur->nik !== $nik && $lembur->atasan_nik !== $nik && $lembur->laporan_atasan_nik !== $nik)) {
                 return null;
             }
-            $try = [$lembur->pdf_form_path ?? '', $lembur->laporan_file ?? ''];
+            $try = [];
+            if ($lembur->laporan_file && basename($lembur->laporan_file) === $file) {
+                $try[] = $lembur->laporan_file;
+            }
+            if ($lembur->pdf_form_path && basename($lembur->pdf_form_path) === $file) {
+                $try[] = $lembur->pdf_form_path;
+            }
+            if ($lembur->pdf_form_path && !in_array($lembur->pdf_form_path, $try)) {
+                $try[] = $lembur->pdf_form_path;
+            }
+            if ($lembur->laporan_file && !in_array($lembur->laporan_file, $try)) {
+                $try[] = $lembur->laporan_file;
+            }
             foreach ($try as $rel) {
                 if ($rel && Storage::disk('public')->exists($rel)) {
                     return $rel;

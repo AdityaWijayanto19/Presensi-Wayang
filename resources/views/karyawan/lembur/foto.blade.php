@@ -285,13 +285,25 @@
                 if (data.success) {
                     window.location.reload();
                 } else {
-                    alert(data.message || 'Gagal menyimpan foto');
+                    Swal.fire({
+                        title: 'Oops...',
+                        html: data.message || 'Gagal menyimpan foto',
+                        icon: 'warning',
+                        confirmButtonColor: '#7a5234',
+                        confirmButtonText: 'Mengerti'
+                    });
                     previewSection.classList.add('hidden');
                     btnCapture.classList.remove('hidden');
                 }
             })
             .catch(err => {
-                alert('Terjadi kesalahan: ' + err.message + '. Silakan coba lagi.');
+                Swal.fire({
+                    title: 'Error',
+                    html: 'Terjadi kesalahan: ' + err.message + '. Silakan coba lagi.',
+                    icon: 'error',
+                    confirmButtonColor: '#7a5234',
+                    confirmButtonText: 'Tutup'
+                });
                 previewSection.classList.add('hidden');
                 btnCapture.classList.remove('hidden');
             });

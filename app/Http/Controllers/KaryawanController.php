@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
+use App\Services\LemburService;
+use App\Services\WfhService;
 use App\Services\ImageService;
 use App\Http\Requests\Karyawan\StoreKaryawanRequest;
 use App\Http\Requests\Karyawan\UpdateKaryawanRequest;
@@ -160,7 +162,7 @@ class KaryawanController extends Controller
             return response()->json([]);
         }
 
-        $query = Karyawan::where('role_approved', $targetPosisi)
+        $query = Karyawan::where('jabatan', $targetPosisi)
             ->select('nik', 'nama_lengkap', 'jabatan', 'posisi')
             ->orderBy('nama_lengkap');
 
@@ -203,31 +205,15 @@ class KaryawanController extends Controller
             }
             $karyawan->izin()->delete();
 
-            // Hapus dokumen lembur
+            // Hapus dokumen lembur (termasuk pdf, foto, laporan)
             foreach ($karyawan->lembur as $l) {
-                if (!empty($l->pdf_form_path)) {
-                    Storage::disk('public')->delete($l->pdf_form_path);
-                }
-                if (!empty($l->foto_mulai)) {
-                    Storage::disk('public')->delete($l->foto_mulai);
-                }
-                if (!empty($l->foto_selesai)) {
-                    Storage::disk('public')->delete($l->foto_selesai);
-                }
-                if (!empty($l->laporan_file)) {
-                    Storage::disk('public')->delete($l->laporan_file);
-                }
+                LemburService::deleteLemburFiles($l);
             }
             $karyawan->lembur()->delete();
 
-            // Hapus dokumen WFH
+            // Hapus dokumen WFH (termasuk pdf, laporan)
             foreach ($karyawan->wfh as $w) {
-                if (!empty($w->pdf_form_path)) {
-                    Storage::disk('public')->delete($w->pdf_form_path);
-                }
-                if (!empty($w->laporan_file)) {
-                    Storage::disk('public')->delete($w->laporan_file);
-                }
+                WfhService::deleteWfhFiles($w);
             }
             $karyawan->wfh()->delete();
 

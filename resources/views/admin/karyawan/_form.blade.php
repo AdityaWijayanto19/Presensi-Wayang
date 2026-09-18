@@ -29,9 +29,9 @@
         placeholder="Pilih Jabatan" required>
         <option value="Intern" {{ ($karyawan?->jabatan ?? '') == 'Intern' ? 'selected' : '' }}>Intern</option>
         <option value="Staff" {{ ($karyawan?->jabatan ?? '') == 'Staff' ? 'selected' : '' }}>Staff</option>
-        <option value="SPV" {{ ($karyawan?->jabatan ?? '') == 'SPV' ? 'selected' : '' }}>SPV (Supervisor)</option>
+        <option value="SPV" {{ ($karyawan?->jabatan ?? '') == 'SPV' ? 'selected' : '' }}>Supervisor</option>
         <option value="Manager" {{ ($karyawan?->jabatan ?? '') == 'Manager' ? 'selected' : '' }}>Manager</option>
-        <option value="GM" {{ ($karyawan?->jabatan ?? '') == 'GM' ? 'selected' : '' }}>GM (General Manager)</option>
+        <option value="GM" {{ ($karyawan?->jabatan ?? '') == 'GM' ? 'selected' : '' }}>General Manager</option>
         <option value="Direktur" {{ ($karyawan?->jabatan ?? '') == 'Direktur' ? 'selected' : '' }}>Direktur</option>
     </x-admin.select>
 

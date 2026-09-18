@@ -35,8 +35,7 @@
                             </option>
                             <option value="Staff" {{ Request('jabatan_filter') == 'Staff' ? 'selected' : '' }}>Staff
                             </option>
-                            <option value="SPV" {{ Request('jabatan_filter') == 'SPV' ? 'selected' : '' }}>SPV
-                                (Supervisor)
+                            <option value="SPV" {{ Request('jabatan_filter') == 'SPV' ? 'selected' : '' }}>Supervisor
                             </option>
                             <option value="Manager" {{ Request('jabatan_filter') == 'Manager' ? 'selected' : '' }}>
                                 Manager
@@ -121,7 +120,7 @@
                                     @if ($k->jabatan)
                                         <span
                                             class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                            {{ $k->jabatan == 'Direktur' ? 'bg-red-100 text-red-700' : ($k->jabatan == 'GM' ? 'bg-yellow-100 text-yellow-700' : ($k->jabatan == 'Manager' ? 'bg-cyan-100 text-cyan-700' : ($k->jabatan == 'SPV' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'))) }}">{{ $k->jabatan }}{{ $k->jabatan == 'GM' ? ' (General Manager)' : ($k->jabatan == 'SPV' ? ' (Supervisor)' : '') }}</span>
+                                            {{ $k->jabatan == 'Direktur' ? 'bg-red-100 text-red-700' : ($k->jabatan == 'GM' ? 'bg-yellow-100 text-yellow-700' : ($k->jabatan == 'Manager' ? 'bg-cyan-100 text-cyan-700' : ($k->jabatan == 'Supervisor' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'))) }}">{{ $k->jabatan }}</span>
                                     @else
                                         <span class="text-slate-500">—</span>
                                     @endif
@@ -291,6 +290,7 @@
             form.querySelector('[name="posisi"]').value = k.posisi;
             form.querySelector('[name="jabatan"]').value = k.jabatan || '';
             form.querySelector('[name="unit"]').value = k.unit || '';
+            form.querySelector('[name="role_approved"]').value = k.role_approved || '';
             form.querySelector('[name="no_hp"]').value = k.no_hp;
             form.querySelector('[name="password"]').placeholder = 'Kosongkan jika tidak diubah';
             form.querySelector('[name="password"]').removeAttribute('required');
@@ -319,19 +319,41 @@
             formContainer.innerHTML = '';
             formContainer.appendChild(clone);
             if (window.lucide) lucide.createIcons();
-            var jabatanSelect = form.querySelector('[name="jabatan"]');
-            if (jabatanSelect) jabatanSelect.dispatchEvent(new Event('change'));
 
-            // Set role_approved & trigger cascading
-            if (k.role_approved) {
-                var roleApprovedSelect = form.querySelector('[name="role_approved"]');
-                if (roleApprovedSelect) {
-                    roleApprovedSelect.value = k.role_approved;
-                    roleApprovedSelect.dispatchEvent(new Event('change'));
-                    // Fetch atasan then set value
-                    fetchAtasanForEdit(k.role_approved, k.atasan_nik, k.nik);
-                }
+            function dispatchSetValue(name, val) {
+                formContainer.dispatchEvent(new CustomEvent('set-value', {
+                    detail: {
+                        name: name,
+                        value: val
+                    },
+                    bubbles: true
+                }));
             }
+
+            function dispatchChangeEvent(name) {
+                var el = formContainer.querySelector('[name="' + name + '"]');
+                if (el) el.dispatchEvent(new Event('change', {
+                    bubbles: true
+                }));
+            }
+
+            setTimeout(function() {
+                dispatchSetValue('jabatan', k.jabatan || '');
+                setTimeout(function() {
+                    dispatchChangeEvent('jabatan');
+                    setTimeout(function() {
+                        if (k.role_approved) {
+                            dispatchSetValue('role_approved', k.role_approved);
+                            setTimeout(function() {
+                                dispatchChangeEvent('role_approved');
+                                fetchAtasanForEdit(k.role_approved, k
+                                    .atasan_nik, k.nik);
+                            }, 30);
+                        }
+                        dispatchSetValue('unit', k.unit || '');
+                    }, 30);
+                }, 30);
+            }, 30);
 
             openModal();
         });
@@ -354,19 +376,35 @@
                     "Direktur": ""
                 };
                 var target = atasanMap[roleApproved] || '';
-                var html = '<option value="">Pilih Atasan (' + target + ')</option>';
+                var options = [{
+                    value: '',
+                    label: 'Pilih Atasan (' + target + ')'
+                }];
                 res.forEach(function(item) {
-                    var selected = item.nik === targetAtasanNik ? ' selected' : '';
-                    html += '<option value="' + item.nik + '"' + selected + '>' + item
-                        .nama_lengkap + ' (' + item.jabatan + ' - ' + item.posisi +
-                        ')</option>';
+                    options.push({
+                        value: item.nik,
+                        label: item.nama_lengkap + ' (' + item.jabatan + ' - ' + item
+                            .posisi + ')'
+                    });
                 });
-                var select = formContainer.querySelector('[name="atasan_nik"]');
-                if (select) {
-                    select.innerHTML = html;
-                    var wrapper = document.getElementById('atasan-wrapper');
-                    if (wrapper) wrapper.style.display = '';
-                }
+                formContainer.dispatchEvent(new CustomEvent('options-updated', {
+                    detail: {
+                        name: 'atasan_nik',
+                        options: options
+                    },
+                    bubbles: true
+                }));
+                setTimeout(function() {
+                    formContainer.dispatchEvent(new CustomEvent('set-value', {
+                        detail: {
+                            name: 'atasan_nik',
+                            value: targetAtasanNik || ''
+                        },
+                        bubbles: true
+                    }));
+                }, 30);
+                var wrapper = document.getElementById('atasan-wrapper');
+                if (wrapper) wrapper.style.display = '';
             });
         }
 
@@ -379,20 +417,62 @@
                 var form = e.target.closest('form');
                 var roleWrapper = form.querySelector('#role-approved-wrapper');
                 var atasanWrapper = form.querySelector('#atasan-wrapper');
-                var roleSelect = form.querySelector('[name="role_approved"]');
-                var atasanSelect = form.querySelector('[name="atasan_nik"]');
 
                 if (jabatan === 'Direktur' || jabatan === '') {
                     roleWrapper.style.display = 'none';
                     atasanWrapper.style.display = 'none';
-                    if (roleSelect) roleSelect.value = '';
-                    if (atasanSelect) atasanSelect.innerHTML = '<option value="">Pilih Atasan</option>';
+                    formContainer.dispatchEvent(new CustomEvent('set-value', {
+                        detail: {
+                            name: 'role_approved',
+                            value: ''
+                        },
+                        bubbles: true
+                    }));
+                    formContainer.dispatchEvent(new CustomEvent('options-updated', {
+                        detail: {
+                            name: 'atasan_nik',
+                            options: [{
+                                value: '',
+                                label: 'Pilih Atasan'
+                            }]
+                        },
+                        bubbles: true
+                    }));
+                    formContainer.dispatchEvent(new CustomEvent('set-value', {
+                        detail: {
+                            name: 'atasan_nik',
+                            value: ''
+                        },
+                        bubbles: true
+                    }));
                     return;
                 }
                 roleWrapper.style.display = '';
                 atasanWrapper.style.display = 'none';
-                if (roleSelect) roleSelect.value = '';
-                if (atasanSelect) atasanSelect.innerHTML = '<option value="">Pilih Atasan</option>';
+                formContainer.dispatchEvent(new CustomEvent('set-value', {
+                    detail: {
+                        name: 'role_approved',
+                        value: ''
+                    },
+                    bubbles: true
+                }));
+                formContainer.dispatchEvent(new CustomEvent('options-updated', {
+                    detail: {
+                        name: 'atasan_nik',
+                        options: [{
+                            value: '',
+                            label: 'Pilih Atasan'
+                        }]
+                    },
+                    bubbles: true
+                }));
+                formContainer.dispatchEvent(new CustomEvent('set-value', {
+                    detail: {
+                        name: 'atasan_nik',
+                        value: ''
+                    },
+                    bubbles: true
+                }));
             }
         });
 
@@ -404,13 +484,28 @@
                 var roleApproved = e.target.value;
                 var form = e.target.closest('form');
                 var wrapper = form.querySelector('#atasan-wrapper');
-                var select = form.querySelector('[name="atasan_nik"]');
                 var nikInput = form.querySelector('[name="nik"]');
                 var excludeNik = nikInput ? nikInput.value : '';
 
                 if (!roleApproved || roleApproved === '') {
                     wrapper.style.display = 'none';
-                    select.innerHTML = '<option value="">Pilih Atasan</option>';
+                    formContainer.dispatchEvent(new CustomEvent('options-updated', {
+                        detail: {
+                            name: 'atasan_nik',
+                            options: [{
+                                value: '',
+                                label: 'Pilih Atasan'
+                            }]
+                        },
+                        bubbles: true
+                    }));
+                    formContainer.dispatchEvent(new CustomEvent('set-value', {
+                        detail: {
+                            name: 'atasan_nik',
+                            value: ''
+                        },
+                        bubbles: true
+                    }));
                     return;
                 }
                 fetch('/karyawan/get-atasan?role_approved=' + encodeURIComponent(roleApproved) +
@@ -426,12 +521,24 @@
                         "Direktur": ""
                     };
                     var target = atasanMap[roleApproved] || '';
-                    var html = '<option value="">Pilih Atasan (' + target + ')</option>';
+                    var options = [{
+                        value: '',
+                        label: 'Pilih Atasan (' + target + ')'
+                    }];
                     res.forEach(function(k) {
-                        html += '<option value="' + k.nik + '">' + k.nama_lengkap +
-                            ' (' + k.jabatan + ' - ' + k.posisi + ')</option>';
+                        options.push({
+                            value: k.nik,
+                            label: k.nama_lengkap + ' (' + k.jabatan + ' - ' + k
+                                .posisi + ')'
+                        });
                     });
-                    select.innerHTML = html;
+                    formContainer.dispatchEvent(new CustomEvent('options-updated', {
+                        detail: {
+                            name: 'atasan_nik',
+                            options: options
+                        },
+                        bubbles: true
+                    }));
                     wrapper.style.display = '';
                 });
             }

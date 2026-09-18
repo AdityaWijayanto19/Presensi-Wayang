@@ -120,6 +120,11 @@
         if ($event.detail && $event.detail.name === '{{ $name }}') {
             setOptions($event.detail.options);
         }
+    "
+    @set-value.window="
+        if ($event.detail && $event.detail.name === '{{ $name }}') {
+            value = $event.detail.value;
+        }
     ">
 
     @if($label)

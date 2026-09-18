@@ -107,6 +107,116 @@
 @push('myscript')
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+
+        // ── Auto-numbering deskripsi pekerjaan ──
+        var el = document.getElementById('deskripsi_pekerjaan');
+        var MAX = 10;
+
+        function maxLineNumber(text) {
+            var max = 0;
+            text.split("\n").forEach(function(l) {
+                var m = l.match(/^(\d+)\.\s/);
+                if (m) max = Math.max(max, parseInt(m[1]));
+            });
+            return max;
+        }
+
+        function renumber(text) {
+            var lines = text.split("\n");
+            var out = [], num = 1;
+            for (var i = 0; i < lines.length; i++) {
+                var content = lines[i].replace(/^\d+[\.\s]*/, "");
+                if (content === "" && i === lines.length - 1) {
+                    out.push("");
+                } else if (content === "") {
+                    continue;
+                } else {
+                    out.push(num + ". " + content);
+                    num++;
+                }
+            }
+            return out.join("\n");
+        }
+
+        el.addEventListener("focus", function() {
+            if (this.value === "") {
+                this.value = "1. ";
+            }
+        });
+
+        el.addEventListener("keydown", function(e) {
+            var val = this.value;
+            var pos = this.selectionStart;
+
+            // ENTER
+            if (e.keyCode === 13) {
+                e.preventDefault();
+                var lines = val.split("\n");
+                var trailing = lines[lines.length - 1] === "";
+                var totalLines = trailing ? lines.length - 1 : lines.length;
+                if (totalLines >= MAX) return;
+
+                var nextNum = maxLineNumber(val) + 1;
+                var cleanVal = trailing ? val.substring(0, val.length - 1) : val;
+                var cleanPos = Math.min(pos, cleanVal.length);
+                var before = cleanVal.substring(0, cleanPos);
+                var after = cleanVal.substring(cleanPos);
+
+                this.value = before + "\n" + nextNum + ". " + after;
+                var newPos = before.length + 1 + String(nextNum).length + 2;
+                this.setSelectionRange(newPos, newPos);
+                return;
+            }
+
+            // BACKSPACE
+            if (e.keyCode === 8 && pos > 0) {
+                var beforeCursor = val.substring(0, pos);
+                var lines = val.split("\n");
+                var lineIdx = beforeCursor.split("\n").length - 1;
+                var currentLine = lines[lineIdx];
+
+                if (/^\d+\.?\s?$/.test(currentLine)) {
+                    e.preventDefault();
+                    if (lines.length <= 1) {
+                        this.value = "";
+                        this.setSelectionRange(0, 0);
+                        return;
+                    }
+                    lines.splice(lineIdx, 1);
+                    var newVal = renumber(lines.join("\n"));
+                    this.value = newVal;
+                    var targetIdx = Math.max(0, lineIdx - 1);
+                    var newLines = newVal.split("\n");
+                    var cursorPos = 0;
+                    for (var i = 0; i < targetIdx; i++) cursorPos += newLines[i].length + 1;
+                    cursorPos += newLines[targetIdx].length;
+                    this.setSelectionRange(cursorPos, cursorPos);
+                    return;
+                }
+
+                var lineStart = beforeCursor.lastIndexOf("\n") + 1;
+                var linePrefix = currentLine.match(/^(\d+)\.\s/);
+                if (linePrefix && pos === lineStart + linePrefix[0].length) {
+                    e.preventDefault();
+                    var prevLineIdx = lineIdx - 1;
+                    if (prevLineIdx < 0) return;
+                    var prevLine = lines[prevLineIdx];
+                    var content = currentLine.replace(/^\d+\.\s/, "");
+                    lines[prevLineIdx] = prevLine + content;
+                    lines.splice(lineIdx, 1);
+                    var newVal = renumber(lines.join("\n"));
+                    this.value = newVal;
+                    var newLines = newVal.split("\n");
+                    var cursorPos = 0;
+                    for (var i = 0; i < prevLineIdx; i++) cursorPos += newLines[i].length + 1;
+                    cursorPos += prevLine.length;
+                    this.setSelectionRange(cursorPos, cursorPos);
+                    return;
+                }
+            }
+        });
+
+        // ── Image preview ──
         const input = document.getElementById('laporan_images');
         const preview = document.getElementById('image-preview');
         let files = [];

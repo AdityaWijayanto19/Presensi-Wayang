@@ -175,7 +175,7 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
             color: #7a5234;
-            margin-bottom: 6px;
+            margin-bottom: 16px;
         }
 
         .foto-grid {
