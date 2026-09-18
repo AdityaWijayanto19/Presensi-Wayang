@@ -218,6 +218,16 @@
                             badgeEl.style.display = 'none';
                         }
                     }
+                    var badgeLembur = document.getElementById('adminLemburBadge');
+                    var totalLembur = (data.pending_lembur || 0) + (data.pending_laporan_lembur || 0);
+                    if(badgeLembur){
+                        if(totalLembur > 0){
+                            badgeLembur.textContent = totalLembur;
+                            badgeLembur.style.display = 'inline-flex';
+                        } else {
+                            badgeLembur.style.display = 'none';
+                        }
+                    }
                 }).catch(function(){});
         }
         pollAdminBadge();

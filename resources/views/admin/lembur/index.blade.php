@@ -281,7 +281,7 @@
                 var adminPollInterval = 5000;
 
                 function pollAdminData() {
-                    return fetch('/api/realtime/admin/lembur-check?last_check=' + encodeURIComponent(lastCheck), {
+                    fetch('/api/realtime/admin/lembur-check?last_check=' + encodeURIComponent(lastCheck), {
                             credentials: 'same-origin'
                         })
                         .then(function(r) { return r.json(); })
@@ -298,19 +298,12 @@
 
                 function startAdminPoll() {
                     setTimeout(function() {
-                        pollAdminData().then(function() {
-                            startAdminPoll();
-                        }).catch(function() {
-                            startAdminPoll();
-                        });
+                        pollAdminData();
+                        startAdminPoll();
                     }, adminPollInterval);
                 }
-
-                pollAdminData().then(function() {
-                    startAdminPoll();
-                }).catch(function() {
-                    startAdminPoll();
-                });
+                pollAdminData();
+                startAdminPoll();
 
                 var pagination = document.getElementById('lemburPagination');
                 if (pagination) {

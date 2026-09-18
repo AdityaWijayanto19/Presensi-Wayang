@@ -784,7 +784,11 @@ class LemburService
         foreach ($candidates as $rel) {
             if (Storage::disk('public')->exists($rel)) {
                 if ($nik === null) return null;
-                $exists = Lembur::where('nik', $nik)
+                $exists = Lembur::where(function ($q) use ($nik) {
+                        $q->where('nik', $nik)
+                          ->orWhere('atasan_nik', $nik)
+                          ->orWhere('laporan_atasan_nik', $nik);
+                    })
                     ->where(function ($q) use ($rel) {
                         $q->where('pdf_form_path', $rel)
                           ->orWhere('laporan_file', $rel)
@@ -806,7 +810,7 @@ class LemburService
             ->first();
 
         if ($lembur) {
-            if ($nik === null || $lembur->nik !== $nik) {
+            if ($nik === null || ($lembur->nik !== $nik && $lembur->atasan_nik !== $nik && $lembur->laporan_atasan_nik !== $nik)) {
                 return null;
             }
             $try = [$lembur->pdf_form_path ?? '', $lembur->laporan_file ?? ''];
