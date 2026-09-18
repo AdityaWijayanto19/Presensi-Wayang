@@ -237,7 +237,7 @@
         <div class="title">
             <div class="title-main">Laporan Hasil Pekerjaan</div>
             <div class="title-sub">Lembur</div>
-            <div class="title-sub" style="margin-top:4px;">Tanggal: {{ date('d/m/Y H:i') }}</div>
+            <div class="title-sub" style="margin-top:4px;">Tanggal: {{ now('Asia/Jakarta')->format('d/m/Y H:i') }}</div>
         </div>
 
 
@@ -315,7 +315,7 @@
                         @if (file_exists($mulaiPath))
                             <div>
                                 <div style="font-size:8px;color:#7a5234;margin-bottom:2px;text-align:center;">Mulai Lembur</div>
-                                <img src="file://{{ $mulaiPath }}" alt="Foto Mulai Lembur">
+                                <img src="{{ $mulaiPath }}" alt="Foto Mulai Lembur">
                             </div>
                         @endif
                     @endif
@@ -324,7 +324,7 @@
                         @if (file_exists($selesaiPath))
                             <div>
                                 <div style="font-size:8px;color:#7a5234;margin-bottom:2px;text-align:center;">Selesai Lembur</div>
-                                <img src="file://{{ $selesaiPath }}" alt="Foto Selesai Lembur">
+                                <img src="{{ $selesaiPath }}" alt="Foto Selesai Lembur">
                             </div>
                         @endif
                     @endif
@@ -341,7 +341,7 @@
                     @foreach ($laporan_images as $img)
                         @php $imgPath = storage_path('app/public/' . $img); @endphp
                         @if (file_exists($imgPath))
-                            <img src="file://{{ $imgPath }}" alt="Foto {{ $loop->iteration }}">
+                            <img src="{{ $imgPath }}" alt="Foto {{ $loop->iteration }}">
                         @endif
                     @endforeach
                 </div>
@@ -362,8 +362,8 @@
                 {{-- PEMOHON --}}
                 <td class="approval-body">
                     <div class="signature-space">
-                        @if (file_exists(public_path('assets\img\stempel-pengaju.png')))
-                            <img src="{{ public_path('assets\img\stempel-pengaju.png') }}" class="stamp"
+                        @if (file_exists(public_path('assets/img/stempel-pengaju.png')))
+                            <img src="{{ public_path('assets/img/stempel-pengaju.png') }}" class="stamp"
                                 alt="Submission">
                         @endif
 

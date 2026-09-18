@@ -6,7 +6,7 @@
         $jabatanKaryawan = $karyawanData->jabatan ?? '-';
         $posisiKaryawan = $karyawanData->posisi ?? '-';
         $unitKaryawan = $karyawanData->unit ?? '-';
-        $perusahaanKaryawan = $karyawanData->unitperusahaan->perusahaan ?? '-';
+        $perusahaanKaryawan = $karyawanData->unitperusahaan?->perusahaan ?? '-';
 
         $status = $d->status instanceof \App\Enums\LemburStatus ? $d->status->value : ($d->status ?? 'pending_atasan');
         $badgeClass = match ($status) {

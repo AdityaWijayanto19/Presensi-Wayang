@@ -474,8 +474,8 @@
                 <td class="approval-body">
 
                     <div class="signature-space">
-                        @if (file_exists(public_path('assets\img\stempel-pengaju.png')))
-                            <img src="{{ public_path('assets\img\stempel-pengaju.png') }}" class="stamp"
+                        @if (file_exists(public_path('assets/img/stempel-pengaju.png')))
+                            <img src="{{ public_path('assets/img/stempel-pengaju.png') }}" class="stamp"
                                 alt="Submission">
                         @endif
 

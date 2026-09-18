@@ -84,6 +84,7 @@ class ImageService
     public function processBase64(string $base64, string $nik, string $type, string $folder = 'absensi'): ?string
     {
         $start = microtime(true);
+        $tempFile = null;
 
         try {
             $storagePath = self::STORAGE_PATH . "/{$folder}";
@@ -122,7 +123,6 @@ class ImageService
             }
 
             $encoded->save($savePath);
-            @unlink($tempFile);
 
             if (!file_exists($savePath)) {
                 throw new \Exception("Failed to save image at {$savePath}");
@@ -139,6 +139,10 @@ class ImageService
         } catch (\Throwable $e) {
             Log::error('Base64 image processing failed: ' . $e->getMessage());
             return null;
+        } finally {
+            if ($tempFile && file_exists($tempFile)) {
+                @unlink($tempFile);
+            }
         }
     }
 

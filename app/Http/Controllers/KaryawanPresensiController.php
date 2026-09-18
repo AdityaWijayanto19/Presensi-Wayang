@@ -154,8 +154,18 @@ class KaryawanPresensiController extends Controller
 
         $abs = storage_path('app/public/' . $path);
         if (file_exists($abs)) {
+            $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+            $mimeMap = [
+                'pdf' => 'application/pdf',
+                'jpg' => 'image/jpeg',
+                'jpeg' => 'image/jpeg',
+                'png' => 'image/png',
+                'webp' => 'image/webp',
+                'gif' => 'image/gif',
+            ];
+            $contentType = $mimeMap[$ext] ?? 'application/octet-stream';
             return response()->file($abs, [
-                'Content-Type' => 'application/pdf',
+                'Content-Type' => $contentType,
                 'Content-Disposition' => 'inline; filename="' . basename($path) . '"',
             ]);
         }

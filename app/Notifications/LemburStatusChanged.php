@@ -9,6 +9,13 @@ class LemburStatusChanged extends Notification
 {
     use Queueable;
 
+    private const STATUS_LABELS = [
+        'pending_atasan' => 'Menunggu Persetujuan Atasan',
+        'pending_admin' => 'Menunggu Persetujuan HR',
+        'approved' => 'Disetujui',
+        'rejected' => 'Ditolak',
+    ];
+
     public function __construct(public $lembur, public $oldStatus, public $newStatus) {}
 
     public function via(object $notifiable): array
@@ -24,7 +31,7 @@ class LemburStatusChanged extends Notification
             'old_status' => $this->oldStatus,
             'new_status' => $this->newStatus,
             'tgl_lembur' => $this->lembur->tgl_lembur->format('Y-m-d'),
-            'message' => 'Status lembur berubah dari ' . $this->oldStatus . ' ke ' . $this->newStatus,
+            'message' => 'Status lembur berubah dari ' . (self::STATUS_LABELS[$this->oldStatus] ?? $this->oldStatus) . ' ke ' . (self::STATUS_LABELS[$this->newStatus] ?? $this->newStatus),
         ];
     }
 

@@ -13,10 +13,14 @@
         $messageerror = Session::get('error');
         $weekdayMap = ['Sunday'=>'Minggu','Monday'=>'Senin','Tuesday'=>'Selasa','Wednesday'=>'Rabu','Thursday'=>'Kamis','Friday'=>'Jumat','Saturday'=>'Sabtu'];
         $statusLabels = [
+            'pending_atasan' => 'Menunggu Persetujuan',
+            'pending_admin' => 'Menunggu Persetujuan HR',
             'approved' => 'Selesai',
             'rejected' => 'Ditolak',
         ];
         $statusColors = [
+            'pending_atasan' => 'bg-amber-100 text-amber-700 border-amber-200',
+            'pending_admin' => 'bg-amber-100 text-amber-700 border-amber-200',
             'approved' => 'bg-emerald-100 text-emerald-700 border-emerald-200',
             'rejected' => 'bg-rose-100 text-rose-700 border-rose-200',
         ];

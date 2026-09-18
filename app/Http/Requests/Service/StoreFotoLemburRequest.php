@@ -15,7 +15,7 @@ class StoreFotoLemburRequest extends FormRequest
     {
         return [
             'type' => 'required|in:mulai,selesai',
-            'image' => 'required|string',
+            'image' => 'required|string|max:10485760',
             'lokasi' => 'nullable|string',
         ];
     }

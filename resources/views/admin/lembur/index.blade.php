@@ -311,7 +311,7 @@
                 var pagination = document.getElementById('lemburPagination');
                 if (pagination) {
                     pagination.addEventListener('click', function(e) {
-                        var link = e.target.closest('a');
+                        var link = e.target.closest('.pagination a, nav a');
                         if (!link) return;
                         e.preventDefault();
                         var apiUrl = link.href.replace('/panel/lembur', '/api/realtime/admin/lembur-data');

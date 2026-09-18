@@ -282,7 +282,7 @@
         <div class="title">
             <div class="title-main">Laporan Hasil Pekerjaan</div>
             <div class="title-sub">Work From Home (WFH)</div>
-            <div class="title-sub" style="margin-top:4px;">Tanggal: {{ date('d/m/Y H:i') }}</div>
+            <div class="title-sub" style="margin-top:4px;">Tanggal: {{ now('Asia/Jakarta')->format('d/m/Y H:i') }}</div>
         </div>
 
 
@@ -357,7 +357,7 @@
                     @foreach ($laporan_images as $img)
                         @php $imgPath = storage_path('app/public/' . $img); @endphp
                         @if (file_exists($imgPath))
-                            <img src="file://{{ $imgPath }}" alt="Foto {{ $loop->iteration }}">
+                            <img src="{{ $imgPath }}" alt="Foto {{ $loop->iteration }}">
                         @endif
                     @endforeach
                 </div>
@@ -394,8 +394,8 @@
                 <td class="approval-body">
 
                     <div class="signature-space">
-                        @if (file_exists(public_path('assets\img\stempel-pengaju.png')))
-                            <img src="{{ public_path('assets\img\stempel-pengaju.png') }}" class="stamp"
+                        @if (file_exists(public_path('assets/img/stempel-pengaju.png')))
+                            <img src="{{ public_path('assets/img/stempel-pengaju.png') }}" class="stamp"
                                 alt="Submission">
                         @endif
 

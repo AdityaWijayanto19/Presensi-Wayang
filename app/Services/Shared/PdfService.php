@@ -12,7 +12,7 @@ class PdfService
     {
         $pdf = Pdf::loadView($view, array_merge($data, ['stempelPath' => $stempelPath]));
         $pdf->setPaper('A4', 'portrait');
-        $dir = dirname(Str::slug($data['nama_lengkap']));
+        $dir = Str::slug($data['nama_lengkap']);
         $filename = Str::uuid() . '-' . Str::slug($data['nama_lengkap']) . '.pdf';
         $path = $dir . '/' . $filename;
         Storage::disk('public')->put($path, $pdf->output());

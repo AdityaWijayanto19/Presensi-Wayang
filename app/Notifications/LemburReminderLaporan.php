@@ -18,11 +18,15 @@ class LemburReminderLaporan extends Notification
 
     public function toDatabase(object $notifiable): array
     {
+        $tgl = is_string($this->lembur->tgl_lembur)
+            ? $this->lembur->tgl_lembur
+            : $this->lembur->tgl_lembur->format('Y-m-d');
+
         return [
             'type' => 'lembur_reminder_laporan',
             'lembur_id' => $this->lembur->id,
-            'tgl_lembur' => $this->lembur->tgl_lembur->format('Y-m-d'),
-            'message' => 'Reminder: lembur tanggal ' . $this->lembur->tgl_lembur->format('Y-m-d') . ' belum upload laporan',
+            'tgl_lembur' => $tgl,
+            'message' => 'Reminder: lembur tanggal ' . $tgl . ' belum upload laporan',
         ];
     }
 

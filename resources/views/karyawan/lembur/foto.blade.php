@@ -247,6 +247,10 @@
         btnConfirm.addEventListener('click', function() {
             if (!currentBlob) return;
 
+            btnConfirm.disabled = true;
+            btnConfirm.textContent = 'Menyimpan...';
+            btnConfirm.classList.add('opacity-50', 'cursor-not-allowed');
+
             const type = {!! $hasMulai ? "'selesai'" : "'mulai'" !!};
 
             const reader = new FileReader();
@@ -285,6 +289,9 @@
                 if (data.success) {
                     window.location.reload();
                 } else {
+                    btnConfirm.disabled = false;
+                    btnConfirm.textContent = 'Simpan';
+                    btnConfirm.classList.remove('opacity-50', 'cursor-not-allowed');
                     Swal.fire({
                         title: 'Oops...',
                         html: data.message || 'Gagal menyimpan foto',
@@ -297,6 +304,9 @@
                 }
             })
             .catch(err => {
+                btnConfirm.disabled = false;
+                btnConfirm.textContent = 'Simpan';
+                btnConfirm.classList.remove('opacity-50', 'cursor-not-allowed');
                 Swal.fire({
                     title: 'Error',
                     html: 'Terjadi kesalahan: ' + err.message + '. Silakan coba lagi.',

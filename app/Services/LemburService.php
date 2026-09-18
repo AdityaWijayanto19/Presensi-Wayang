@@ -82,8 +82,9 @@ class LemburService
                 return ['can' => false, 'message' => 'Silakan presensi pulang terlebih dahulu sebelum mengajukan lembur.'];
             }
         } else {
-            $jamSekarang = now('Asia/Jakarta')->format('H:i:s');
-            if ($jamSekarang < '17:00:00') {
+            $jamSekarang = now('Asia/Jakarta');
+            $batasJam = \Carbon\Carbon::parse('17:00:00');
+            if ($jamSekarang->lt($batasJam)) {
                 return ['can' => false, 'message' => 'Pengajuan lembur baru bisa dilakukan mulai pukul 17:00.'];
             }
         }
@@ -99,9 +100,14 @@ class LemburService
                 $q->where(function ($q2) {
                     $q2->where('status', 'approved')
                         ->where('laporan_status', 'approved');
-                });
+                })->orWhere('status', 'rejected')
+                  ->orWhere('status', 'pending_atasan')
+                  ->orWhere('status', 'pending_admin')
+                  ->orWhere(function ($q3) {
+                      $q3->where('status', 'approved')
+                         ->where('laporan_status', '!=', 'approved');
+                  });
             })
-            ->orWhere('status', 'rejected')
             ->orderBy('tgl_lembur', 'desc')
             ->get();
     }
@@ -157,17 +163,18 @@ class LemburService
             'posisi' => $posisi ?? '-',
             'perusahaan' => $perusahaan,
             'keterangan' => $request->keterangan,
-            'tgl_lembur' => now('Asia/Jakarta')->format('Y-m-d'),
+            'tgl_lembur' => $request->tgl_lembur ?? now('Asia/Jakarta')->format('Y-m-d'),
             'nama_atasan' => $atasan?->nama_lengkap ?? '-',
             'jabatan_atasan' => $atasan?->jabatan instanceof Jabatan ? $atasan->jabatan->value : ($atasan?->jabatan ?? '-'),
         ];
 
         $stempelPath = $this->pdf->getStempelPath();
+        $tglLembur = $request->tgl_lembur ?? now('Asia/Jakarta')->format('Y-m-d');
 
         DB::beginTransaction();
         try {
             $exists = Lembur::where('nik', $nik)
-                ->where('tgl_lembur', now('Asia/Jakarta')->format('Y-m-d'))
+                ->where('tgl_lembur', $tglLembur)
                 ->lockForUpdate()
                 ->exists();
 
@@ -178,7 +185,7 @@ class LemburService
 
             $lembur = Lembur::create([
                 'nik' => $nik,
-                'tgl_lembur' => now('Asia/Jakarta')->format('Y-m-d'),
+                'tgl_lembur' => $tglLembur,
                 'keterangan' => $request->keterangan,
                 'status' => $initial['status'],
                 'atasan_nik' => $atasanNik,
@@ -228,6 +235,7 @@ class LemburService
         $lembur->delete();
         cache()->forget('pending_lembur_count');
         cache()->forget('pending_lembur_admin_count');
+        cache()->forget('pending_laporan_lembur_admin_count');
 
         return ['success' => true, 'message' => 'Data lembur berhasil dihapus!'];
     }
@@ -241,8 +249,17 @@ class LemburService
             return ['success' => false, 'message' => 'Hanya data dengan status pending atau ditolak yang bisa dihapus!'];
         }
 
-        self::deleteLemburFiles($lembur);
-        $lembur->delete();
+        DB::beginTransaction();
+        try {
+            self::deleteLemburFiles($lembur);
+            $lembur->delete();
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('deleteLemburAdmin failed: ' . $e->getMessage());
+            return ['success' => false, 'message' => 'Gagal menghapus data lembur'];
+        }
+
         cache()->forget('pending_lembur_count');
         cache()->forget('pending_lembur_admin_count');
         cache()->forget('pending_laporan_lembur_admin_count');
@@ -575,6 +592,11 @@ class LemburService
             cache()->forget('pending_laporan_lembur_admin_count');
         } catch (\Exception $e) {
             DB::rollBack();
+            if (!empty($imagePaths)) {
+                foreach ($imagePaths as $imgPath) {
+                    Storage::disk('public')->delete($imgPath);
+                }
+            }
             Log::error('storeLaporanLembur failed: ' . $e->getMessage());
             return ['success' => false, 'message' => 'Gagal mengirim laporan lembur. Silakan coba lagi.'];
         }
@@ -819,11 +841,13 @@ class LemburService
             }
         }
 
-        $lembur = Lembur::where('pdf_form_path', 'like', '%/' . $file)
-            ->orWhere('laporan_file', 'like', '%/' . $file)
-            ->orWhere('foto_mulai', $file)
-            ->orWhere('foto_selesai', $file)
-            ->orWhere('laporan_images', 'like', '%' . $file . '%')
+        $lembur = Lembur::where(function ($q) use ($file) {
+                $q->where('pdf_form_path', 'like', '%/' . $file)
+                  ->orWhere('laporan_file', 'like', '%/' . $file)
+                  ->orWhere('foto_mulai', $file)
+                  ->orWhere('foto_selesai', $file)
+                  ->orWhere('laporan_images', 'like', '%"uploads/lembur/laporan/' . $file . '"%');
+            })
             ->first();
 
         if ($lembur) {
@@ -831,24 +855,19 @@ class LemburService
                 return null;
             }
             $try = [];
-            if ($lembur->laporan_file && basename($lembur->laporan_file) === $file) {
-                $try[] = $lembur->laporan_file;
-            }
-            if ($lembur->pdf_form_path && basename($lembur->pdf_form_path) === $file) {
-                $try[] = $lembur->pdf_form_path;
-            }
-            if ($lembur->pdf_form_path && !in_array($lembur->pdf_form_path, $try)) {
-                $try[] = $lembur->pdf_form_path;
-            }
-            if ($lembur->laporan_file && !in_array($lembur->laporan_file, $try)) {
-                $try[] = $lembur->laporan_file;
+            if ($lembur->pdf_form_path) $try[] = $lembur->pdf_form_path;
+            if ($lembur->laporan_file) $try[] = $lembur->laporan_file;
+            if ($lembur->foto_mulai) $try[] = 'uploads/lembur/' . $lembur->foto_mulai;
+            if ($lembur->foto_selesai) $try[] = 'uploads/lembur/' . $lembur->foto_selesai;
+            if (!empty($lembur->laporan_images) && is_array($lembur->laporan_images)) {
+                foreach ($lembur->laporan_images as $img) {
+                    if ($img) $try[] = $img;
+                }
             }
             foreach ($try as $rel) {
                 if ($rel && Storage::disk('public')->exists($rel)) {
                     return $rel;
                 }
-                $abs = storage_path('app/public/' . $rel);
-                if ($rel && file_exists($abs)) return $rel;
             }
         }
 

@@ -14,11 +14,11 @@ class ReminderLaporanLembur extends Command
 
     public function handle()
     {
-        $hariIni = now('Asia/Jakarta')->format('Y-m-d');
+        $tujuhHariLalu = now('Asia/Jakarta')->subDays(7)->format('Y-m-d');
 
         $lemburList = DB::table('lemburs')
             ->where('status', LemburStatus::Approved->value)
-            ->where('tgl_lembur', $hariIni)
+            ->where('tgl_lembur', '>=', $tujuhHariLalu)
             ->where(function ($q) {
                 $q->whereNull('laporan_deskripsi')
                   ->orWhere('laporan_deskripsi', '');

@@ -161,8 +161,18 @@ class AdminPresensiController extends Controller
         ];
 
         if ($oldStatus !== $newStatus) {
-            if ($newStatus === 'approved' && empty($lembur->approved_at)) {
-                $updateData['approved_at'] = now();
+            if ($newStatus === 'approved') {
+                $updateData['admin_status'] = 'approved';
+                if (empty($lembur->approved_at)) {
+                    $updateData['approved_at'] = now('Asia/Jakarta');
+                }
+            } elseif ($newStatus === 'rejected') {
+                $updateData['admin_status'] = 'rejected';
+            } elseif ($newStatus === 'pending_atasan') {
+                $updateData['admin_status'] = 'pending';
+                $updateData['atasan_status'] = 'pending';
+            } elseif ($newStatus === 'pending_admin') {
+                $updateData['admin_status'] = 'pending';
             }
         }
 
@@ -173,6 +183,10 @@ class AdminPresensiController extends Controller
             if ($karyawan) {
                 $karyawan->notify(new \App\Notifications\LemburStatusChanged($lembur, $oldStatus, $newStatus));
             }
+
+            cache()->forget('pending_lembur_count');
+            cache()->forget('pending_lembur_admin_count');
+            cache()->forget('pending_laporan_lembur_admin_count');
         }
 
         return redirect()->back()->with('success', 'Data lembur berhasil diperbarui');
