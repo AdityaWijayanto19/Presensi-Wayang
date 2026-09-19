@@ -161,49 +161,49 @@
                 disableMobile: "true"
             });
 
-            document.querySelector('input[name="tanggal"]').addEventListener('change', function() {
-                this.closest('form').submit();
-            });
-
-            document.querySelector('select[name="unit"]').addEventListener('change', function() {
-                this.closest('form').submit();
-            });
-
-            document.querySelector('select[name="jenis_izin"]').addEventListener('change', function() {
-                this.closest('form').submit();
-            });
-
-            document.querySelector('select[name="status"]').addEventListener('change', function() {
-                this.closest('form').submit();
-            });
+            try {
+                var tanggalInput = document.querySelector('input[name="tanggal"]');
+                if (tanggalInput) tanggalInput.addEventListener('change', function() {
+                    this.closest('form').submit();
+                });
+                var unitSelect = document.querySelector('select[name="unit"]');
+                if (unitSelect) unitSelect.addEventListener('change', function() {
+                    this.closest('form').submit();
+                });
+                var jenisSelect = document.querySelector('select[name="jenis_izin"]');
+                if (jenisSelect) jenisSelect.addEventListener('change', function() {
+                    this.closest('form').submit();
+                });
+                var statusSelect = document.querySelector('select[name="status"]');
+                if (statusSelect) statusSelect.addEventListener('change', function() {
+                    this.closest('form').submit();
+                });
+            } catch (e) { console.warn('Filter init error:', e); }
 
             // Edit Izin Modal
-            var tbody = document.getElementById('izinTableBody');
-            if (tbody) {
-                tbody.addEventListener('click', function(e) {
-                    var btn = e.target.closest('.edit-izin');
-                    if (btn) {
-                        var id = btn.dataset.id;
-                        var tgl = btn.dataset.tgl_izin;
-                        var jenis = btn.dataset.jenis_izin;
+            document.addEventListener('click', function(e) {
+                var btn = e.target.closest('.edit-izin');
+                if (btn) {
+                    var id = btn.dataset.id;
+                    var tgl = btn.dataset.tgl_izin;
+                    var jenis = btn.dataset.jenis_izin;
 
-                        document.getElementById('edit_izin_id').value = id;
-                        document.getElementById('edit_tgl_izin').value = tgl;
-                        document.getElementById('edit_jenis_izin').value = jenis;
-                        document.getElementById('formEditIzin').setAttribute('action', '/presensi/izin/' + id + '/update');
-                        window.dispatchEvent(new CustomEvent('open-modal-modal-editizin'));
-                    }
+                    document.getElementById('edit_izin_id').value = id;
+                    document.getElementById('edit_tgl_izin').value = tgl;
+                    document.getElementById('edit_jenis_izin').value = jenis;
+                    document.getElementById('formEditIzin').setAttribute('action', '/presensi/izin/' + id + '/update');
+                    window.dispatchEvent(new CustomEvent('open-modal-modal-editizin'));
+                }
 
-                    // Reject Izin
-                    var rejectBtn = e.target.closest('.btn-reject-izin');
-                    if (rejectBtn) {
-                        var rejectId = rejectBtn.dataset.id;
-                        document.getElementById('reject_izin_id').value = rejectId;
-                        document.getElementById('formRejectIzin').setAttribute('action', '/presensi/dataizin/' + rejectId + '/reject');
-                        window.dispatchEvent(new CustomEvent('open-modal-modal-reject-izin'));
-                    }
-                });
-            }
+                // Reject Izin
+                var rejectBtn = e.target.closest('.btn-reject-izin');
+                if (rejectBtn) {
+                    var rejectId = rejectBtn.dataset.id;
+                    document.getElementById('reject_izin_id').value = rejectId;
+                    document.getElementById('formRejectIzin').setAttribute('action', '/presensi/dataizin/' + rejectId + '/reject');
+                    window.dispatchEvent(new CustomEvent('open-modal-modal-reject-izin'));
+                }
+            });
 
             // Konfirmasi Hapus
             document.addEventListener('click', function(e) {

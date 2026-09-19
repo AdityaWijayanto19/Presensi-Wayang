@@ -40,7 +40,7 @@
             default => 'bg-slate-50 text-slate-600 border border-slate-200',
         };
         $pdfUrl = !empty($d->pdf_form_path) ? Storage::url($d->pdf_form_path) : null;
-        $buktiUrl = !empty($d->bukti_file) ? '/presensi/showfileizin/' . $d->bukti_file : null;
+        $buktiUrl = !empty($d->bukti_file) ? Storage::disk('public')->url('uploads/izin/' . $d->bukti_file) : null;
         $karyawanData = $d->karyawan;
         $atasanData = $d->atasan;
         $namaKaryawan = $karyawanData->nama_lengkap ?? '-';
@@ -48,8 +48,8 @@
         $posisiKaryawan = $karyawanData->posisi ?? '-';
         $unitKaryawan = $karyawanData->unit ?? '-';
         $perusahaanKaryawan = $karyawanData->unitperusahaan->perusahaan ?? '-';
-        $atasanNama = $atasanData->nama_lengkap ?? '—';
-        $jabatanAtasan = $atasanData->jabatan instanceof \App\Enums\Jabatan ? $atasanData->jabatan->value : ($atasanData->jabatan ?? '—');
+        $atasanNama = $atasanData?->nama_lengkap ?? '—';
+        $jabatanAtasan = $atasanData?->jabatan instanceof \App\Enums\Jabatan ? $atasanData?->jabatan->value : ($atasanData?->jabatan ?? '—');
     @endphp
     <tr class="hover:bg-slate-50/50 transition-colors">
         <td class="px-2 py-2 text-xs text-slate-500 whitespace-nowrap">{{ ($dataizin->currentPage() - 1) * $dataizin->perPage() + $loop->iteration }}</td>

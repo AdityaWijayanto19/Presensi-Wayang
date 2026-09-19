@@ -35,8 +35,8 @@
         $posisiKaryawan = $karyawanData->posisi ?? '-';
         $unitKaryawan = $karyawanData->unit ?? '-';
         $perusahaanKaryawan = $karyawanData->unitperusahaan->perusahaan ?? '-';
-        $atasanNama = $atasanData->nama_lengkap ?? '—';
-        $jabatanAtasan = $atasanData->jabatan instanceof \App\Enums\Jabatan ? $atasanData->jabatan->value : ($atasanData->jabatan ?? '—');
+        $atasanNama = $atasanData?->nama_lengkap ?? '—';
+        $jabatanAtasan = $atasanData?->jabatan instanceof \App\Enums\Jabatan ? $atasanData?->jabatan->value : ($atasanData?->jabatan ?? '—');
 
         $lStatus = !empty($d->laporan_status) ? ($d->laporan_status instanceof \App\Enums\WfhStatus ? $d->laporan_status->value : $d->laporan_status) : null;
         $lBadgeClass = match ($lStatus) {

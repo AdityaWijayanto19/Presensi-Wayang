@@ -279,7 +279,7 @@
                         <h3 class="text-[15px] font-bold text-[#1c1917] flex items-center gap-2">
                             <span
                                 class="w-8 h-8 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center text-amber-700"><i
-                                    data-lucide="shield-check"></i></span>
+                                    data-lucide="file-text"></i></span>
                             Pengajuan Perlu Persetujuan
                         </h3>
                     </div>
@@ -331,7 +331,7 @@
                 <div class="mt-6">
                     <div class="flex items-center justify-between mb-2">
                         <h3 class="text-[15px] font-bold text-[#1c1917] flex items-center gap-2">
-                            <span class="w-8 h-8 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center text-amber-700"><i data-lucide="shield-check"></i></span>
+                            <span class="w-8 h-8 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center text-amber-700"><i data-lucide="file-text"></i></span>
                             Pengajuan Izin Perlu Persetujuan ({{ $pendingAtasanIzin->count() }})
                         </h3>
                     </div>
@@ -377,7 +377,7 @@
                 <div class="mt-6">
                     <div class="flex items-center justify-between mb-2">
                         <h3 class="text-[15px] font-bold text-[#1c1917] flex items-center gap-2">
-                            <span class="w-8 h-8 rounded-xl bg-rose-100 border border-rose-200 flex items-center justify-center text-rose-700"><i data-lucide="shield"></i></span>
+                            <span class="w-8 h-8 rounded-xl bg-rose-100 border border-rose-200 flex items-center justify-center text-rose-700"><i data-lucide="file-text"></i></span>
                             Izin Saya
                         </h3>
                         <a href="/izin" class="text-[11px] font-semibold text-rose-700">Lihat Semua</a>
@@ -493,7 +493,7 @@
                         <h3 class="text-[15px] font-bold text-[#1c1917] flex items-center gap-2">
                             <span
                                 class="w-8 h-8 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center text-amber-700"><i
-                                    data-lucide="shield-check"></i></span>
+                                    data-lucide="file-text"></i></span>
                             Pengajuan Lembur Perlu Persetujuan ({{ $pendingAtasanLembur->count() }})
                         </h3>
                     </div>
@@ -1061,7 +1061,7 @@
                                     updateSection(section, '', 'pendingAtasan');
                                 } else {
                                     let html =
-                                        '<div class="mt-6"><div class="flex items-center justify-between mb-2"><h3 class="text-[15px] font-bold text-[#1c1917] flex items-center gap-2"><span class="w-8 h-8 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center text-amber-700"><i data-lucide="shield-check"></i></span>Pengajuan Perlu Persetujuan (' +
+                                        '<div class="mt-6"><div class="flex items-center justify-between mb-2"><h3 class="text-[15px] font-bold text-[#1c1917] flex items-center gap-2"><span class="w-8 h-8 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center text-amber-700"><i data-lucide="file-text"></i></span>Pengajuan Perlu Persetujuan (' +
                                         count + ')</h3></div>';
                                     data.pendingAtasan.forEach(function(p) {
                                         var k = p.karyawan || {};
@@ -1172,7 +1172,7 @@
                                     updateSection(section, '', 'pendingAtasanLembur');
                                 } else {
                                     let html =
-                                        '<div class="mt-6"><div class="flex items-center justify-between mb-2"><h3 class="text-[15px] font-bold text-[#1c1917] flex items-center gap-2"><span class="w-8 h-8 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center text-amber-700"><i data-lucide="shield-check"></i></span>Pengajuan Lembur Perlu Persetujuan (' +
+                                        '<div class="mt-6"><div class="flex items-center justify-between mb-2"><h3 class="text-[15px] font-bold text-[#1c1917] flex items-center gap-2"><span class="w-8 h-8 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center text-amber-700"><i data-lucide="file-text"></i></span>Pengajuan Lembur Perlu Persetujuan (' +
                                         count + ')</h3></div>';
                                     data.pendingAtasanLembur.forEach(function(p) {
                                         var k = p.karyawan || {};
@@ -1639,7 +1639,7 @@
                                         'rejected': ['bg-rose-100 text-rose-700 border-rose-200', 'Ditolak']
                                     };
                                     let jenisLabels = {'tidak_masuk': 'Tidak Masuk', 'terlambat': 'Terlambat', 'pulang_cepat': 'Pulang Cepat', 'sakit': 'Sakit'};
-                                    let html = '<div class="mt-6"><div class="flex items-center justify-between mb-2"><h3 class="text-[15px] font-bold text-[#1c1917] flex items-center gap-2"><span class="w-8 h-8 rounded-xl bg-rose-100 border border-rose-200 flex items-center justify-center text-rose-700"><i data-lucide="shield"></i></span>Izin Saya</h3><a href="/izin" class="text-[11px] font-semibold text-rose-700">Lihat Semua</a></div>';
+                                    let html = '<div class="mt-6"><div class="flex items-center justify-between mb-2"><h3 class="text-[15px] font-bold text-[#1c1917] flex items-center gap-2"><span class="w-8 h-8 rounded-xl bg-rose-100 border border-rose-200 flex items-center justify-center text-rose-700"><i data-lucide="file-text"></i></span>Izin Saya</h3><a href="/izin" class="text-[11px] font-semibold text-rose-700">Lihat Semua</a></div>';
                                     data.izinSaya.forEach(function(i) {
                                         var b = iBadgeMap[i.status] || ['bg-gray-100 text-gray-700 border-gray-200', i.status];
                                         var jenisLabel = jenisLabels[i.jenis_izin] || i.jenis_izin || '';
@@ -1666,7 +1666,7 @@
                                 } else {
                                     let jenisLabels = {'tidak_masuk': 'Tidak Masuk', 'terlambat': 'Terlambat', 'pulang_cepat': 'Pulang Cepat', 'sakit': 'Sakit'};
                                     let jenisBadgeClasses = {'tidak_masuk': 'bg-amber-100 text-amber-700', 'terlambat': 'bg-orange-100 text-orange-700', 'pulang_cepat': 'bg-cyan-100 text-cyan-700', 'sakit': 'bg-rose-100 text-rose-700'};
-                                    let html = '<div class="mt-6"><div class="flex items-center justify-between mb-2"><h3 class="text-[15px] font-bold text-[#1c1917] flex items-center gap-2"><span class="w-8 h-8 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center text-amber-700"><i data-lucide="shield-check"></i></span>Pengajuan Izin Perlu Persetujuan (' + count + ')</h3></div>';
+                                    let html = '<div class="mt-6"><div class="flex items-center justify-between mb-2"><h3 class="text-[15px] font-bold text-[#1c1917] flex items-center gap-2"><span class="w-8 h-8 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center text-amber-700"><i data-lucide="file-text"></i></span>Pengajuan Izin Perlu Persetujuan (' + count + ')</h3></div>';
                                     data.pendingAtasanIzin.forEach(function(p) {
                                         var k = p.karyawan || {};
                                         var up = k.unitperusahaan || {};

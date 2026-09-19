@@ -3,6 +3,8 @@
 namespace App\Http\Requests\Service;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 
 class StoreIzinRequest extends FormRequest
 {
@@ -36,5 +38,15 @@ class StoreIzinRequest extends FormRequest
             'bukti_file.mimes' => 'Bukti file harus berupa jpg, jpeg, png, pdf, doc, atau docx.',
             'bukti_file.max' => 'Ukuran bukti file maksimal 4MB.',
         ];
+    }
+
+    protected function failedValidation(\Illuminate\Contracts\Validation\Validator $validator): void
+    {
+        Log::warning('StoreIzinRequest: Validation failed', [
+            'errors' => $validator->errors()->toArray(),
+            'input' => $validator->getData(),
+        ]);
+
+        throw ValidationException::withMessages($validator->errors()->toArray());
     }
 }

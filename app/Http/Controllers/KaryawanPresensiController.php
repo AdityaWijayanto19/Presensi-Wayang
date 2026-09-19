@@ -11,6 +11,7 @@ use App\Services\IzinService;
 use App\Services\LemburService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use App\Services\Shared\LocationService;
 use App\Http\Requests\RejectRequest;
@@ -111,7 +112,19 @@ class KaryawanPresensiController extends Controller
     public function storeizin(StoreIzinRequest $request, IzinService $izinService)
     {
         $karyawan = Auth::guard('karyawan')->user();
+
+        Log::info('storeizin controller: Request received', [
+            'nik' => $karyawan->nik,
+            'validated_data' => $request->validated(),
+        ]);
+
         $result = $izinService->storeIzin($request, $karyawan);
+
+        Log::info('storeizin controller: Result', [
+            'nik' => $karyawan->nik,
+            'success' => $result['success'],
+            'message' => $result['message'],
+        ]);
 
         if ($result['success']) {
             return redirect('/izin')->with('success', $result['message']);

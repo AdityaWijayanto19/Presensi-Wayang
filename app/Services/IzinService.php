@@ -51,19 +51,58 @@ class IzinService
     {
         $nik = $karyawan->nik;
 
+        Log::info('=== storeIzin START ===', [
+            'nik' => $nik,
+            'tgl_izin' => $request->tgl_izin,
+            'jenis_izin' => $request->jenis_izin,
+            'keterangan' => $request->keterangan,
+            'has_bukti_file' => $request->hasFile('bukti_file'),
+        ]);
+
         $karyawanFresh = Karyawan::with('unitperusahaan')->where('nik', $nik)->first();
-        $unitKerja = $karyawanFresh?->unitperusahaan;
+        if (!$karyawanFresh) {
+            Log::error('storeIzin: Karyawan not found', ['nik' => $nik]);
+            return ['success' => false, 'message' => 'Data karyawan tidak ditemukan.'];
+        }
+
+        $unitKerja = $karyawanFresh->unitperusahaan;
         $jamMasuk = $unitKerja?->jam_masuk instanceof \Carbon\Carbon
             ? $unitKerja->jam_masuk->format('H:i:s')
             : ($unitKerja?->jam_masuk ?? '08:00:00');
 
+        Log::info('storeIzin: Karyawan data loaded', [
+            'nik' => $nik,
+            'nama' => $karyawanFresh->nama_lengkap,
+            'unit' => $karyawanFresh->unit,
+            'has_unit_kerja' => $unitKerja !== null,
+            'jam_masuk' => $jamMasuk,
+            'role_approved' => $karyawanFresh->role_approved,
+            'atasan_nik' => $karyawanFresh->atasan_nik,
+        ]);
+
         $jenisIzin = $request->jenis_izin;
 
-        // Deadline check: non-pulang_cepat must submit within 1 hour after jam masuk
+        // Deadline check: non-pulang_cepat must submit within 1 hour after jam masuk (HANYA untuk tanggal hari ini)
         if ($jenisIzin !== JenisIzin::PulangCepat->value) {
-            $batasSubmit = \Carbon\Carbon::parse($jamMasuk)->addHour()->format('H:i:s');
-            if (now('Asia/Jakarta')->format('H:i:s') > $batasSubmit) {
-                return ['success' => false, 'message' => 'Batas pengajuan izin sudah lewat (maksimal 1 jam setelah jam masuk).'];
+            $hariIni = now('Asia/Jakarta')->format('Y-m-d');
+            if ($request->tgl_izin === $hariIni) {
+                $batasSubmit = \Carbon\Carbon::parse($jamMasuk)->addHour()->format('H:i:s');
+                $sekarang = now('Asia/Jakarta')->format('H:i:s');
+                Log::info('storeIzin: Deadline check (tgl_izin = hari ini)', [
+                    'jam_masuk' => $jamMasuk,
+                    'batas_submit' => $batasSubmit,
+                    'sekarang' => $sekarang,
+                    'lewat_deadline' => $sekarang > $batasSubmit,
+                ]);
+                if ($sekarang > $batasSubmit) {
+                    Log::warning('storeIzin: Rejected - deadline passed', ['nik' => $nik, 'sekarang' => $sekarang, 'batas' => $batasSubmit]);
+                    return ['success' => false, 'message' => 'Batas pengajuan izin hari ini sudah lewat (maksimal 1 jam setelah jam masuk). Silakan pilih tanggal lain.'];
+                }
+            } else {
+                Log::info('storeIzin: Deadline check skipped (tgl_izin bukan hari ini)', [
+                    'tgl_izin' => $request->tgl_izin,
+                    'hari_ini' => $hariIni,
+                ]);
             }
         }
 
@@ -75,7 +114,14 @@ class IzinService
                 ->whereNotNull('jam_in')
                 ->exists();
 
+            Log::info('storeIzin: Pulang cepat presensi check', [
+                'nik' => $nik,
+                'tanggal' => $hariini,
+                'has_presensi_masuk' => $hasPresensi,
+            ]);
+
             if (!$hasPresensi) {
+                Log::warning('storeIzin: Rejected - no presensi masuk for pulang_cepat', ['nik' => $nik]);
                 return ['success' => false, 'message' => 'Anda belum melakukan presensi masuk hari ini. Silakan presensi masuk terlebih dahulu.'];
             }
         }
@@ -86,17 +132,27 @@ class IzinService
         $adminStatus = $initial['admin_status'];
         $atasanNik = self::determineAtasanNik($karyawanFresh);
 
+        Log::info('storeIzin: Status determined', [
+            'status' => $status,
+            'atasan_status' => $atasanStatus,
+            'admin_status' => $adminStatus,
+            'atasan_nik' => $atasanNik,
+        ]);
+
         $perusahaan = $karyawanFresh->unitperusahaan?->perusahaan ?? '-';
         $atasan = $atasanNik ? Karyawan::where('nik', $atasanNik)->first() : null;
 
         $stempelPath = $this->pdf->getStempelPath();
 
         DB::beginTransaction();
+        Log::info('storeIzin: DB transaction started');
         try {
             $exists = Izin::where('nik', $nik)
                 ->where('tgl_izin', $request->tgl_izin)
                 ->lockForUpdate()
                 ->exists();
+
+            Log::info('storeIzin: Duplicate check', ['exists' => $exists]);
 
             if ($exists) {
                 DB::rollBack();
@@ -108,10 +164,21 @@ class IzinService
             if ($request->hasFile('bukti_file')) {
                 $file = $request->file('bukti_file');
                 $namaFile = now('Asia/Jakarta')->format('YmdHis') . '-' . $nik . '.' . $file->getClientOriginalExtension();
-                $file->storeAs('public/uploads/izin', $namaFile);
+
+                Log::info('storeIzin: Uploading bukti file', [
+                    'original_name' => $file->getClientOriginalName(),
+                    'mime_type' => $file->getMimeType(),
+                    'size' => $file->getSize(),
+                    'destination' => 'uploads/izin/' . $namaFile,
+                ]);
+
+                $file->storeAs('uploads/izin', $namaFile, 'public');
                 $buktiFilePath = $namaFile;
+
+                Log::info('storeIzin: Bukti file uploaded successfully', ['path' => $buktiFilePath]);
             }
 
+            Log::info('storeIzin: Creating izin record');
             $izin = Izin::create([
                 'nik' => $nik,
                 'tgl_izin' => $request->tgl_izin,
@@ -125,7 +192,10 @@ class IzinService
                 'dikirim_tanggal' => now('Asia/Jakarta'),
             ]);
 
+            Log::info('storeIzin: Izin record created', ['izin_id' => $izin->id]);
+
             // Generate PDF
+            Log::info('storeIzin: Generating PDF');
             $pdfData = [
                 'headerSuratPath' => 'assets/img/header-surat.png',
                 'nama_lengkap' => $karyawanFresh->nama_lengkap,
@@ -143,6 +213,8 @@ class IzinService
             $pdfPath = $this->generatePdf($pdfData, $stempelPath);
             $izin->update(['pdf_form_path' => $pdfPath]);
 
+            Log::info('storeIzin: PDF generated', ['pdf_path' => $pdfPath]);
+
             // Notify atasan
             if ($atasanNik) {
                 try {
@@ -151,19 +223,33 @@ class IzinService
                         $atasanUser->notify(new \App\Notifications\IzinSubmitted($izin, $karyawanFresh));
                         $jenisLabel = $this->getJenisIzinLabel($jenisIzin);
                         $this->push->send($atasanNik, 'Pengajuan Izin Baru', $karyawanFresh->nama_lengkap . ' mengajukan izin (' . $jenisLabel . ') ' . $request->tgl_izin, '/presensi/dataizin', 'izin-submitted-' . $izin->id);
+                        Log::info('storeIzin: Atasan notified', ['atasan_nik' => $atasanNik]);
                     }
                 } catch (\Exception $e) {
-                    Log::warning('Izin atasan notification failed: ' . $e->getMessage());
+                    Log::warning('Izin atasan notification failed: ' . $e->getMessage(), [
+                        'trace' => $e->getTraceAsString(),
+                    ]);
                 }
             }
 
             DB::commit();
             cache()->forget('pending_izin_admin_count');
 
+            Log::info('=== storeIzin SUCCESS ===', ['izin_id' => $izin->id]);
             return ['success' => true, 'message' => 'Pengajuan izin berhasil! Silahkan menunggu persetujuan.'];
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('storeIzin failed: ' . $e->getMessage());
+            Log::error('=== storeIzin FAILED ===', [
+                'nik' => $nik,
+                'tgl_izin' => $request->tgl_izin,
+                'jenis_izin' => $request->jenis_izin,
+                'keterangan' => $request->keterangan,
+                'has_bukti_file' => $request->hasFile('bukti_file'),
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+            ]);
             return ['success' => false, 'message' => 'Gagal mengajukan izin. Silakan coba lagi.'];
         }
     }
@@ -371,6 +457,7 @@ class IzinService
     {
         return Izin::with('atasan')
             ->where('nik', $nik)
+            ->whereIn('status', ['approved', 'rejected'])
             ->orderBy('tgl_izin', 'desc')
             ->get();
     }

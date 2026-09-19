@@ -177,6 +177,7 @@ class DashboardController extends Controller
 
         $pendingAtasanLembur = collect();
         $pendingLaporanLemburAtasan = collect();
+        $pendingAtasanIzin = collect();
 
         if (!empty($karyawan->role_approved)) {
             $pendingAtasanLembur = \App\Models\Lembur::with(['karyawan.unitperusahaan'])
@@ -190,7 +191,19 @@ class DashboardController extends Controller
                 ->where('laporan_status', 'pending_atasan')
                 ->orderBy('tgl_lembur', 'desc')
                 ->get();
+
+            $pendingAtasanIzin = \App\Models\Izin::with(['karyawan.unitperusahaan'])
+                ->where('atasan_nik', $nik)
+                ->where('status', 'pending_atasan')
+                ->orderBy('tgl_izin', 'desc')
+                ->get();
         }
+
+        $izinSaya = \App\Models\Izin::where('nik', $nik)
+            ->whereIn('status', ['pending_atasan', 'pending_admin', 'rejected'])
+            ->orderBy('tgl_izin', 'desc')
+            ->limit(5)
+            ->get();
 
         $notifications = $karyawan->notifications()->latest()->take(5)->get();
 
@@ -199,6 +212,7 @@ class DashboardController extends Controller
             'rekappresensi', 'rekapizin', 'rekaplembur', 'rekapwfh',
             'wfhSaya', 'pendingAtasan', 'pendingLaporanAtasan',
             'lemburSaya', 'pendingAtasanLembur', 'pendingLaporanLemburAtasan',
+            'pendingAtasanIzin', 'izinSaya',
             'wfhBesok', 'wfhHariIni', 'jamMasuk', 'tglCountdown', 'notifications'
         ));
     }

@@ -98,11 +98,11 @@
                     <div class="mt-1">
                         @if ($disableToday)
                             <small class="text-[11px] text-red-500 block">
-                                Batas pengajuan izin hari ini sudah lewat (maks 1 jam setelah jam masuk).
+                                Pengajuan untuk hari ini sudah lewat batas. Silakan pilih tanggal lain (besok/dst).
                             </small>
                         @else
                             <small class="text-[11px] text-[#a8a29e] block">
-                                Untuk hari ini, maksimal 1 jam setelah jam masuk.
+                                Hari ini maksimal 1 jam setelah jam masuk. Tanggal lain bisa dipilih kapan saja.
                             </small>
                         @endif
                     </div>
@@ -148,10 +148,6 @@
             var SERVER_TODAY = '{{ now("Asia/Jakarta")->format("Y-m-d") }}';
             var SERVER_DISABLE_TODAY = {{ $disableToday ? 'true' : 'false' }};
 
-            var minDateSetting = SERVER_DISABLE_TODAY
-                ? '{{ now("Asia/Jakarta")->addDay()->format("Y-m-d") }}'
-                : SERVER_TODAY;
-
             flatpickr("#tgl_izin", {
                 locale: "id",
                 dateFormat: "Y-m-d",
@@ -159,7 +155,7 @@
                 altFormat: "j F Y",
                 allowInput: true,
                 disableMobile: true,
-                minDate: minDateSetting,
+                minDate: SERVER_TODAY,
                 disable: [
                     function(date) {
                         if (SERVER_DISABLE_TODAY) {

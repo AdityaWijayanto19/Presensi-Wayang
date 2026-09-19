@@ -61,7 +61,6 @@
     @if ($dataizin->count() > 0)
         @php
             $approvedCount = $dataizin->where('status', 'approved')->count();
-            $pendingCount = $dataizin->whereIn('status', ['pending_atasan','pending_admin'])->count();
             $rejectedCount = $dataizin->where('status', 'rejected')->count();
         @endphp
         <div class="flex mt-3">
@@ -73,17 +72,11 @@
                         @if ($approvedCount > 0)
                             <span class="text-emerald-700">{{ $approvedCount }} Disetujui</span>
                         @endif
-                        @if ($pendingCount > 0)
+                        @if ($rejectedCount > 0)
                             @if ($approvedCount > 0)
                                 <span class="mx-1.5 text-[#e7e5e4]">•</span>
                             @endif
-                            <span class="text-amber-600">{{ $pendingCount }} Pending</span>
-                        @endif
-                        @if ($rejectedCount > 0)
-                            @if ($approvedCount > 0 || $pendingCount > 0)
-                                <span class="mx-1.5 text-[#e7e5e4]">•</span>
-                            @endif
-                            <span class="text-rose-600">{{ $rejectedCount }} Ditolak</span>
+                            <span class="text-rose-700">{{ $rejectedCount }} Ditolak</span>
                         @endif
                     </p>
                     <span class="text-[11px] font-medium text-[#78716c] bg-white border border-[#f0ece8] rounded-full px-2.5 py-1">{{ date('M Y') }}</span>
@@ -107,12 +100,12 @@
                     $jenisBadge = $jenisBadgeClasses[$jenis] ?? 'bg-gray-100 text-gray-700 border-gray-200';
                     $pdfUrl = !empty($d->pdf_form_path) ? \Illuminate\Support\Facades\Storage::url($d->pdf_form_path) : "#";
                     $pdfName = !empty($d->pdf_form_path) ? basename($d->pdf_form_path) : '';
-                    $buktiUrl = !empty($d->bukti_file) ? 'uploads/izin/' . $d->bukti_file : null;
+                    $buktiUrl = !empty($d->bukti_file) ? \Illuminate\Support\Facades\Storage::disk('public')->url('uploads/izin/' . $d->bukti_file) : null;
                 @endphp
                 <div class="presensi-card mb-2.5">
                     <div class="flex items-start gap-3">
                         <div class="presensi-icon-box icon-izin">
-                            <i data-lucide="shield"></i>
+                            <i data-lucide="file-text"></i>
                         </div>
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-2 flex-wrap">
@@ -144,24 +137,15 @@
                                 <i data-lucide="paperclip"></i> Bukti
                             </button>
                         @endif
-                        @if($status === 'pending_atasan')
-                            <form action="/izin/{{ $d->id }}" method="POST" class="inline" onsubmit="return confirmDelete(event)">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="file-pill text-rose-600 hover:bg-rose-50">
-                                    <i data-lucide="trash-2"></i> Hapus
-                                </button>
-                            </form>
-                        @endif
                     </div>
                 </div>
             @empty
                 <x-admin.card class="p-8 mt-6 text-center">
                     <div class="w-20 h-20 rounded-2xl bg-[#fff1f2] border border-[#fecdd3] flex items-center justify-center mx-auto text-[#e11d48]">
-                        <i data-lucide="shield" class="text-[#e11d48]" style="width:40px;height:40px;"></i>
+                        <i data-lucide="file-text" class="text-[#e11d48]" style="width:40px;height:40px;"></i>
                     </div>
-                    <h4 class="mt-4 text-[16px] font-bold text-[#1c1917]">Tidak Ada Data Izin</h4>
-                    <p class="mt-1.5 text-[13px] leading-relaxed text-[#78716c] max-w-[28ch] mx-auto">Ajukan izin jika Anda tidak bisa masuk kerja atau perlu izin khusus lainnya.</p>
+                    <h4 class="mt-4 text-[16px] font-bold text-[#1c1917]">Belum Ada Riwayat Izin</h4>
+                    <p class="mt-1.5 text-[13px] leading-relaxed text-[#78716c] max-w-[28ch] mx-auto">Riwayat izin yang sudah disetujui atau ditolak akan muncul di sini.</p>
                     <a href="/izin/create" class="inline-flex items-center gap-2 mt-5 px-5 py-2.5 rounded-full bg-coklat text-white text-[13px] font-semibold shadow-sm hover:bg-coklat-dark transition">
                         <i data-lucide="plus" style="width:16px;height:16px;"></i> Ajukan Izin
                     </a>
@@ -181,21 +165,5 @@
             let alert = document.getElementById('alert-success');
             if (alert) { alert.style.opacity = '0'; alert.style.transition = 'opacity 0.3s'; setTimeout(() => alert.style.display = 'none', 300); }
         }, 3000);
-
-        function confirmDelete(e) {
-            e.preventDefault();
-            Swal.fire({
-                title: "Hapus Izin?",
-                text: "Pengajuan izin ini akan dihapus secara permanen.",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonColor: "#d33",
-                cancelButtonColor: "#7a5234",
-                confirmButtonText: "Ya, Hapus",
-                cancelButtonText: "Batal"
-            }).then(function(r) {
-                if (r.isConfirmed) e.target.closest('form').submit();
-            });
-        }
     </script>
 @endsection
