@@ -47,9 +47,21 @@ class RolePermissionSeeder extends Seeder
         $superAdmin = Role::firstOrCreate(['name' => 'super_admin', 'guard_name' => 'user']);
         $superAdmin->syncPermissions($permissions);
 
-        // Admin - semua kecuali approve dan user-manage
+        // Admin - hanya read + create (tidak bisa edit, delete, approve)
         $admin = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'user']);
-        $adminPermissions = array_diff($permissions, ['wfh-approve', 'lembur-approve', 'izin-approve', 'user-manage', 'presensi-edit']);
+        $adminPermissions = [
+            'dashboard-view',
+            'karyawan-view',
+            'karyawan-create',
+            'unit-view',
+            'unit-create',
+            'monitoring-view',
+            'presensi-view',
+            'izin-view',
+            'lembur-view',
+            'wfh-view',
+            'laporan-view',
+        ];
         $admin->syncPermissions($adminPermissions);
 
         // Owner - hanya view, tanpa create/edit/delete
