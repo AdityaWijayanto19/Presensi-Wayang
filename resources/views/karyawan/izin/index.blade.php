@@ -33,12 +33,14 @@
         $jenisLabels = [
             'tidak_masuk' => 'Tidak Masuk',
             'terlambat' => 'Terlambat',
+            'setengah_hari' => 'Setengah Hari',
             'pulang_cepat' => 'Pulang Cepat',
             'sakit' => 'Sakit',
         ];
         $jenisBadgeClasses = [
             'tidak_masuk' => 'bg-amber-100 text-amber-700 border-amber-200',
             'terlambat' => 'bg-orange-100 text-orange-700 border-orange-200',
+            'setengah_hari' => 'bg-indigo-100 text-indigo-700 border-indigo-200',
             'pulang_cepat' => 'bg-cyan-100 text-cyan-700 border-cyan-200',
             'sakit' => 'bg-rose-100 text-rose-700 border-rose-200',
         ];
@@ -65,8 +67,8 @@
 
     @if ($dataizin->count() > 0)
         @php
-            $approvedCount = $dataizin->where('status', 'approved')->count();
-            $rejectedCount = $dataizin->where('status', 'rejected')->count();
+            $approvedCount = $dataizin->where('status', \App\Enums\IzinStatus::Approved)->count();
+            $rejectedCount = $dataizin->where('status', \App\Enums\IzinStatus::Rejected)->count();
         @endphp
         <div class="flex mt-3">
             <div class="w-full px-3">

@@ -126,14 +126,16 @@
             </x-admin.select>
 
             <div id="editJamDatangWrapper" style="display:none;">
-                <x-admin.select name="jam_datang" id="edit_jam_datang" label="Jam Datang <span class='text-red-500'>*</span>">
-                    <option value="">-- Pilih Jam --</option>
-                    <option value="08:00">08:00</option>
-                    <option value="09:00">09:00</option>
-                    <option value="10:00">10:00</option>
-                    <option value="11:00">11:00</option>
-                    <option value="12:00">12:00</option>
-                </x-admin.select>
+                <x-admin.input
+                    type="time"
+                    name="jam_datang"
+                    id="edit_jam_datang"
+                    label="Jam Datang <span class='text-red-500'>*</span>"
+                    min="08:00"
+                    max="12:00"
+                    step="60"
+                />
+                <small class="block mt-1 text-[11px] text-[#a8a29e]">Rentang 08:00 - 12:00.</small>
             </div>
 
             <div class="mt-2">

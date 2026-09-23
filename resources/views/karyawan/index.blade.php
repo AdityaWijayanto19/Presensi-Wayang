@@ -330,8 +330,8 @@
                     </div>
                     @foreach ($pendingAtasanIzin as $p)
                         @php
-                            $jenisLabels = ['tidak_masuk' => 'Tidak Masuk', 'terlambat' => 'Terlambat', 'pulang_cepat' => 'Pulang Cepat', 'sakit' => 'Sakit'];
-                            $jenisBadgeClasses = ['tidak_masuk' => 'bg-amber-100 text-amber-700', 'terlambat' => 'bg-orange-100 text-orange-700', 'pulang_cepat' => 'bg-cyan-100 text-cyan-700', 'sakit' => 'bg-rose-100 text-rose-700'];
+                            $jenisLabels = ['tidak_masuk' => 'Tidak Masuk', 'terlambat' => 'Terlambat', 'setengah_hari' => 'Setengah Hari', 'pulang_cepat' => 'Pulang Cepat', 'sakit' => 'Sakit'];
+                            $jenisBadgeClasses = ['tidak_masuk' => 'bg-amber-100 text-amber-700', 'terlambat' => 'bg-orange-100 text-orange-700', 'setengah_hari' => 'bg-indigo-100 text-indigo-700', 'pulang_cepat' => 'bg-cyan-100 text-cyan-700', 'sakit' => 'bg-rose-100 text-rose-700'];
                             $jenis = $p->jenis_izin instanceof \App\Enums\JenisIzin ? $p->jenis_izin->value : ($p->jenis_izin ?? '');
                         @endphp
                         <div class="card mb-2 border-l-4 border-l-amber-400 bg-amber-50/50">
@@ -391,7 +391,7 @@
                                 'rejected' => 'Ditolak',
                                 default => $i->status?->value ?? '',
                             };
-                            $jenisLabels = ['tidak_masuk' => 'Tidak Masuk', 'terlambat' => 'Terlambat', 'pulang_cepat' => 'Pulang Cepat', 'sakit' => 'Sakit'];
+                            $jenisLabels = ['tidak_masuk' => 'Tidak Masuk', 'terlambat' => 'Terlambat', 'setengah_hari' => 'Setengah Hari', 'pulang_cepat' => 'Pulang Cepat', 'sakit' => 'Sakit'];
                             $jenis = $i->jenis_izin instanceof \App\Enums\JenisIzin ? $i->jenis_izin->value : ($i->jenis_izin ?? '');
                         @endphp
                         <div class="card mb-2">
@@ -1640,7 +1640,7 @@
                                         'approved': ['bg-emerald-100 text-emerald-700 border-emerald-200', 'Disetujui'],
                                         'rejected': ['bg-rose-100 text-rose-700 border-rose-200', 'Ditolak']
                                     };
-                                    let jenisLabels = {'tidak_masuk': 'Tidak Masuk', 'terlambat': 'Terlambat', 'pulang_cepat': 'Pulang Cepat', 'sakit': 'Sakit'};
+                                    let jenisLabels = {'tidak_masuk': 'Tidak Masuk', 'terlambat': 'Terlambat', 'setengah_hari': 'Setengah Hari', 'pulang_cepat': 'Pulang Cepat', 'sakit': 'Sakit'};
                                     let html = '<div class="mt-6"><div class="flex items-center justify-between mb-2"><h3 class="text-[15px] font-bold text-[#1c1917] flex items-center gap-2"><span class="w-8 h-8 rounded-xl bg-rose-100 border border-rose-200 flex items-center justify-center text-rose-700"><i data-lucide="file-text"></i></span>Izin Saya</h3><a href="/izin" class="text-[11px] font-semibold text-rose-700">Lihat Semua</a></div>';
                                     data.izinSaya.forEach(function(i) {
                                         var b = iBadgeMap[i.status] || ['bg-gray-100 text-gray-700 border-gray-200', i.status];
@@ -1666,8 +1666,8 @@
                                 if (count === 0) {
                                     updateSection(section, '', 'pendingAtasanIzin');
                                 } else {
-                                    let jenisLabels = {'tidak_masuk': 'Tidak Masuk', 'terlambat': 'Terlambat', 'pulang_cepat': 'Pulang Cepat', 'sakit': 'Sakit'};
-                                    let jenisBadgeClasses = {'tidak_masuk': 'bg-amber-100 text-amber-700', 'terlambat': 'bg-orange-100 text-orange-700', 'pulang_cepat': 'bg-cyan-100 text-cyan-700', 'sakit': 'bg-rose-100 text-rose-700'};
+                                    let jenisLabels = {'tidak_masuk': 'Tidak Masuk', 'terlambat': 'Terlambat', 'setengah_hari': 'Setengah Hari', 'pulang_cepat': 'Pulang Cepat', 'sakit': 'Sakit'};
+                                    let jenisBadgeClasses = {'tidak_masuk': 'bg-amber-100 text-amber-700', 'terlambat': 'bg-orange-100 text-orange-700', 'setengah_hari': 'bg-indigo-100 text-indigo-700', 'pulang_cepat': 'bg-cyan-100 text-cyan-700', 'sakit': 'bg-rose-100 text-rose-700'};
                                     let html = '<div class="mt-6"><div class="flex items-center justify-between mb-2"><h3 class="text-[15px] font-bold text-[#1c1917] flex items-center gap-2"><span class="w-8 h-8 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center text-amber-700"><i data-lucide="file-text"></i></span>Pengajuan Izin Perlu Persetujuan (' + count + ')</h3></div>';
                                     data.pendingAtasanIzin.forEach(function(p) {
                                         var k = p.karyawan || {};

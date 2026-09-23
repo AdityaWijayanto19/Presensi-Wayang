@@ -118,17 +118,12 @@
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500 z-10">
                             <i data-lucide="clock" style="width:20px;height:20px;"></i>
                         </div>
-                        <select name="jam_datang" id="jam_datang"
+                        <input type="time" name="jam_datang" id="jam_datang"
+                            min="08:00" max="12:00" step="60"
+                            value="{{ old('jam_datang') }}"
                             class="w-full pl-10 pr-3 py-2 text-sm bg-white border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
-                            <option value="">-- Pilih Jam Datang --</option>
-                            <option value="08:00" {{ old('jam_datang') == '08:00' ? 'selected' : '' }}>08:00</option>
-                            <option value="09:00" {{ old('jam_datang') == '09:00' ? 'selected' : '' }}>09:00</option>
-                            <option value="10:00" {{ old('jam_datang') == '10:00' ? 'selected' : '' }}>10:00</option>
-                            <option value="11:00" {{ old('jam_datang') == '11:00' ? 'selected' : '' }}>11:00</option>
-                            <option value="12:00" {{ old('jam_datang') == '12:00' ? 'selected' : '' }}>12:00</option>
-                        </select>
                     </div>
-                    <small class="text-[11px] text-[#a8a29e] block mt-1">Pilih jam Anda akan datang di kantor.</small>
+                    <small class="text-[11px] text-[#a8a29e] block mt-1">Isi jam Anda akan datang di kantor (08:00 - 12:00).</small>
                 </div>
 
                 {{-- Keterangan --}}

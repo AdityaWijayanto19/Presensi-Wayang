@@ -243,9 +243,9 @@
                     <td align="center">
 
                         @if (isset($lembur[$tglKey]) &&
-                                $lembur[$tglKey]->durasi != 'Prorate')
+                                $lembur[$tglKey]->durasi_jam <= 5)
 
-                            {{ $lembur[$tglKey]->durasi }}
+                            {{ $lembur[$tglKey]->durasi_formatted }}
 
                         @else
 
@@ -261,7 +261,7 @@
                     <td align="center">
 
                         @if (isset($lembur[$tglKey]) &&
-                                $lembur[$tglKey]->durasi == 'Prorate')
+                                $lembur[$tglKey]->durasi_jam > 5)
 
                             1
 

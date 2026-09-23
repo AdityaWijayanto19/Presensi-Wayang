@@ -41,7 +41,7 @@ class ReminderLaporanLembur extends Command
                     $lembur->nik,
                     'Reminder Upload Laporan Lembur',
                     'Lembur tanggal ' . $lembur->tgl_lembur . ' belum upload laporan! Upload sebelum pukul 00:00.',
-                    '/presensi/lembur/' . $lembur->id . '/laporan',
+                    '/lembur/' . $lembur->id . '/laporan',
                     'reminder-laporan-lembur-' . $lembur->id
                 );
 

@@ -24,7 +24,6 @@ class DashboardController extends Controller
 
         $rekapizin = Izin::selectRaw('COUNT(*) as jmlizin')
             ->where('tgl_izin', $hariini)
-            ->whereIn('jenis_izin', ['i', 's'])
             ->first();
 
         $rekaplembur = Lembur::selectRaw('COUNT(*) as jmllembur')
@@ -74,7 +73,7 @@ class DashboardController extends Controller
 
         $namabulan = ["", "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
 
-        $rekapizin = Izin::selectRaw('SUM(IF(jenis_izin = "i" OR jenis_izin = "s", 1, 0)) as jmlizin, SUM(IF(jenis_izin = "l", 1, 0)) as jmllembur')
+        $rekapizin = Izin::selectRaw('COUNT(*) as jmlizin')
             ->where('nik', $nik)
             ->whereRaw('MONTH(tgl_izin) = ?', [$bulanini])
             ->whereRaw('YEAR(tgl_izin) = ?', [$tahunini])

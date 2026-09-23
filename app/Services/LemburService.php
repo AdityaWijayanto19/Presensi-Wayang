@@ -147,6 +147,11 @@ class LemburService
         $nik = $karyawan->nik;
         $karyawanFresh = Karyawan::with('unitperusahaan')->where('nik', $nik)->first();
 
+        $canSubmit = $this->canSubmit($karyawanFresh);
+        if (!$canSubmit['can']) {
+            return ['success' => false, 'message' => $canSubmit['message']];
+        }
+
         $atasanNik = self::determineAtasanNik($karyawanFresh);
         $jabatan = $karyawanFresh->jabatan instanceof Jabatan ? $karyawanFresh->jabatan->value : $karyawanFresh->jabatan;
         $posisi = $karyawanFresh->posisi;
@@ -225,7 +230,7 @@ class LemburService
                     $atasanUser = Karyawan::where('nik', $atasanNik)->first();
                     if ($atasanUser) {
                         $atasanUser->notify(new \App\Notifications\LemburSubmitted($lembur, $karyawanFresh));
-                        $this->push->send($atasanNik, 'Pengajuan Lembur Baru', $karyawanFresh->nama_lengkap . ' mengajukan lembur', '/presensi/datalembur', 'lembur-submitted-' . $lembur->id);
+                        $this->push->send($atasanNik, 'Pengajuan Lembur Baru', $karyawanFresh->nama_lengkap . ' mengajukan lembur', '/dashboard', 'lembur-submitted-' . $lembur->id);
                     }
                 } catch (\Exception $e) {
                     Log::warning('Lembur atasan notification failed: ' . $e->getMessage());
@@ -389,7 +394,7 @@ class LemburService
         try {
             if ($pengaju) {
                 $pengaju->notify(new \App\Notifications\LemburApproved($lembur));
-                $this->push->send($lembur->nik, 'Lembur Disetujui', 'Lembur disetujui! Silakan ambil foto dan upload laporan.', '/presensi/lembur/' . $id . '/foto', 'lembur-approved-admin-' . $lembur->id);
+                $this->push->send($lembur->nik, 'Lembur Disetujui', 'Lembur disetujui! Silakan ambil foto dan upload laporan.', '/lembur/' . $id . '/foto', 'lembur-approved-admin-' . $lembur->id);
             }
         } catch (\Exception $e) {
             Log::warning('Lembur admin approval notification failed: ' . $e->getMessage());
@@ -484,9 +489,9 @@ class LemburService
             // Foto mulai boleh diambil jika:
             // 1. Sudah ada presensi pulang hari ini, ATAU
             // 2. Lembur ini untuk jam sebelum jam buka presensi (pre-shift)
-            if (!$presensiHariIni && !$isPreShift) {
-                return ['success' => false, 'message' => 'Silakan presensi pulang terlebih dahulu sebelum mengambil foto mulai lembur.'];
-            }
+            // if (!$presensiHariIni && !$isPreShift) {
+            //     return ['success' => false, 'message' => 'Silakan presensi pulang terlebih dahulu sebelum mengambil foto mulai lembur.'];
+            // }
         }
 
         if ($type === 'selesai') {
@@ -544,6 +549,9 @@ class LemburService
                 return (object) ['error' => 'Laporan ini tidak dalam status ditolak.'];
             }
         } else {
+            if ($lembur->laporan_status !== null) {
+                return (object) ['error' => 'Laporan sudah pernah dikirim. Gunakan Edit Laporan.'];
+            }
             if (empty($lembur->foto_mulai) || empty($lembur->foto_selesai)) {
                 return (object) ['error' => 'Anda harus mengambil foto mulai dan selesai lembur terlebih dahulu.'];
             }
@@ -570,6 +578,10 @@ class LemburService
 
         if ($isEdit && $lembur->laporan_status !== LemburStatus::Rejected) {
             return ['success' => false, 'message' => 'Laporan ini tidak dalam status ditolak'];
+        }
+
+        if (!$isEdit && $lembur->laporan_status !== null) {
+            return ['success' => false, 'message' => 'Laporan sudah pernah dikirim. Gunakan Edit Laporan.'];
         }
 
         if (!$isEdit && (empty($lembur->foto_mulai) || empty($lembur->foto_selesai))) {
@@ -601,14 +613,12 @@ class LemburService
         DB::beginTransaction();
         try {
             $imagePaths = [];
+            $oldImages = ($isEdit && !empty($lembur->laporan_images) && is_array($lembur->laporan_images))
+                ? $lembur->laporan_images
+                : [];
+            $oldLaporanFile = $isEdit ? $lembur->laporan_file : null;
+
             if ($request->hasFile('laporan_images')) {
-                if ($isEdit && !empty($lembur->laporan_images) && is_array($lembur->laporan_images)) {
-                    foreach ($lembur->laporan_images as $oldPath) {
-                        if (!empty($oldPath)) {
-                            Storage::disk('public')->delete($oldPath);
-                        }
-                    }
-                }
                 $imageService = app(ImageService::class);
                 foreach ($request->file('laporan_images') as $file) {
                     $path = $imageService->processUpload($file, 'lembur/laporan');
@@ -650,10 +660,6 @@ class LemburService
 
             $stempelPath = $this->pdf->getStempelPath();
 
-            if ($isEdit && !empty($lembur->laporan_file)) {
-                Storage::disk('public')->delete($lembur->laporan_file);
-            }
-
             $pdfPath = $this->generateLaporanPdf($pdfData, $stempelPath);
             $lembur->update(['laporan_file' => $pdfPath]);
 
@@ -668,6 +674,20 @@ class LemburService
             }
             Log::error('storeLaporanLembur failed: ' . $e->getMessage());
             return ['success' => false, 'message' => 'Gagal mengirim laporan lembur. Silakan coba lagi.'];
+        }
+
+        // Hapus file lama setelah commit agar link lama tidak mati jika generate gagal
+        foreach ($oldImages as $oldPath) {
+            if (!empty($oldPath)) {
+                try { Storage::disk('public')->delete($oldPath); } catch (\Exception $e) {
+                    Log::warning('Old lembur laporan image delete failed: ' . $e->getMessage());
+                }
+            }
+        }
+        if ($oldLaporanFile && $oldLaporanFile !== $lembur->fresh()->laporan_file) {
+            try { Storage::disk('public')->delete($oldLaporanFile); } catch (\Exception $e) {
+                Log::warning('Old lembur laporan file delete failed: ' . $e->getMessage());
+            }
         }
 
         try {
@@ -863,6 +883,52 @@ class LemburService
             'lembur',
             $stempelPath
         );
+    }
+
+    public function regenerateFormPdf(Lembur $lembur): void
+    {
+        try {
+            $karyawan = Karyawan::where('nik', $lembur->nik)->first();
+            if (!$karyawan) return;
+
+            $jabatan = $karyawan->jabatan instanceof Jabatan ? $karyawan->jabatan->value : ($karyawan->jabatan ?? '-');
+            $perusahaan = $karyawan->unitperusahaan?->perusahaan ?? '-';
+            $atasan = $lembur->atasan_nik ? Karyawan::where('nik', $lembur->atasan_nik)->first() : null;
+            $isProrate = $lembur->durasi_jam > 5;
+
+            $pdfData = [
+                'headerSuratPath' => 'assets/img/header-surat.png',
+                'nik' => $lembur->nik,
+                'nama_lengkap' => $karyawan->nama_lengkap,
+                'jabatan' => $jabatan,
+                'posisi' => $karyawan->posisi ?? '-',
+                'perusahaan' => $perusahaan,
+                'keterangan' => $lembur->keterangan,
+                'tgl_lembur' => $lembur->tgl_lembur,
+                'jam_mulai' => $lembur->rencana_mulai instanceof \Carbon\Carbon
+                    ? $lembur->rencana_mulai->format('H:i')
+                    : '-',
+                'jam_selesai' => $lembur->rencana_selesai instanceof \Carbon\Carbon
+                    ? $lembur->rencana_selesai->format('H:i')
+                    : 'Menyesuaikan',
+                'durasi_jam' => $lembur->durasi_jam,
+                'is_prorate' => $isProrate,
+                'nama_atasan' => $atasan?->nama_lengkap ?? '-',
+                'jabatan_atasan' => $atasan?->jabatan instanceof Jabatan ? $atasan->jabatan->value : ($atasan?->jabatan ?? '-'),
+            ];
+
+            $oldPath = $lembur->pdf_form_path;
+            $pdfPath = $this->generatePdf($pdfData, $this->pdf->getStempelPath());
+            $lembur->update(['pdf_form_path' => $pdfPath]);
+
+            if ($oldPath && $oldPath !== $pdfPath) {
+                try { Storage::disk('public')->delete($oldPath); } catch (\Exception $e) {
+                    Log::warning('Old lembur form PDF delete failed: ' . $e->getMessage());
+                }
+            }
+        } catch (\Exception $e) {
+            Log::error('regenerateFormPdf lembur failed: ' . $e->getMessage());
+        }
     }
 
     public function generateLaporanPdf(array $data, ?string $stempelPath = null): string

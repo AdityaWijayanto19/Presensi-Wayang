@@ -224,7 +224,7 @@ class IzinService
                     if ($atasanUser) {
                         $atasanUser->notify(new \App\Notifications\IzinSubmitted($izin, $karyawanFresh));
                         $jenisLabel = $this->getJenisIzinLabel($jenisIzin);
-                        $this->push->send($atasanNik, 'Pengajuan Izin Baru', $karyawanFresh->nama_lengkap . ' mengajukan izin (' . $jenisLabel . ') ' . $request->tgl_izin, '/presensi/dataizin', 'izin-submitted-' . $izin->id);
+                        $this->push->send($atasanNik, 'Pengajuan Izin Baru', $karyawanFresh->nama_lengkap . ' mengajukan izin (' . $jenisLabel . ') ' . $request->tgl_izin, '/', 'izin-submitted-' . $izin->id);
                         Log::info('storeIzin: Atasan notified', ['atasan_nik' => $atasanNik]);
                     }
                 } catch (\Exception $e) {
@@ -543,11 +543,66 @@ class IzinService
             return ['success' => false, 'message' => 'Data tidak ditemukan'];
         }
 
-        $izin->update([
-            'tgl_izin' => $request->tgl_izin,
-            'jenis_izin' => $request->jenis_izin,
-            'jam_datang' => $request->jam_datang,
-        ]);
+        if (!in_array($izin->status, [IzinStatus::PendingAdmin, IzinStatus::Rejected])) {
+            return ['success' => false, 'message' => 'Hanya izin berstatus menunggu HR atau ditolak yang bisa diedit'];
+        }
+
+        $duplicate = Izin::where('nik', $izin->nik)
+            ->where('tgl_izin', $request->tgl_izin)
+            ->where('id', '!=', $id)
+            ->exists();
+        if ($duplicate) {
+            return ['success' => false, 'message' => 'Karyawan tersebut sudah memiliki izin pada tanggal tersebut'];
+        }
+
+        $jenisIzin = $request->jenis_izin;
+        $jamDatang = $jenisIzin === 'terlambat' ? $request->jam_datang : null;
+
+        DB::beginTransaction();
+        try {
+            $izin->update([
+                'tgl_izin' => $request->tgl_izin,
+                'jenis_izin' => $jenisIzin,
+                'jam_datang' => $jamDatang,
+            ]);
+
+            $karyawan = Karyawan::where('nik', $izin->nik)->first();
+            if ($karyawan) {
+                $atasan = !empty($izin->atasan_nik) ? Karyawan::where('nik', $izin->atasan_nik)->first() : null;
+                $perusahaan = Unitperusahaan::where('unit', $karyawan->unit)->value('perusahaan') ?? '-';
+
+                $pdfData = [
+                    'headerSuratPath' => 'assets/img/header-surat.png',
+                    'nama_lengkap' => $karyawan->nama_lengkap,
+                    'jabatan' => $karyawan->jabatan instanceof Jabatan ? $karyawan->jabatan->value : ($karyawan->jabatan ?? '-'),
+                    'posisi' => $karyawan->posisi ?? '-',
+                    'perusahaan' => $perusahaan,
+                    'tgl_izin' => $izin->tgl_izin,
+                    'jenis_izin' => $jenisIzin,
+                    'jenis_izin_label' => $this->getJenisIzinLabel($jenisIzin),
+                    'jam_datang' => $jamDatang,
+                    'keterangan' => $izin->keterangan,
+                    'nama_atasan' => $atasan?->nama_lengkap ?? '-',
+                    'jabatan_atasan' => $atasan?->jabatan instanceof Jabatan ? $atasan->jabatan->value : ($atasan?->jabatan ?? '-'),
+                ];
+
+                if (!empty($izin->pdf_form_path)) {
+                    Storage::disk('public')->delete($izin->pdf_form_path);
+                }
+
+                $stempelPath = $this->pdf->getStempelPath();
+                $pdfPath = $this->generatePdf($pdfData, $stempelPath);
+                $izin->update(['pdf_form_path' => $pdfPath]);
+            }
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('updateIzinAdmin failed: ' . $e->getMessage());
+            return ['success' => false, 'message' => 'Gagal memperbarui izin'];
+        }
+
+        cache()->forget('pending_izin_admin_count');
 
         return ['success' => true, 'message' => 'Data izin berhasil diperbarui'];
     }

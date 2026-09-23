@@ -169,6 +169,22 @@ class AdminPresensiController extends Controller
             'durasi_jam' => $durasiJam,
         ];
 
+        $oldTgl = $lembur->tgl_lembur instanceof \Carbon\Carbon
+            ? $lembur->tgl_lembur->format('Y-m-d')
+            : (string) $lembur->tgl_lembur;
+        $newTgl = $request->tgl_lembur;
+        $durasiChanged = abs((float) $lembur->durasi_jam - $durasiJam) > 0.001;
+        if (($oldTgl !== $newTgl || $durasiChanged) && $lembur->rencana_mulai) {
+            $jam = $lembur->rencana_mulai instanceof \Carbon\Carbon
+                ? $lembur->rencana_mulai->format('H:i')
+                : \Carbon\Carbon::parse($lembur->rencana_mulai)->format('H:i');
+            $rencanaMulai = \Carbon\Carbon::parse($newTgl . ' ' . $jam);
+            $updateData['rencana_mulai'] = $rencanaMulai;
+            $updateData['rencana_selesai'] = $durasiJam > 5
+                ? null
+                : $rencanaMulai->copy()->addMinutes((int) ($durasiJam * 60));
+        }
+
         if ($oldStatus !== $newStatus) {
             if ($newStatus === 'approved') {
                 $updateData['admin_status'] = 'approved';
@@ -186,6 +202,10 @@ class AdminPresensiController extends Controller
         }
 
         $lembur->update($updateData);
+
+        if ($lembur->wasChanged(['tgl_lembur', 'keterangan', 'durasi_jam'])) {
+            app(LemburService::class)->regenerateFormPdf($lembur->fresh());
+        }
 
         if ($oldStatus !== $newStatus) {
             $karyawan = \App\Models\Karyawan::where('nik', $lembur->nik)->first();

@@ -138,7 +138,7 @@ class RealtimeController extends Controller
     {
         $lastId = is_numeric($request->last_id) ? (int) $request->last_id : 0;
         $lastCheck = $request->last_check
-            ? \Carbon\Carbon::parse($request->last_check)->subSecond()
+            ? \Carbon\Carbon::parse($request->last_check)->tz('Asia/Jakarta')->subSecond()
             : now('Asia/Jakarta')->subSeconds(10);
 
         $stats = \App\Models\Izin::selectRaw('
@@ -224,7 +224,7 @@ class RealtimeController extends Controller
             'izin' => \App\Models\Izin::where('nik', $nik)
                 ->whereMonth('tgl_izin', $bulanini)
                 ->whereYear('tgl_izin', $tahunini)
-                ->whereIn('jenis_izin', ['tidak_masuk', 'terlambat', 'pulang_cepat', 'sakit'])
+                ->whereIn('jenis_izin', ['tidak_masuk', 'terlambat', 'setengah_hari', 'pulang_cepat', 'sakit'])
                 ->count(),
         ];
 

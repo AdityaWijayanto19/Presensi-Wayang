@@ -114,6 +114,7 @@ class LaporanService
         $sisaMenitKerja = $totalMenitKerja % 60;
 
         $lembur = Lembur::where('nik', $nik)
+            ->where('status', 'approved')
             ->whereBetween('tgl_lembur', [$startDate, $endDate])
             ->get()
             ->keyBy(fn ($item) => $item->tgl_lembur->format('Y-m-d'));
@@ -121,10 +122,10 @@ class LaporanService
         $totalLembur = 0;
         $totalProrate = 0;
         foreach ($lembur as $item) {
-            if ($item->durasi == 'Prorate') {
+            if ($item->durasi_jam > 5) {
                 $totalProrate++;
             } else {
-                $totalLembur += (float) $item->durasi;
+                $totalLembur += (float) $item->durasi_jam;
             }
         }
 
@@ -194,16 +195,17 @@ class LaporanService
             $sisaMenitKerja = $totalMenitKerja % 60;
 
             $lembur = Lembur::where('nik', $k->nik)
+                ->where('status', 'approved')
                 ->whereBetween('tgl_lembur', [$startDate, $endDate])
                 ->get();
 
             $totalLembur = 0;
             $totalProrate = 0;
             foreach ($lembur as $item) {
-                if ($item->durasi == 'Prorate') {
+                if ($item->durasi_jam > 5) {
                     $totalProrate++;
                 } else {
-                    $totalLembur += (float) $item->durasi;
+                    $totalLembur += (float) $item->durasi_jam;
                 }
             }
 
