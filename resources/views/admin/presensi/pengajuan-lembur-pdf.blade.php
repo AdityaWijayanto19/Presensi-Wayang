@@ -247,15 +247,19 @@
                 </td>
             </tr>
 
-            @if (!empty($jam_mulai) && !empty($jam_selesai))
+            @if (!empty($jam_mulai))
             <tr>
                 <td class="info-cell">
                     <span class="info-label">Rencana Waktu:</span>
-                    {{ $jam_mulai }} - {{ $jam_selesai }}
+                    {{ $jam_mulai }} - {{ $jam_selesai ?? 'Menyesuaikan' }}
                 </td>
                 <td class="info-cell">
                     <span class="info-label">Durasi:</span>
-                    {{ number_format($durasi_jam, 1, ',', '') }} jam
+                    @if (!empty($is_prorate) || (isset($durasi_jam) && $durasi_jam > 5))
+                        Prorate
+                    @else
+                        {{ number_format($durasi_jam, 1, ',', '') }} jam
+                    @endif
                 </td>
             </tr>
             @endif

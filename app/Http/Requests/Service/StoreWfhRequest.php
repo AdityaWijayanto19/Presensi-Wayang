@@ -14,7 +14,7 @@ class StoreWfhRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'tgl_wfh' => 'required|date|after_or_equal:today',
+            'tgl_wfh' => 'required|date|date_format:Y-m-d|after_or_equal:today',
             'keterangan' => 'required|string|min:5|max:1000',
             'deskripsi_pekerjaan' => 'required|string|min:10|max:2000',
         ];

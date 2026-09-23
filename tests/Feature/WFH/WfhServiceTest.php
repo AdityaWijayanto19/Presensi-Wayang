@@ -818,4 +818,225 @@ class WfhServiceTest extends TestCase
         $this->assertFalse($result['success']);
         $this->assertStringContainsString('presensi', $result['message']);
     }
+
+    // ======================================================================
+    // REGRESSION: ORIGINAL BUG FIXES
+    // ======================================================================
+
+    public function test_generate_pdf_includes_keterangan(): void
+    {
+        $service = app(\App\Services\WfhService::class);
+
+        $data = [
+            'headerSuratPath' => 'assets/img/header-surat.png',
+            'nama_lengkap' => 'Test User',
+            'jabatan' => 'Staff',
+            'posisi' => 'Developer',
+            'perusahaan' => 'PT Test',
+            'tgl_wfh' => now()->format('Y-m-d'),
+            'deskripsi_pekerjaan' => 'Test work',
+            'keterangan' => 'Alasan WFH dari kantor',
+            'nama_atasan' => 'Atasan Test',
+            'jabatan_atasan' => 'Manager',
+            'nama_approver' => '-',
+            'jabatan_approver' => '-',
+        ];
+
+        $path = $service->generatePdf($data);
+
+        $this->assertIsString($path);
+        $this->assertStringContainsString('wfh/', $path);
+    }
+
+    public function test_store_wfh_saves_keterangan(): void
+    {
+        $service = app(\App\Services\WfhService::class);
+        $tgl = now('Asia/Jakarta')->addDay()->format('Y-m-d');
+
+        $request = new \Illuminate\Http\Request([
+            'tgl_wfh' => $tgl,
+            'deskripsi_pekerjaan' => 'Kerja dari rumah',
+            'keterangan' => 'Anak sakit',
+            'live_location' => '-',
+        ]);
+
+        $result = $service->storeWfh($request, $this->karyawan);
+
+        $this->assertTrue($result['success']);
+        $wfh = Wfh::where('nik', 'KRY001')->where('tgl_wfh', $tgl)->first();
+        $this->assertNotNull($wfh);
+        $this->assertEquals('Anak sakit', $wfh->keterangan);
+    }
+
+    public function test_laporan_approve_admin_uses_enum_status(): void
+    {
+        $wfh = Wfh::factory()->approved()
+            ->for($this->karyawan)
+            ->create([
+                'laporan_status' => WfhStatus::PendingAdmin->value,
+                'laporan_admin_status' => 'pending',
+                'laporan_deskripsi' => 'Selesai',
+            ]);
+
+        $service = app(\App\Services\WfhService::class);
+        $result = $service->approveLaporanAdmin($wfh->id);
+
+        $this->assertTrue($result['success'], $result['message'] ?? '');
+        $wfh->refresh();
+        $this->assertEquals(WfhStatus::Approved, $wfh->laporan_status);
+        $this->assertEquals('approved', $wfh->laporan_admin_status);
+    }
+
+    public function test_laporan_reject_admin_uses_enum_status(): void
+    {
+        $wfh = Wfh::factory()->approved()
+            ->for($this->karyawan)
+            ->create([
+                'laporan_status' => WfhStatus::PendingAdmin->value,
+                'laporan_admin_status' => 'pending',
+            ]);
+
+        $service = app(\App\Services\WfhService::class);
+        $result = $service->rejectLaporanAdmin($wfh->id, 'Data tidak lengkap');
+
+        $this->assertTrue($result['success'], $result['message'] ?? '');
+        $wfh->refresh();
+        $this->assertEquals(WfhStatus::Rejected, $wfh->laporan_status);
+        $this->assertEquals('rejected', $wfh->laporan_admin_status);
+    }
+
+    public function test_laporan_approve_rejects_already_approved(): void
+    {
+        $wfh = Wfh::factory()->approved()
+            ->for($this->karyawan)
+            ->create([
+                'laporan_status' => WfhStatus::Approved->value,
+                'laporan_admin_status' => 'approved',
+            ]);
+
+        $service = app(\App\Services\WfhService::class);
+        $result = $service->approveLaporanAdmin($wfh->id);
+
+        $this->assertFalse($result['success']);
+    }
+
+    public function test_store_laporan_rejects_double_submit(): void
+    {
+        $wfh = Wfh::factory()->approved()
+            ->for($this->karyawan)
+            ->create([
+                'laporan_status' => WfhStatus::PendingAdmin->value,
+                'laporan_deskripsi' => 'Sudah ada',
+            ]);
+
+        $service = app(\App\Services\WfhService::class);
+        $request = new \Illuminate\Http\Request([
+            'laporan_deskripsi' => 'Coba kirim ulang',
+        ]);
+
+        $result = $service->storeLaporanWfh($request, $wfh->id, 'KRY001');
+
+        $this->assertFalse($result['success']);
+        $this->assertStringContainsString('Edit Laporan', $result['message']);
+    }
+
+    public function test_store_laporan_edit_rejected_allows_resubmit(): void
+    {
+        $wfh = Wfh::factory()->approved()
+            ->for($this->karyawan)
+            ->create([
+                'laporan_status' => WfhStatus::Rejected->value,
+                'laporan_admin_status' => 'rejected',
+                'laporan_deskripsi' => 'Ditolak',
+            ]);
+
+        $service = app(\App\Services\WfhService::class);
+        $data = $service->getLaporanData($wfh->id, 'KRY001', true);
+
+        $this->assertIsObject($data);
+        $this->assertObjectNotHasProperty('error', $data);
+        $this->assertEquals(WfhStatus::Rejected, $data->laporan_status);
+    }
+
+    public function test_store_laporan_edit_requires_rejected_status(): void
+    {
+        $wfh = Wfh::factory()->approved()
+            ->for($this->karyawan)
+            ->create([
+                'laporan_status' => WfhStatus::PendingAdmin->value,
+            ]);
+
+        $service = app(\App\Services\WfhService::class);
+        $data = $service->getLaporanData($wfh->id, 'KRY001', true);
+
+        $this->assertIsObject($data);
+        $this->assertObjectHasProperty('error', $data);
+        $this->assertStringContainsString('ditolak', $data->error);
+    }
+
+    public function test_store_laporan_unpaid_allowed_for_edit_query(): void
+    {
+        $wfh = Wfh::factory()
+            ->for($this->karyawan)
+            ->create([
+                'status' => WfhStatus::Unpaid->value,
+                'laporan_status' => WfhStatus::Rejected->value,
+                'laporan_admin_status' => 'rejected',
+            ]);
+
+        $service = app(\App\Services\WfhService::class);
+        $data = $service->getLaporanData($wfh->id, 'KRY001', true);
+
+        $this->assertIsObject($data);
+        $this->assertObjectNotHasProperty('error', $data);
+        $this->assertEquals(WfhStatus::Unpaid, $data->status);
+    }
+
+    public function test_get_laporan_allows_admin_recovery_after_unpaid_approved(): void
+    {
+        $tglWfh = now('Asia/Jakarta')->subDays(3)->format('Y-m-d');
+        $wfh = Wfh::factory()
+            ->for($this->karyawan)
+            ->create([
+                'status' => WfhStatus::Approved->value,
+                'tgl_wfh' => $tglWfh,
+                'laporan_status' => null,
+                'approved_at' => now('Asia/Jakarta'),
+            ]);
+
+        Presensi::create([
+            'nik' => 'KRY001',
+            'tgl_presensi' => $tglWfh,
+            'jam_in' => '08:00:00',
+            'jam_out' => '17:00:00',
+            'foto_in' => '-',
+            'lokasi_in' => '-',
+        ]);
+
+        $service = app(\App\Services\WfhService::class);
+        $data = $service->getLaporanData($wfh->id, 'KRY001');
+
+        $this->assertIsObject($data);
+        $this->assertObjectNotHasProperty('error', $data);
+    }
+
+    public function test_get_laporan_blocks_after_unpaid_approved_in_same_recovery_window_null_approved(): void
+    {
+        $tglWfh = now('Asia/Jakarta')->subDays(3)->format('Y-m-d');
+        $wfh = Wfh::factory()
+            ->for($this->karyawan)
+            ->create([
+                'status' => WfhStatus::Approved->value,
+                'tgl_wfh' => $tglWfh,
+                'laporan_status' => null,
+                'approved_at' => $tglWfh,
+            ]);
+
+        $service = app(\App\Services\WfhService::class);
+        $data = $service->getLaporanData($wfh->id, 'KRY001');
+
+        $this->assertIsObject($data);
+        $this->assertObjectHasProperty('error', $data);
+        $this->assertStringContainsString('tanggal WFH', $data->error);
+    }
 }

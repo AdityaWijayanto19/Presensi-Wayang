@@ -160,6 +160,7 @@ class WfhService
             'perusahaan' => $perusahaan,
             'tgl_wfh' => $request->tgl_wfh,
             'deskripsi_pekerjaan' => $request->deskripsi_pekerjaan,
+            'keterangan' => $request->keterangan ?? '-',
             'nama_atasan' => $atasan?->nama_lengkap ?? '-',
             'jabatan_atasan' => $atasan?->jabatan instanceof Jabatan ? $atasan->jabatan->value : ($atasan?->jabatan ?? '-'),
             'nama_approver' => '-',
@@ -202,7 +203,7 @@ class WfhService
                     $atasanUser = Karyawan::where('nik', $atasanNik)->first();
                     if ($atasanUser) {
                         $atasanUser->notify(new \App\Notifications\WfhSubmitted($wfh, $karyawanFresh));
-                        $this->push->send($atasanNik, 'Pengajuan WFH Baru', $karyawanFresh->nama_lengkap . ' mengajukan WFH ' . $request->tgl_wfh, '/presensi/datawfh', 'wfh-submitted-' . $wfh->id);
+                        $this->push->send($atasanNik, 'Pengajuan WFH Baru', $karyawanFresh->nama_lengkap . ' mengajukan WFH ' . $request->tgl_wfh, '/dashboard', 'wfh-submitted-' . $wfh->id);
                     }
                 } catch (\Exception $e) {
                     Log::warning('WFH atasan notification failed: ' . $e->getMessage());
@@ -222,17 +223,29 @@ class WfhService
 
     public function deleteWfh(int $id, string $nik): array
     {
-        $wfh = Wfh::where('id', $id)->where('nik', $nik)->first();
-        if (!$wfh) {
-            return ['success' => false, 'message' => 'Data tidak ditemukan!'];
+        DB::beginTransaction();
+        try {
+            $wfh = Wfh::where('id', $id)->where('nik', $nik)->lockForUpdate()->first();
+            if (!$wfh) {
+                DB::rollBack();
+                return ['success' => false, 'message' => 'Data tidak ditemukan!'];
+            }
+
+            if (!in_array($wfh->status, [WfhStatus::PendingAtasan])) {
+                DB::rollBack();
+                return ['success' => false, 'message' => 'WFH yang sudah disetujui atau masuk ke admin tidak bisa dihapus!'];
+            }
+
+            $files = self::collectWfhFiles($wfh);
+            $wfh->delete();
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('deleteWfh failed: ' . $e->getMessage());
+            return ['success' => false, 'message' => 'Gagal menghapus data WFH'];
         }
 
-        if (!in_array($wfh->status, [WfhStatus::PendingAtasan])) {
-            return ['success' => false, 'message' => 'WFH yang sudah disetujui atau masuk ke admin tidak bisa dihapus!'];
-        }
-
-        self::deleteWfhFiles($wfh);
-        $wfh->delete();
+        self::deleteFilesFromArray($files);
         cache()->forget('pending_wfh_count');
         cache()->forget('pending_wfh_admin_count');
 
@@ -241,15 +254,29 @@ class WfhService
 
     public function deleteWfhAdmin(int $id): array
     {
-        $wfh = Wfh::find($id);
-        if (!$wfh) return ['success' => false, 'message' => 'Data tidak ditemukan'];
+        DB::beginTransaction();
+        try {
+            $wfh = Wfh::where('id', $id)->lockForUpdate()->first();
+            if (!$wfh) {
+                DB::rollBack();
+                return ['success' => false, 'message' => 'Data tidak ditemukan'];
+            }
 
-        if (!in_array($wfh->status, [WfhStatus::PendingAdmin, WfhStatus::Rejected])) {
-            return ['success' => false, 'message' => 'Hanya data dengan status pending atau ditolak yang bisa dihapus!'];
+            if (!in_array($wfh->status, [WfhStatus::PendingAtasan, WfhStatus::PendingAdmin, WfhStatus::Rejected])) {
+                DB::rollBack();
+                return ['success' => false, 'message' => 'Hanya data dengan status pending atau ditolak yang bisa dihapus!'];
+            }
+
+            $files = self::collectWfhFiles($wfh);
+            $wfh->delete();
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('deleteWfhAdmin failed: ' . $e->getMessage());
+            return ['success' => false, 'message' => 'Gagal menghapus data WFH'];
         }
 
-        self::deleteWfhFiles($wfh);
-        $wfh->delete();
+        self::deleteFilesFromArray($files);
         cache()->forget('pending_wfh_count');
         cache()->forget('pending_wfh_admin_count');
         cache()->forget('pending_laporan_admin_count');
@@ -356,7 +383,7 @@ class WfhService
         try {
             if ($pengaju) {
                 $pengaju->notify(new \App\Notifications\WfhApproved($wfh));
-                $this->push->send($wfh->nik, 'WFH Disetujui ', 'WFH ' . self::tglWfh($wfh) . ' disetujui! Silakan input Laporan.', '/presensi/wfh/' . $id . '/laporan', 'wfh-approved-admin-' . $wfh->id);
+                $this->push->send($wfh->nik, 'WFH Disetujui ', 'WFH ' . self::tglWfh($wfh) . ' disetujui! Silakan input Laporan.', '/wfh/' . $id . '/laporan', 'wfh-approved-admin-' . $wfh->id);
             }
         } catch (\Exception $e) {
             Log::warning('WFH admin approval notification failed: ' . $e->getMessage());
@@ -406,32 +433,47 @@ class WfhService
 
     public function getLaporanData(int $id, string $nik, bool $isEdit = false): ?object
     {
-        $wfh = Wfh::where('id', $id)->where('nik', $nik)->where('status', WfhStatus::Approved->value)->first();
+        $wfh = Wfh::where('id', $id)
+            ->where('nik', $nik)
+            ->whereIn('status', [WfhStatus::Approved->value, WfhStatus::Unpaid->value])
+            ->first();
         if (!$wfh) return null;
 
         if ($isEdit) {
-            if ($wfh->laporan_status !== WfhStatus::Rejected->value) {
+            if ($wfh->laporan_status !== WfhStatus::Rejected) {
                 return (object) ['error' => 'Laporan ini tidak dalam status ditolak.'];
             }
             return $wfh;
         }
 
+        if ($wfh->laporan_status !== null) {
+            return (object) ['error' => 'Laporan sudah pernah dikirim. Gunakan Edit Laporan.'];
+        }
+
         $tglWfh = $wfh->tgl_wfh instanceof \Carbon\Carbon ? $wfh->tgl_wfh->format('Y-m-d') : (string) $wfh->tgl_wfh;
         $hariIni = now('Asia/Jakarta')->format('Y-m-d');
-        if ($tglWfh !== $hariIni) {
+        $approvedAtStr = $wfh->approved_at instanceof \Carbon\Carbon
+            ? $wfh->approved_at->format('Y-m-d')
+            : (string) ($wfh->approved_at ?? '');
+        $adminRecovery = $approvedAtStr !== '' && $approvedAtStr > $tglWfh;
+
+        if ($tglWfh !== $hariIni && !$adminRecovery) {
             return (object) ['error' => 'Laporan hanya bisa diupload pada tanggal WFH (' . now('Asia/Jakarta')->parse($tglWfh)->format('d M Y') . '). Hari ini: ' . now('Asia/Jakarta')->format('d M Y') . '.'];
         }
 
-        $presensiToday = Presensi::where('nik', $nik)->where('tgl_presensi', $hariIni)->first();
+        $cekTgl = $adminRecovery ? $tglWfh : $hariIni;
+        $presensiToday = Presensi::where('nik', $nik)->where('tgl_presensi', $cekTgl)->first();
         if (!$presensiToday || !$presensiToday->jam_in) {
             return (object) ['error' => 'Anda belum melakukan absen masuk hari ini. Silakan absen masuk terlebih dahulu.'];
         }
 
-        $jamMasuk = \Carbon\Carbon::parse($presensiToday->jam_in)->setTimezone('Asia/Jakarta');
-        $selisihJam = $jamMasuk->diffInHours(now('Asia/Jakarta'));
-        if ($selisihJam < 7) {
-            $sisa = ceil(7 - $selisihJam);
-            return (object) ['error' => 'Laporan hanya bisa diisi setelah 7 jam absen masuk. Sisa waktu: ' . $sisa . ' jam.'];
+        if (!$adminRecovery) {
+            $jamMasuk = \Carbon\Carbon::parse($presensiToday->jam_in)->setTimezone('Asia/Jakarta');
+            $selisihJam = $jamMasuk->diffInHours(now('Asia/Jakarta'));
+            if ($selisihJam < 7) {
+                $sisa = ceil(7 - $selisihJam);
+                return (object) ['error' => 'Laporan hanya bisa diisi setelah 7 jam absen masuk. Sisa waktu: ' . $sisa . ' jam.'];
+            }
         }
 
         return $wfh;
@@ -439,11 +481,18 @@ class WfhService
 
     public function storeLaporanWfh(Request $request, int $id, string $nik, bool $isEdit = false): array
     {
-        $wfh = Wfh::where('id', $id)->where('nik', $nik)->where('status', WfhStatus::Approved->value)->first();
+        $wfh = Wfh::where('id', $id)
+            ->where('nik', $nik)
+            ->whereIn('status', [WfhStatus::Approved->value, WfhStatus::Unpaid->value])
+            ->first();
         if (!$wfh) return ['success' => false, 'message' => 'Akses ditolak'];
 
-        if ($isEdit && $wfh->laporan_status !== WfhStatus::Rejected->value) {
+        if ($isEdit && $wfh->laporan_status !== WfhStatus::Rejected) {
             return ['success' => false, 'message' => 'Laporan ini tidak dalam status ditolak'];
+        }
+
+        if (!$isEdit && $wfh->laporan_status !== null) {
+            return ['success' => false, 'message' => 'Laporan sudah pernah dikirim. Gunakan Edit Laporan.'];
         }
 
         $karyawan = Karyawan::where('nik', $nik)->first();
@@ -454,33 +503,38 @@ class WfhService
             $tglWfh = $wfh->tgl_wfh instanceof \Carbon\Carbon
                 ? $wfh->tgl_wfh->format('Y-m-d')
                 : (string) $wfh->tgl_wfh;
-            if ($tglWfh !== $hariIni) {
+
+            $approvedAtStr = $wfh->approved_at instanceof \Carbon\Carbon
+                ? $wfh->approved_at->format('Y-m-d')
+                : (string) ($wfh->approved_at ?? '');
+            $adminRecovery = $approvedAtStr !== '' && $approvedAtStr > $tglWfh;
+
+            if ($tglWfh !== $hariIni && !$adminRecovery) {
                 return ['success' => false, 'message' => 'Laporan hanya bisa diupload pada tanggal WFH (' . $tglWfh . ')'];
             }
 
-            $presensiToday = Presensi::where('nik', $nik)->where('tgl_presensi', $hariIni)->first();
-            if (!$presensiToday || !$presensiToday->jam_in) {
+            $cekTgl = $adminRecovery ? $tglWfh : $hariIni;
+            $presensiCek = Presensi::where('nik', $nik)->where('tgl_presensi', $cekTgl)->first();
+            if (!$presensiCek || !$presensiCek->jam_in) {
                 return ['success' => false, 'message' => 'Data presensi hari ini tidak ditemukan. Silakan presensi terlebih dahulu.'];
             }
 
-            $jamMasuk = \Carbon\Carbon::parse($presensiToday->jam_in)->setTimezone('Asia/Jakarta');
-            $selisihJam = $jamMasuk->diffInHours(now('Asia/Jakarta'));
-            if ($selisihJam < 7) {
-                return ['success' => false, 'message' => 'Laporan WFH hanya bisa diajukan setelah 7 jam kerja dari jam masuk.'];
+            if (!$adminRecovery) {
+                $jamMasuk = \Carbon\Carbon::parse($presensiCek->jam_in)->setTimezone('Asia/Jakarta');
+                $selisihJam = $jamMasuk->diffInHours(now('Asia/Jakarta'));
+                if ($selisihJam < 7) {
+                    return ['success' => false, 'message' => 'Laporan WFH hanya bisa diajukan setelah 7 jam kerja dari jam masuk.'];
+                }
             }
         }
 
         DB::beginTransaction();
         try {
             $imagePaths = [];
+            $oldImages = ($isEdit && !empty($wfh->laporan_images) && is_array($wfh->laporan_images))
+                ? $wfh->laporan_images
+                : [];
             if ($request->hasFile('laporan_images')) {
-                if ($isEdit && !empty($wfh->laporan_images) && is_array($wfh->laporan_images)) {
-                    foreach ($wfh->laporan_images as $oldPath) {
-                        if (!empty($oldPath)) {
-                            Storage::disk('public')->delete($oldPath);
-                        }
-                    }
-                }
                 $imageService = app(ImageService::class);
                 foreach ($request->file('laporan_images') as $idx => $file) {
                     $path = $imageService->processUpload($file, 'wfh/laporan');
@@ -532,7 +586,7 @@ class WfhService
 
             $stempelPath = $this->pdf->getStempelPath();
 
-            $wfh->update([
+            $laporanUpdate = [
                 'laporan_deskripsi' => $request->laporan_deskripsi,
                 'live_location' => $liveLocation,
                 'laporan_images' => $imagePaths,
@@ -541,17 +595,36 @@ class WfhService
                 'laporan_atasan_status' => $initialLaporan['laporan_atasan_status'],
                 'laporan_admin_status' => $initialLaporan['laporan_admin_status'],
                 'laporan_rejected_reason' => null,
-            ]);
+            ];
 
-            if ($isEdit && !empty($wfh->laporan_file)) {
-                Storage::disk('public')->delete($wfh->laporan_file);
+            if ($isEdit && $wfh->status === WfhStatus::Unpaid) {
+                $laporanUpdate['status'] = WfhStatus::Approved->value;
+                $laporanUpdate['approved_at'] = now('Asia/Jakarta');
             }
+
+            $wfh->update($laporanUpdate);
+
+            $oldLaporanFile = $isEdit ? $wfh->laporan_file : null;
 
             $pdfPath = $this->generateLaporanPdf($pdfData, $stempelPath);
             $wfh->update(['laporan_file' => $pdfPath]);
 
             DB::commit();
             cache()->forget('pending_laporan_admin_count');
+
+            // Hapus file lama setelah commit agar link lama tidak mati jika generate gagal
+            if ($oldLaporanFile) {
+                try { Storage::disk('public')->delete($oldLaporanFile); } catch (\Exception $e) {
+                    Log::warning('Old laporan file delete failed: ' . $e->getMessage());
+                }
+            }
+            foreach ($oldImages as $oldPath) {
+                if (!empty($oldPath) && !in_array($oldPath, $imagePaths, true)) {
+                    try { Storage::disk('public')->delete($oldPath); } catch (\Exception $e) {
+                        Log::warning('Old laporan image delete failed: ' . $e->getMessage());
+                    }
+                }
+            }
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('storeLaporanWfh failed: ' . $e->getMessage());
@@ -580,6 +653,7 @@ class WfhService
         try {
             $wfh = Wfh::where('id', $id)->lockForUpdate()->first();
             if (!$wfh) { DB::rollBack(); return ['success' => false, 'message' => 'Data tidak ditemukan']; }
+            if ($wfh->status !== WfhStatus::Approved) { DB::rollBack(); return ['success' => false, 'message' => 'WFH sudah tidak berstatus disetujui']; }
             if ($wfh->laporan_atasan_nik !== $karyawan->nik) { DB::rollBack(); return ['success' => false, 'message' => 'Anda bukan atasan untuk laporan ini']; }
             if ($wfh->laporan_status !== WfhStatus::PendingAtasan) { DB::rollBack(); return ['success' => false, 'message' => 'Status laporan tidak valid']; }
 
@@ -615,6 +689,7 @@ class WfhService
         try {
             $wfh = Wfh::where('id', $id)->lockForUpdate()->first();
             if (!$wfh || $wfh->laporan_atasan_nik !== $karyawan->nik) { DB::rollBack(); return ['success' => false, 'message' => 'Akses ditolak']; }
+            if ($wfh->status !== WfhStatus::Approved) { DB::rollBack(); return ['success' => false, 'message' => 'WFH sudah tidak berstatus disetujui']; }
             if ($wfh->laporan_status !== WfhStatus::PendingAtasan) { DB::rollBack(); return ['success' => false, 'message' => 'Status laporan tidak valid untuk penolakan']; }
 
             $wfh->update([
@@ -650,6 +725,7 @@ class WfhService
         try {
             $wfh = Wfh::where('id', $id)->lockForUpdate()->first();
             if (!$wfh) { DB::rollBack(); return ['success' => false, 'message' => 'Data tidak ditemukan']; }
+            if ($wfh->status !== WfhStatus::Approved) { DB::rollBack(); return ['success' => false, 'message' => 'WFH sudah tidak berstatus disetujui']; }
             if ($wfh->laporan_status !== WfhStatus::PendingAdmin) { DB::rollBack(); return ['success' => false, 'message' => 'Status laporan tidak valid untuk persetujuan']; }
             if ($wfh->laporan_admin_status !== 'pending') { DB::rollBack(); return ['success' => false, 'message' => 'Laporan ini sudah diproses']; }
 
@@ -686,6 +762,7 @@ class WfhService
         try {
             $wfh = Wfh::where('id', $id)->lockForUpdate()->first();
             if (!$wfh) { DB::rollBack(); return ['success' => false, 'message' => 'Data tidak ditemukan']; }
+            if ($wfh->status !== WfhStatus::Approved) { DB::rollBack(); return ['success' => false, 'message' => 'WFH sudah tidak berstatus disetujui']; }
             if ($wfh->laporan_status !== WfhStatus::PendingAdmin) { DB::rollBack(); return ['success' => false, 'message' => 'Status laporan tidak valid untuk penolakan']; }
             if ($wfh->laporan_admin_status !== 'pending') { DB::rollBack(); return ['success' => false, 'message' => 'Laporan ini sudah diproses']; }
 
@@ -718,22 +795,78 @@ class WfhService
 
     public static function deleteWfhFiles(Wfh $wfh): void
     {
+        self::deleteFilesFromArray(self::collectWfhFiles($wfh));
+    }
+
+    public static function collectWfhFiles(Wfh $wfh): array
+    {
+        $files = [];
+        if (!empty($wfh->pdf_form_path)) {
+            $files[] = $wfh->pdf_form_path;
+        }
+        if (!empty($wfh->laporan_file)) {
+            $files[] = $wfh->laporan_file;
+        }
+        if (!empty($wfh->laporan_images) && is_array($wfh->laporan_images)) {
+            foreach ($wfh->laporan_images as $imagePath) {
+                if (!empty($imagePath)) {
+                    $files[] = $imagePath;
+                }
+            }
+        }
+        return $files;
+    }
+
+    public static function deleteFilesFromArray(array $files): void
+    {
+        foreach ($files as $file) {
+            try {
+                if (!empty($file)) {
+                    Storage::disk('public')->delete($file);
+                }
+            } catch (\Exception $e) {
+                Log::warning('Failed to delete WFH file: ' . $e->getMessage());
+            }
+        }
+    }
+
+    public function regenerateFormPdf(Wfh $wfh): void
+    {
         try {
-            if (!empty($wfh->pdf_form_path)) {
-                Storage::disk('public')->delete($wfh->pdf_form_path);
-            }
-            if (!empty($wfh->laporan_file)) {
-                Storage::disk('public')->delete($wfh->laporan_file);
-            }
-            if (!empty($wfh->laporan_images) && is_array($wfh->laporan_images)) {
-                foreach ($wfh->laporan_images as $imagePath) {
-                    if (!empty($imagePath)) {
-                        Storage::disk('public')->delete($imagePath);
-                    }
+            $karyawan = Karyawan::where('nik', $wfh->nik)->first();
+            if (!$karyawan) return;
+
+            $jabatan = $karyawan->jabatan instanceof Jabatan ? $karyawan->jabatan->value : ($karyawan->jabatan ?? '-');
+            $posisi = $karyawan->posisi ?? '-';
+            $perusahaan = $karyawan->unitperusahaan?->perusahaan ?? '-';
+            $atasan = $wfh->atasan_nik ? Karyawan::where('nik', $wfh->atasan_nik)->first() : null;
+
+            $pdfData = [
+                'headerSuratPath' => 'assets/img/header-surat.png',
+                'nama_lengkap' => $karyawan->nama_lengkap,
+                'jabatan' => $jabatan,
+                'posisi' => $posisi,
+                'perusahaan' => $perusahaan,
+                'tgl_wfh' => $wfh->tgl_wfh,
+                'deskripsi_pekerjaan' => $wfh->deskripsi_pekerjaan,
+                'keterangan' => $wfh->keterangan ?? '-',
+                'nama_atasan' => $atasan?->nama_lengkap ?? '-',
+                'jabatan_atasan' => $atasan?->jabatan instanceof Jabatan ? $atasan->jabatan->value : ($atasan?->jabatan ?? '-'),
+                'nama_approver' => '-',
+                'jabatan_approver' => '-',
+            ];
+
+            $oldPath = $wfh->pdf_form_path;
+            $pdfPath = $this->generatePdf($pdfData, $this->pdf->getStempelPath());
+            $wfh->update(['pdf_form_path' => $pdfPath]);
+
+            if ($oldPath && $oldPath !== $pdfPath) {
+                try { Storage::disk('public')->delete($oldPath); } catch (\Exception $e) {
+                    Log::warning('Old WFH form PDF delete failed: ' . $e->getMessage());
                 }
             }
         } catch (\Exception $e) {
-            Log::warning('Failed to delete WFH files: ' . $e->getMessage());
+            Log::error('regenerateFormPdf failed: ' . $e->getMessage());
         }
     }
 

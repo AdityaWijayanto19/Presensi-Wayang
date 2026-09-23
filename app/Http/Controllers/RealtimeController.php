@@ -34,7 +34,7 @@ class RealtimeController extends Controller
     {
         $lastId = is_numeric($request->last_id) ? (int) $request->last_id : 0;
         $lastCheck = $request->last_check
-            ? \Carbon\Carbon::parse($request->last_check)->subSecond()
+            ? \Carbon\Carbon::parse($request->last_check)->tz('Asia/Jakarta')->subSecond()
             : now('Asia/Jakarta')->subSeconds(10);
 
         $stats = Wfh::selectRaw('
@@ -44,7 +44,7 @@ class RealtimeController extends Controller
         ')->setBindings([$lastId, $lastCheck, $lastCheck])->first();
 
         return response()->json([
-            'new_data' => ($stats->new_count ?? 0) > 0,
+            'new_data' => $lastId > 0 && ($stats->new_count ?? 0) > 0,
             'updated_data' => ($stats->updated_count ?? 0) > 0,
             'latest_id' => $stats->latest_id ?? 0,
         ]);

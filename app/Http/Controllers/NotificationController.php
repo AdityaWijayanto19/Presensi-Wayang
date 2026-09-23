@@ -60,11 +60,32 @@ class NotificationController extends Controller
             'type' => 'nullable|string|max:100',
         ]);
 
+        $type = $validated['type'] ?? 'adhoc';
+
+        if ($type === 'wfh_h1_reminder') {
+            $alreadyToday = $user->notifications()
+                ->where('type', 'App\\Notifications\\AdhocNotification')
+                ->where('created_at', '>=', now('Asia/Jakarta')->startOfDay())
+                ->where('data->type', 'wfh_h1_reminder')
+                ->exists();
+            if ($alreadyToday) {
+                return response()->json(['ok' => true, 'deduped' => true]);
+            }
+
+            $sudahAbsen = \App\Models\Presensi::where('nik', $user->nik)
+                ->where('tgl_presensi', now('Asia/Jakarta')->format('Y-m-d'))
+                ->whereNotNull('jam_in')
+                ->exists();
+            if ($sudahAbsen) {
+                return response()->json(['ok' => true, 'deduped' => true, 'reason' => 'already_absent']);
+            }
+        }
+
         $user->notifications()->create([
             'id' => \Illuminate\Support\Str::uuid(),
             'type' => 'App\\Notifications\\AdhocNotification',
             'data' => [
-                'type' => $validated['type'] ?? 'adhoc',
+                'type' => $type,
                 'message' => $validated['message'],
             ],
         ]);

@@ -16,7 +16,7 @@ class StoreLemburRequest extends FormRequest
         return [
             'keterangan' => 'required|string|min:5|max:1000',
             'tgl_lembur' => 'required|date',
-            'durasi_jam' => 'required|numeric|in:0.5,1,1.5,2,2.5,3',
+            'durasi_jam' => 'required|in:1,1.5,2,2.5,3,3.5,4,4.5,5,prorate',
             'jam_mulai' => 'required|date_format:H:i',
         ];
     }
@@ -30,8 +30,7 @@ class StoreLemburRequest extends FormRequest
             'tgl_lembur.required' => 'Tanggal lembur wajib diisi.',
             'tgl_lembur.date' => 'Format tanggal tidak valid.',
             'durasi_jam.required' => 'Durasi lembur wajib diisi.',
-            'durasi_jam.numeric' => 'Format durasi tidak valid.',
-            'durasi_jam.in' => 'Durasi lembur harus 0.5, 1, 1.5, 2, 2.5, atau 3 jam.',
+            'durasi_jam.in' => 'Durasi lembur harus 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, atau Prorate.',
             'jam_mulai.required' => 'Rencana jam mulai lembur wajib diisi.',
             'jam_mulai.date_format' => 'Format jam mulai tidak valid (HH:MM).',
         ];

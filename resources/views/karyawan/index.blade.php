@@ -225,12 +225,12 @@
                             <div class="card-body p-3">
                                 <div class="flex items-start justify-between gap-3">
                                     <div class="flex-1 min-w-0">
-                                        <div class="text-[13px] font-bold text-[#1c1917]">{{ $p->nama_lengkap }} <span
-                                                class="text-[11px] font-normal text-[#78716c]">• {{ $p->jabatan }} •
-                                                {{ $p->posisi }}</span></div>
+                                        <div class="text-[13px] font-bold text-[#1c1917]">{{ $p->karyawan->nama_lengkap ?? '-' }} <span
+                                                class="text-[11px] font-normal text-[#78716c]">• {{ $p->karyawan->jabatan ?? '-' }} •
+                                                {{ $p->karyawan->posisi ?? '-' }}</span></div>
                                         <div class="text-[11px] text-[#78716c]">
                                             {{ date('d M Y', strtotime($p->tgl_wfh)) }} •
-                                            {{ $p->unit }} ({{ $p->perusahaan }})</div>
+                                            {{ $p->karyawan->unit ?? '-' }} ({{ $p->karyawan->unitperusahaan->perusahaan ?? '-' }})</div>
                                         <div class="text-[11px] text-[#57534e] mt-1">Laporan WFH menunggu persetujuan Anda
                                         </div>
                                         @if (!empty($p->laporan_file))
@@ -244,7 +244,7 @@
                                                     class="text-[11px] text-sky-700 hover:underline cursor-pointer js-preview-laporan"
                                                     data-deskripsi="{{ $p->laporan_deskripsi }}"
                                                     data-tgl="{{ date('d M Y', strtotime($p->tgl_wfh)) }}"
-                                                    data-label="Laporan WFH — {{ $p->nama_lengkap }}">Form
+                                                    data-label="Laporan WFH — {{ $p->karyawan->nama_lengkap ?? '-' }}">Form
                                                     Laporan</button>
                                             </div>
                                         @endif
@@ -713,10 +713,14 @@
                 <div class="flex-1">
                     <div class="text-[13px] font-bold text-sky-900">WFH {{ $isBesok ? 'Besok' : 'Hari Ini' }}
                         ({{ date('d M Y', strtotime($activeWfh->tgl_wfh)) }}) Sudah Disetujui</div>
-                    <div class="text-[11px] text-sky-700">Jangan lupa absen sesuai jam kerja @if ($jamMasuk)
-                            <b>{{ $jamMasuk }}</b>
-                        @endif. Alert akan muncul 10 menit sebelum jam masuk.</div>
-                    <div class="text-[11px] text-sky-600 mt-1" id="countdownH1"></div>
+                    @if (!empty($sudahAbsenHariIni) && !$isBesok)
+                        <div class="text-[11px] text-sky-700">Anda sudah absen hari ini. Terima kasih!</div>
+                    @else
+                        <div class="text-[11px] text-sky-700">Jangan lupa absen sesuai jam kerja @if ($jamMasuk)
+                                <b>{{ $jamMasuk }}</b>
+                            @endif. Alert akan muncul 10 menit sebelum jam masuk.</div>
+                        <div class="text-[11px] text-sky-600 mt-1" id="countdownH1"></div>
+                    @endif
                 </div>
             </div>
         @endif
@@ -1266,6 +1270,11 @@
                         // 6. Update presensi jam in/out + foto
                         if (data.presensi) {
                             var p = data.presensi;
+                            if (p.jam_in && window._tglCountdown === "{{ now('Asia/Jakarta')->format('Y-m-d') }}") {
+                                window._alreadyAbsen = true;
+                                var alertH1CardLive = document.getElementById('alertH1');
+                                if (alertH1CardLive) alertH1CardLive.style.display = 'none';
+                            }
                             var jamInEl = document.getElementById('presensi-jam-in');
                             var jamOutEl = document.getElementById('presensi-jam-out');
                             if (jamInEl) jamInEl.textContent = p.jam_in || 'Belum Presensi';
@@ -2337,6 +2346,7 @@
 
             // === ALERT H-1 : 10 menit sebelum jam masuk ===
             @if (isset($tglCountdown) && $tglCountdown)
+                window._tglCountdown = "{{ $tglCountdown }}";
                 (function() {
                     var countdownEl = document.getElementById('countdownH1');
                     @if (isset($jamMasuk) && $jamMasuk)
@@ -2352,12 +2362,20 @@
                         }
 
                         function checkH1() {
+                            if (window._alreadyAbsen) {
+                                if (countdownEl) countdownEl.textContent = 'Anda sudah absen hari ini.';
+                                var alertCard = document.getElementById('alertH1');
+                                if (alertCard) alertCard.style.display = 'none';
+                                return;
+                            }
                             var nowMs = serverNowMs();
                             var jamParts = jamMasuk.split(':');
                             var tglParts = tglCountdown.split('-');
-                            var targetMs = new Date(parseInt(tglParts[0]), parseInt(tglParts[1]) - 1, parseInt(
-                                tglParts[2]), parseInt(jamParts[0]), parseInt(jamParts[1]), parseInt(
-                                jamParts[2] || 0)).getTime();
+                            var targetMs = Date.parse(
+                                tglParts[0] + '-' + tglParts[1] + '-' + tglParts[2] + 'T' +
+                                jamParts[0].padStart(2, '0') + ':' + jamParts[1].padStart(2, '0') + ':' +
+                                (jamParts[2] || '00') + '+07:00'
+                            );
                             var alertMs = targetMs - 10 * 60 * 1000;
                             var diff = alertMs - nowMs;
                             if (countdownEl) {

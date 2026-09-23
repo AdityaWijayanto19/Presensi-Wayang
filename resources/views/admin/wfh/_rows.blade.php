@@ -178,12 +178,14 @@
                     </button>
                     @endcan
                     @can('wfh-delete')
+                    @if (in_array($status, ['pending_atasan', 'pending_admin', 'rejected']))
                     <form action="/presensi/datawfh/{{ $d->id }}/delete" method="POST" class="m-0">
                         @csrf
                         <button type="submit" class="w-full text-left px-3 py-1.5 text-xs text-rose-600 hover:bg-rose-50 flex items-center gap-2 delete-confirm">
                             <i data-lucide="trash-2" style="width:12px;height:12px;"></i> Hapus
                         </button>
                     </form>
+                    @endif
                     @endcan
                 </div>
             </div>

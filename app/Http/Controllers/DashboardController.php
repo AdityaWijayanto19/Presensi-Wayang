@@ -94,7 +94,7 @@ class DashboardController extends Controller
 
     $wfhSaya = Wfh::where('nik', $nik)
         ->where(function ($q) {
-            $q->whereIn('status', ['pending_atasan', 'pending_admin'])
+            $q->whereIn('status', ['pending_atasan', 'pending_admin', 'rejected'])
                 ->orWhere(function ($q2) {
                     $q2->where('status', 'approved')
                         ->where(function ($q3) {
@@ -110,7 +110,7 @@ class DashboardController extends Controller
         ->map(function ($w) use ($hariini) {
             $tgl = $w->tgl_wfh instanceof \Carbon\Carbon
                 ? $w->tgl_wfh->format('Y-m-d')
-                : now('Asia/Jakarta')->format('Y-m-d');
+                : (string) $w->tgl_wfh;
             $w->is_today = ($tgl === $hariini);
             return $w;
         });
@@ -138,13 +138,14 @@ class DashboardController extends Controller
         $wfhHariIni = Wfh::where('nik', $nik)->where('tgl_wfh', $hariini)->where('status', 'approved')->first();
         $jamMasuk = null;
         $tglCountdown = null;
+        $sudahAbsenHariIni = $presensihariini && $presensihariini->jam_in;
         if ($wfhBesok) {
             $jamMasuk = Unitperusahaan::where('unit', $karyawan->unit)->value('jam_masuk');
             if ($jamMasuk instanceof \Carbon\Carbon) {
                 $jamMasuk = $jamMasuk->format('H:i:s');
             }
             $tglCountdown = date('Y-m-d', strtotime($wfhBesok->tgl_wfh));
-        } elseif ($wfhHariIni) {
+        } elseif ($wfhHariIni && !$sudahAbsenHariIni) {
             $jamMasuk = Unitperusahaan::where('unit', $karyawan->unit)->value('jam_masuk');
             if ($jamMasuk instanceof \Carbon\Carbon) {
                 $jamMasuk = $jamMasuk->format('H:i:s');
@@ -154,7 +155,7 @@ class DashboardController extends Controller
 
         $lemburSaya = \App\Models\Lembur::where('nik', $nik)
             ->where(function ($q) {
-                $q->whereIn('status', ['pending_atasan', 'pending_admin'])
+                $q->whereIn('status', ['pending_atasan', 'pending_admin', 'rejected'])
                     ->orWhere(function ($q2) {
                         $q2->where('status', 'approved')
                             ->where(function ($q3) {
@@ -213,7 +214,7 @@ class DashboardController extends Controller
             'wfhSaya', 'pendingAtasan', 'pendingLaporanAtasan',
             'lemburSaya', 'pendingAtasanLembur', 'pendingLaporanLemburAtasan',
             'pendingAtasanIzin', 'izinSaya',
-            'wfhBesok', 'wfhHariIni', 'jamMasuk', 'tglCountdown', 'notifications'
+            'wfhBesok', 'wfhHariIni', 'jamMasuk', 'tglCountdown', 'sudahAbsenHariIni', 'notifications'
         ));
     }
 }

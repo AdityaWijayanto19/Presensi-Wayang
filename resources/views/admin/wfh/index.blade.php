@@ -498,13 +498,21 @@
                 }
 
                 var adminPollInterval = 5000;
+                var lastWfhId = 0;
 
                 function pollAdminData() {
-                    fetch('/api/realtime/admin/wfh-check?last_check=' + encodeURIComponent(lastCheck), {
+                    var checkUrl = '/api/realtime/admin/wfh-check?last_check=' + encodeURIComponent(lastCheck);
+                    if (lastWfhId) {
+                        checkUrl += '&last_id=' + lastWfhId;
+                    }
+                    fetch(checkUrl, {
                             credentials: 'same-origin'
                         })
                         .then(function(r) { return r.json(); })
                         .then(function(check) {
+                            if (check.latest_id) {
+                                lastWfhId = check.latest_id;
+                            }
                             if (check.updated_data || check.new_data) {
                                 lastCheck = new Date().toISOString();
                                 fetchTableData();

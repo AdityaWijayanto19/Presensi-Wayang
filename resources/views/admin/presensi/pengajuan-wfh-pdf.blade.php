@@ -439,6 +439,23 @@
 
             </tr>
 
+
+            <tr>
+
+                <td class="activity-cell" colspan="2">
+
+                    <span class="info-label">
+                        Keterangan:
+                    </span>
+
+                    <div class="activity-content">
+                        {!! nl2br(e($keterangan ?? '-')) !!}
+                    </div>
+
+                </td>
+
+            </tr>
+
         </table>
 
 

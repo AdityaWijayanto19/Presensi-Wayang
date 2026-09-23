@@ -16,13 +16,14 @@ class ReminderLaporan extends Command
     {
         $hariIni = now('Asia/Jakarta')->format('Y-m-d');
 
-        // Query WFH yang approved + tanggal hari ini + belum upload laporan
+        // Query WFH yang approved + tanggal hari ini + (belum upload laporan ATAU laporan ditolak)
         $wfhList = DB::table('wfhs')
             ->where('status', WfhStatus::Approved->value)
             ->where('tgl_wfh', $hariIni)
             ->where(function ($q) {
                 $q->whereNull('laporan_deskripsi')
-                  ->orWhere('laporan_deskripsi', '');
+                  ->orWhere('laporan_deskripsi', '')
+                  ->orWhere('laporan_status', WfhStatus::Rejected->value);
             })
             ->get();
 
@@ -44,7 +45,7 @@ class ReminderLaporan extends Command
                     $wfh->nik,
                     '⚠️ Reminder Upload Laporan',
                     'WFH tanggal ' . $wfh->tgl_wfh . ' belum upload laporan! Upload sebelum pukul 00:00.',
-                    '/presensi/wfh/' . $wfh->id . '/laporan',
+                    '/wfh/' . $wfh->id . '/laporan',
                     'reminder-laporan-' . $wfh->id
                 );
 

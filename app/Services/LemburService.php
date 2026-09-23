@@ -156,20 +156,21 @@ class LemburService
         $initial = self::initialStatus($karyawanFresh);
 
         $tglLembur = $request->tgl_lembur ?? now('Asia/Jakarta')->format('Y-m-d');
-        $durasiJam = (float) $request->durasi_jam;
+        $isProrate = $request->durasi_jam === 'prorate';
+        $durasiJam = $isProrate ? 5.5 : (float) $request->durasi_jam;
         $jamMulai = $request->jam_mulai;
 
-        // Validasi jam_mulai tidak di gap (16:51 - 17:59)
+        // Validasi jam_mulai: menit harus :00 atau :30
         $jamMulaiParts = explode(':', $jamMulai);
-        $jamMulaiMenit = (int) $jamMulaiParts[0] * 60 + (int) $jamMulaiParts[1];
-        $validPagi = ($jamMulaiMenit >= 1 && $jamMulaiMenit <= 1010);   // 00:01 - 16:50
-        $validMalam = ($jamMulaiMenit >= 1080 && $jamMulaiMenit <= 1439); // 18:00 - 23:59
-        if (!$validPagi && !$validMalam) {
-            return ['success' => false, 'message' => 'Jam mulai lembur tidak valid. Pilih jam dalam window yang diizinkan (00:01-16:50 atau 18:00-23:59).'];
+        $jamMulaiMenit = (int) ($jamMulaiParts[1] ?? -1);
+        if (!in_array($jamMulaiMenit, [0, 30], true)) {
+            return ['success' => false, 'message' => 'Jam mulai lembur harus interval 30 menit (:00 atau :30).'];
         }
 
         $rencanaMulai = \Carbon\Carbon::parse($tglLembur . ' ' . $jamMulai);
-        $rencanaSelesai = $rencanaMulai->copy()->addMinutes((int) ($durasiJam * 60));
+        $rencanaSelesai = $isProrate
+            ? null
+            : $rencanaMulai->copy()->addMinutes((int) ($durasiJam * 60));
 
         $pdfData = [
             'headerSuratPath' => 'assets/img/header-surat.png',
@@ -181,8 +182,9 @@ class LemburService
             'keterangan' => $request->keterangan,
             'tgl_lembur' => $tglLembur,
             'jam_mulai' => $jamMulai,
-            'jam_selesai' => $rencanaSelesai->format('H:i'),
+            'jam_selesai' => $rencanaSelesai?->format('H:i') ?? 'Menyesuaikan',
             'durasi_jam' => $durasiJam,
+            'is_prorate' => $isProrate,
             'nama_atasan' => $atasan?->nama_lengkap ?? '-',
             'jabatan_atasan' => $atasan?->jabatan instanceof Jabatan ? $atasan->jabatan->value : ($atasan?->jabatan ?? '-'),
         ];
@@ -538,7 +540,7 @@ class LemburService
         if (!$lembur) return null;
 
         if ($isEdit) {
-            if ($lembur->laporan_status !== LemburStatus::Rejected->value) {
+            if ($lembur->laporan_status !== LemburStatus::Rejected) {
                 return (object) ['error' => 'Laporan ini tidak dalam status ditolak.'];
             }
         } else {
@@ -566,7 +568,7 @@ class LemburService
             ->first();
         if (!$lembur) return ['success' => false, 'message' => 'Akses ditolak'];
 
-        if ($isEdit && $lembur->laporan_status !== LemburStatus::Rejected->value) {
+        if ($isEdit && $lembur->laporan_status !== LemburStatus::Rejected) {
             return ['success' => false, 'message' => 'Laporan ini tidak dalam status ditolak'];
         }
 

@@ -316,26 +316,49 @@ class AdminPresensiController extends Controller
         ];
 
         if ($oldStatus !== $newStatus) {
-            if ($newStatus === 'approved' && empty($wfh->approved_at)) {
-                $updateData['approved_at'] = now();
+            if ($newStatus === 'approved') {
+                $updateData['admin_status'] = 'approved';
+                if (empty($wfh->approved_at) || $oldStatus === 'unpaid') {
+                    $updateData['approved_at'] = now('Asia/Jakarta');
+                }
+            } elseif ($newStatus === 'rejected') {
+                $updateData['admin_status'] = 'rejected';
+            } elseif ($newStatus === 'pending_atasan') {
+                $updateData['admin_status'] = 'pending';
+                $updateData['atasan_status'] = 'pending';
+            } elseif ($newStatus === 'pending_admin') {
+                $updateData['admin_status'] = 'pending';
+            } elseif ($newStatus === 'unpaid') {
+                $updateData['admin_status'] = 'approved';
             }
 
             if ($oldStatus === 'unpaid' && $newStatus === 'approved') {
                 $updateData['laporan_status'] = null;
                 $updateData['laporan_deskripsi'] = null;
                 $updateData['laporan_file'] = null;
-                $updateData['laporan_submitted_at'] = null;
                 $updateData['laporan_approved_at'] = null;
+                $updateData['laporan_images'] = null;
+                $updateData['laporan_atasan_nik'] = null;
+                $updateData['laporan_atasan_status'] = null;
+                $updateData['laporan_admin_status'] = null;
+                $updateData['laporan_rejected_reason'] = null;
+                $updateData['live_location'] = null;
             }
         }
 
         $wfh->update($updateData);
+
+        if ($wfh->wasChanged(['tgl_wfh', 'deskripsi_pekerjaan', 'keterangan'])) {
+            app(\App\Services\WfhService::class)->regenerateFormPdf($wfh->fresh());
+        }
 
         if ($oldStatus !== $newStatus) {
             $karyawan = \App\Models\Karyawan::where('nik', $wfh->nik)->first();
             if ($karyawan) {
                 $karyawan->notify(new \App\Notifications\WfhStatusChanged($wfh, $oldStatus, $newStatus));
             }
+            cache()->forget('pending_wfh_count');
+            cache()->forget('pending_wfh_admin_count');
         }
 
         return redirect()->back()->with('success', 'Data WFH berhasil diperbarui');

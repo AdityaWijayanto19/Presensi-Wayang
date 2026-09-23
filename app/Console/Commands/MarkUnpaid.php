@@ -17,14 +17,21 @@ class MarkUnpaid extends Command
         $hariIni = now('Asia/Jakarta')->format('Y-m-d');
 
         // Query WFH yang akan jadi unpaid:
-        // 1. Status approved, tgl_wfh sudah lewat, BELUM upload laporan
+        // 1. Status approved, tgl_wfh sudah lewat, BELUM upload laporan ATAU laporan ditolak
         // 2. Status approved, tgl_wfh sudah lewat, SUDAH upload laporan tapi BELUM absen pulang
+        // Catatan: approved_at di-update saat admin memulihkan unpaid→approved,
+        // sehingga DATE(approved_at) > tgl_wfh menandai waiving manual → dilewati.
         $wfhBelumLaporan = DB::table('wfhs')
             ->where('wfhs.status', WfhStatus::Approved->value)
             ->where('wfhs.tgl_wfh', '<', $hariIni)
             ->where(function ($q) {
                 $q->whereNull('wfhs.laporan_deskripsi')
-                  ->orWhere('wfhs.laporan_deskripsi', '');
+                  ->orWhere('wfhs.laporan_deskripsi', '')
+                  ->orWhere('wfhs.laporan_status', WfhStatus::Rejected->value);
+            })
+            ->where(function ($q) {
+                $q->whereNull('wfhs.approved_at')
+                  ->orWhereRaw('DATE(wfhs.approved_at) <= wfhs.tgl_wfh');
             })
             ->select('wfhs.*')
             ->get();
@@ -38,7 +45,12 @@ class MarkUnpaid extends Command
             ->where('wfhs.tgl_wfh', '<', $hariIni)
             ->whereNotNull('wfhs.laporan_deskripsi')
             ->where('wfhs.laporan_deskripsi', '!=', '')
+            ->where('wfhs.laporan_status', '!=', WfhStatus::Rejected->value)
             ->whereNull('presensis.jam_out')
+            ->where(function ($q) {
+                $q->whereNull('wfhs.approved_at')
+                  ->orWhereRaw('DATE(wfhs.approved_at) <= wfhs.tgl_wfh');
+            })
             ->select('wfhs.*')
             ->groupBy('wfhs.id')
             ->get();
@@ -67,7 +79,7 @@ class MarkUnpaid extends Command
                     $wfh->nik,
                     'WFH Unpaid',
                     'WFH tanggal ' . $wfh->tgl_wfh . ' ditandai sebagai Unpaid karena ' . $reason,
-                    '/presensi/wfh',
+                    '/wfh',
                     'wfh-unpaid-' . $wfh->id
                 );
             }
@@ -83,6 +95,10 @@ class MarkUnpaid extends Command
 
     private function determineReason(object $wfh): string
     {
+        if (!empty($wfh->laporan_status) && $wfh->laporan_status === WfhStatus::Rejected->value) {
+            return 'laporan ditolak dan belum diperbaiki';
+        }
+
         $hasLaporan = !empty($wfh->laporan_deskripsi);
 
         if (!$hasLaporan) {

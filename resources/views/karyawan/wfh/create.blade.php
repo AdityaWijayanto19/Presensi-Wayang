@@ -82,11 +82,11 @@
                     <div class="mt-1">
                         @if ($disableToday)
                             <small class="text-[11px] text-red-500 block">
-                                Hari ini sudah lewat jam masuk, minimal 15 menit sebelum jam masuk.
+                                Hari ini sudah lewat jam masuk. Pengajuan WFH untuk hari ini hanya bisa diajukan sebelum jam masuk.
                             </small>
                         @else
                             <small class="text-[11px] text-[#a8a29e] block">
-                                Minimal H+1, tidak bisa hari ini jika sudah lewat jam masuk.
+                                Hari ini masih bisa diajukan sebelum jam masuk. Setelah itu pilih tanggal H+1.
                             </small>
                         @endif
                     </div>

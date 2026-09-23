@@ -78,10 +78,13 @@ class Lembur extends Model
 
     public function getRencanaWaktuAttribute(): ?string
     {
-        if (!$this->rencana_mulai || !$this->rencana_selesai) return null;
+        if (!$this->rencana_mulai) return null;
         $mulai = $this->rencana_mulai instanceof \Carbon\Carbon
             ? $this->rencana_mulai->format('H:i')
             : \Carbon\Carbon::parse($this->rencana_mulai)->format('H:i');
+        if (!$this->rencana_selesai) {
+            return ($this->durasi_jam ?? 0) > 5 ? $mulai . ' - Menyesuaikan' : null;
+        }
         $selesai = $this->rencana_selesai instanceof \Carbon\Carbon
             ? $this->rencana_selesai->format('H:i')
             : \Carbon\Carbon::parse($this->rencana_selesai)->format('H:i');
