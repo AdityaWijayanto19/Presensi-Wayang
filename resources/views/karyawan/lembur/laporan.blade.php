@@ -7,7 +7,7 @@
                 <i data-lucide="chevron-left"></i>
             </a>
         </div>
-        <div class="pageTitle">Laporan Lembur</div>
+        <div class="pageTitle">{{ $isEdit ?? false ? 'Edit Laporan Lembur' : 'Laporan Lembur' }}</div>
         <div class="right"></div>
     </div>
 @endsection
@@ -71,8 +71,20 @@
             </div>
 
             {{-- Form Laporan --}}
-            <form method="POST" action="/lembur/{{ $lembur->id }}/laporan" id="form_laporan" autocomplete="off" enctype="multipart/form-data" class="mt-3">
+            <form method="POST" action="{{ $isEdit ?? false ? '/lembur/' . $lembur->id . '/laporan/update' : '/lembur/' . $lembur->id . '/laporan' }}" id="form_laporan" autocomplete="off" enctype="multipart/form-data" class="mt-3">
                 @csrf
+
+                @if($isEdit ?? false)
+                    @if($lembur->laporan_rejected_reason)
+                        <div class="bg-rose-50 border border-rose-200 rounded-xl p-3 mb-3 flex gap-2.5">
+                            <i data-lucide="alert-circle" class="text-rose-600 shrink-0 mt-0.5" style="width:18px;height:18px;"></i>
+                            <div>
+                                <p class="text-[12px] font-semibold text-rose-700">Laporan Ditolak</p>
+                                <p class="text-[11px] text-rose-600">{{ $lembur->laporan_rejected_reason }}</p>
+                            </div>
+                        </div>
+                    @endif
+                @endif
 
                 {{-- Deskripsi Pekerjaan --}}
                 <div class="form-group">
@@ -96,7 +108,7 @@
 
                 {{-- Submit --}}
                 <div class="form-group mt-3">
-                    <button class="btn btn-primary w-full">Kirim Laporan</button>
+                    <button class="btn btn-primary w-full">{{ $isEdit ?? false ? 'Update Laporan' : 'Kirim Laporan' }}</button>
                 </div>
             </form>
         </div>

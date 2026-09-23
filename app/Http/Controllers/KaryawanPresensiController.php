@@ -22,6 +22,7 @@ use App\Http\Requests\Service\StoreWfhRequest;
 use App\Http\Requests\Service\StoreLaporanWfhRequest;
 use App\Http\Requests\Service\StoreFotoLemburRequest;
 use App\Http\Requests\Service\StoreLaporanLemburRequest;
+use App\Http\Requests\Service\UpdateIzinKaryawanRequest;
 
 class KaryawanPresensiController extends Controller
 {
@@ -276,6 +277,78 @@ class KaryawanPresensiController extends Controller
 
         if ($result['success']) {
             return redirect('/lembur')->with('success', $result['message']);
+        }
+        return redirect()->back()->with('error', $result['message'])->withInput();
+    }
+
+    public function editLaporanWfh(int $id, WfhService $wfhService)
+    {
+        $nik = Auth::guard('karyawan')->user()->nik;
+        $wfh = $wfhService->getLaporanData($id, $nik, true);
+
+        if (!$wfh || isset($wfh->error)) {
+            $msg = $wfh->error ?? 'Data tidak ditemukan';
+            return redirect()->back()->with('error', $msg);
+        }
+
+        $liveLocation = $wfh->live_location ?? '-';
+        return view('karyawan.wfh.laporan', compact('wfh', 'liveLocation'))->with('isEdit', true);
+    }
+
+    public function updateLaporanWfh(StoreLaporanWfhRequest $request, int $id, WfhService $wfhService)
+    {
+        $nik = Auth::guard('karyawan')->user()->nik;
+        $result = $wfhService->storeLaporanWfh($request, $id, $nik, true);
+
+        if ($result['success']) {
+            return redirect('/wfh')->with('success', $result['message']);
+        }
+        return redirect()->back()->with('error', $result['message'])->withInput();
+    }
+
+    public function editLaporanLembur(int $id, LemburService $lemburService)
+    {
+        $nik = Auth::guard('karyawan')->user()->nik;
+        $data = $lemburService->getLaporanData($id, $nik, true);
+
+        if (!$data || isset($data->error)) {
+            $msg = $data->error ?? 'Data tidak ditemukan';
+            return redirect()->back()->with('error', $msg);
+        }
+
+        return view('karyawan.lembur.laporan', ['data' => $data])->with('isEdit', true);
+    }
+
+    public function updateLaporanLembur(StoreLaporanLemburRequest $request, int $id, LemburService $lemburService)
+    {
+        $nik = Auth::guard('karyawan')->user()->nik;
+        $result = $lemburService->storeLaporanLembur($request, $id, $nik, true);
+
+        if ($result['success']) {
+            return redirect('/lembur')->with('success', $result['message']);
+        }
+        return redirect()->back()->with('error', $result['message'])->withInput();
+    }
+
+    public function editIzin(int $id, IzinService $izinService)
+    {
+        $nik = Auth::guard('karyawan')->user()->nik;
+        $izin = $izinService->getEditIzinData($id, $nik);
+
+        if (!$izin) {
+            return redirect()->back()->with('error', 'Data izin tidak ditemukan atau tidak dalam status ditolak');
+        }
+
+        return view('karyawan.izin.edit', compact('izin'));
+    }
+
+    public function updateIzin(\App\Http\Requests\Service\UpdateIzinKaryawanRequest $request, int $id, IzinService $izinService)
+    {
+        $nik = Auth::guard('karyawan')->user()->nik;
+        $result = $izinService->updateIzin($request, $id, $nik);
+
+        if ($result['success']) {
+            return redirect('/izin')->with('success', $result['message']);
         }
         return redirect()->back()->with('error', $result['message'])->withInput();
     }

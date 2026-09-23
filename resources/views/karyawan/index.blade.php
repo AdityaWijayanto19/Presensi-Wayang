@@ -38,9 +38,6 @@
                 <span id="notifBadge"
                     class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[10px] min-w-[18px] h-[18px] rounded-full flex items-center justify-center px-1">0</span>
             </a>
-            <a href="/settings" class="text-white text-[22px] no-underline hover:text-[#bdb4b4]">
-                <i data-lucide="settings"></i>
-            </a>
         </div>
 
         <div class="mt-5 flex relative z-10">
@@ -77,12 +74,11 @@
 
                 {{-- Hadir --}}
                 <div class="w-1/2 sm:w-1/4 px-2 mb-2">
-                    <div class="card text-center py-3 px-2 rounded-[10px] h-full relative overflow-hidden">
+                    <a href="/presensi" class="card text-center py-3 px-2 rounded-[10px] h-full relative overflow-hidden block no-underline active:scale-[0.97] transition-transform">
                         <div class="p-3">
-                            <i data-lucide="person-standing" class="text-green-500 mb-1"
+                            <i data-lucide="person-standing" class="text-green-500 mb-1 mx-auto"
                                 style="width:28px;height:28px;"></i>
-                            <br>
-                            <span class="text-center text-xs font-bold block mt-1 leading-[1.2]">Hadir</span>
+                            <span class="text-center text-xs font-bold block mt-1 leading-[1.2] text-[#141515]">Hadir</span>
                         </div>
                         @if ($rekappresensi->jmlhadir > 0)
                             <span id="rekap-hadir"
@@ -90,16 +86,15 @@
                                 {{ $rekappresensi->jmlhadir }}
                             </span>
                         @endif
-                    </div>
+                    </a>
                 </div>
 
                 {{-- WFH --}}
                 <div class="w-1/2 sm:w-1/4 px-2 mb-2">
-                    <div class="card text-center py-3 px-2 rounded-[10px] h-full relative overflow-hidden">
+                    <a href="/wfh" class="card text-center py-3 px-2 rounded-[10px] h-full relative overflow-hidden block no-underline active:scale-[0.97] transition-transform">
                         <div class="p-3">
-                            <i data-lucide="home" class="text-blue-500 mb-1" style="width:28px;height:28px;"></i>
-                            <br>
-                            <span class="text-center text-xs font-bold block mt-1 leading-[1.2]">WFH</span>
+                            <i data-lucide="home" class="text-blue-500 mb-1 mx-auto" style="width:28px;height:28px;"></i>
+                            <span class="text-center text-xs font-bold block mt-1 leading-[1.2] text-[#141515]">WFH</span>
                         </div>
                         @if ($rekapwfh->jmlwfh > 0)
                             <span id="rekap-wfh"
@@ -107,16 +102,15 @@
                                 {{ $rekapwfh->jmlwfh }}
                             </span>
                         @endif
-                    </div>
+                    </a>
                 </div>
 
                 {{-- Lembur --}}
                 <div class="w-1/2 sm:w-1/4 px-2 mb-2">
-                    <div class="card text-center py-3 px-2 rounded-[10px] h-full relative overflow-hidden">
+                    <a href="/lembur" class="card text-center py-3 px-2 rounded-[10px] h-full relative overflow-hidden block no-underline active:scale-[0.97] transition-transform">
                         <div class="p-3">
-                            <i data-lucide="hourglass" class="text-yellow-500 mb-1" style="width:28px;height:28px;"></i>
-                            <br>
-                            <span class="text-center text-xs font-bold block mt-1 leading-[1.2]">Lembur</span>
+                            <i data-lucide="hourglass" class="text-yellow-500 mb-1 mx-auto" style="width:28px;height:28px;"></i>
+                            <span class="text-center text-xs font-bold block mt-1 leading-[1.2] text-[#141515]">Lembur</span>
                         </div>
                         @if (($rekaplembur->jmllembur ?? 0) > 0)
                             <span id="rekap-lembur"
@@ -124,16 +118,15 @@
                                 {{ $rekaplembur->jmllembur }}
                             </span>
                         @endif
-                    </div>
+                    </a>
                 </div>
 
                 {{-- Izin / Sakit --}}
                 <div class="w-1/2 sm:w-1/4 px-2 mb-2">
-                    <div class="card text-center py-3 px-2 rounded-[10px] h-full relative overflow-hidden">
+                    <a href="/izin" class="card text-center py-3 px-2 rounded-[10px] h-full relative overflow-hidden block no-underline active:scale-[0.97] transition-transform">
                         <div class="p-3">
-                            <i data-lucide="file-text" class="text-red-500 mb-1" style="width:28px;height:28px;"></i>
-                            <br>
-                            <span class="text-center text-xs font-bold block mt-1 leading-[1.2]">Izin / Sakit</span>
+                            <i data-lucide="file-text" class="text-red-500 mb-1 mx-auto" style="width:28px;height:28px;"></i>
+                            <span class="text-center text-xs font-bold block mt-1 leading-[1.2] text-[#141515]">Izin / Sakit</span>
                         </div>
                         @if ($rekapizin->jmlizin > 0)
                             <span id="rekap-izin"
@@ -141,7 +134,7 @@
                                 {{ $rekapizin->jmlizin }}
                             </span>
                         @endif
-                    </div>
+                    </a>
                 </div>
 
             </div>
@@ -2412,8 +2405,10 @@
                                 }
                             }
                         }
-                        setInterval(checkH1, 1000);
-                        checkH1();
+                        document.addEventListener('DOMContentLoaded', function() {
+                            setInterval(checkH1, 1000);
+                            checkH1();
+                        });
                     @else
                         if (countdownEl) {
                             countdownEl.textContent = 'Jam masuk belum ditentukan.';

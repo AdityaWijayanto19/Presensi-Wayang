@@ -18,6 +18,7 @@ class Izin extends Model
         'nik',
         'tgl_izin',
         'jenis_izin',
+        'jam_datang',
         'keterangan',
         'bukti_file',
         'status',

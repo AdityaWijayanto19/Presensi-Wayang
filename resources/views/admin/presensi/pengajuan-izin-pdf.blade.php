@@ -90,6 +90,14 @@
                     {{ \Carbon\Carbon::parse($tgl_izin)->locale('id')->isoFormat('dddd, D MMMM Y') }}
                 </td>
             </tr>
+            @if (!empty($jam_datang))
+            <tr>
+                <td class="info-cell" colspan="2">
+                    <span class="info-label">Jam Datang:</span>
+                    {{ $jam_datang }}
+                </td>
+            </tr>
+            @endif
             <tr>
                 <td class="activity-cell" colspan="2">
                     <span class="info-label">Keterangan:</span>

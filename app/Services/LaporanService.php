@@ -8,6 +8,7 @@ use App\Models\Lembur;
 use App\Models\Wfh;
 use App\Models\Unitperusahaan;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 
@@ -17,6 +18,13 @@ class LaporanService
         "", "Januari", "Februari", "Maret", "April", "Mei", "Juni",
         "Juli", "Agustus", "September", "Oktober", "November", "Desember",
     ];
+
+    private static function getCutoffDates(int $bulan, int $tahun): array
+    {
+        $startDate = Carbon::create($tahun, $bulan, 21)->subMonth()->startOfDay();
+        $endDate = Carbon::create($tahun, $bulan, 20)->endOfDay();
+        return [$startDate, $endDate];
+    }
 
     public static function getLaporanPageData(): array
     {
@@ -29,25 +37,39 @@ class LaporanService
 
     public static function cetakLaporan(Request $request)
     {
+        if ($request->tipe_export === 'perusahaan') {
+            $data = self::buildUnitLaporanData($request);
+            if ($data instanceof \Illuminate\Http\RedirectResponse) {
+                return $data;
+            }
+            $pdf = Pdf::loadView('admin.presensi.cetaklaporan-unit', $data);
+            return $pdf->download('Laporan_Presensi_' . $data['unitData']->perusahaan . '.pdf');
+        }
+
         $data = self::buildLaporanData($request);
         if ($data instanceof \Illuminate\Http\RedirectResponse) {
             return $data;
         }
-
         $pdf = Pdf::loadView('admin.presensi.cetaklaporan', $data);
-
         return $pdf->download('Laporan_Presensi_' . $data['karyawan']->nama_lengkap . '.pdf');
     }
 
     public static function previewLaporan(Request $request)
     {
+        if ($request->tipe_export === 'perusahaan') {
+            $data = self::buildUnitLaporanData($request);
+            if ($data instanceof \Illuminate\Http\RedirectResponse) {
+                return $data;
+            }
+            $pdf = Pdf::loadView('admin.presensi.cetaklaporan-unit', $data);
+            return $pdf->stream('Laporan_Presensi_' . $data['unitData']->perusahaan . '.pdf');
+        }
+
         $data = self::buildLaporanData($request);
         if ($data instanceof \Illuminate\Http\RedirectResponse) {
             return $data;
         }
-
         $pdf = Pdf::loadView('admin.presensi.cetaklaporan', $data);
-
         return $pdf->stream('Laporan_Presensi_' . $data['karyawan']->nama_lengkap . '.pdf');
     }
 
@@ -63,6 +85,7 @@ class LaporanService
         }
 
         $namabulan = self::NAMA_BULAN;
+        [$startDate, $endDate] = self::getCutoffDates((int) $bulan, (int) $tahun);
 
         $karyawan = Karyawan::with('unitperusahaan')
             ->where('nik', $nik)
@@ -73,8 +96,7 @@ class LaporanService
         }
 
         $presensi = Presensi::where('nik', $nik)
-            ->whereMonth('tgl_presensi', $bulan)
-            ->whereYear('tgl_presensi', $tahun)
+            ->whereBetween('tgl_presensi', [$startDate, $endDate])
             ->orderBy('tgl_presensi', 'desc')
             ->get();
 
@@ -92,8 +114,7 @@ class LaporanService
         $sisaMenitKerja = $totalMenitKerja % 60;
 
         $lembur = Lembur::where('nik', $nik)
-            ->whereMonth('tgl_lembur', $bulan)
-            ->whereYear('tgl_lembur', $tahun)
+            ->whereBetween('tgl_lembur', [$startDate, $endDate])
             ->get()
             ->keyBy(fn ($item) => $item->tgl_lembur->format('Y-m-d'));
 
@@ -109,8 +130,7 @@ class LaporanService
 
         $wfh = Wfh::where('nik', $nik)
             ->where('status', 'approved')
-            ->whereMonth('tgl_wfh', $bulan)
-            ->whereYear('tgl_wfh', $tahun)
+            ->whereBetween('tgl_wfh', [$startDate, $endDate])
             ->get()
             ->keyBy(fn ($item) => $item->tgl_wfh->format('Y-m-d'));
 
@@ -123,7 +143,91 @@ class LaporanService
         return compact(
             'bulan', 'tahun', 'namabulan', 'karyawan', 'presensi',
             'lembur', 'wfh', 'totalLembur', 'totalProrate', 'totalWfh',
-            'sisaMenitKerja', 'totalJamKerja'
+            'sisaMenitKerja', 'totalJamKerja', 'startDate', 'endDate'
+        );
+    }
+
+    private static function buildUnitLaporanData(Request $request): array|\Illuminate\Http\RedirectResponse
+    {
+        $bulan = $request->bulan;
+        $tahun = $request->tahun;
+        $unit = $request->unit;
+
+        if (empty($bulan) || empty($tahun) || empty($unit)) {
+            return Redirect::back()->with('warning', 'Harap lengkapi seluruh filter terlebih dahulu');
+        }
+
+        $namabulan = self::NAMA_BULAN;
+        [$startDate, $endDate] = self::getCutoffDates((int) $bulan, (int) $tahun);
+
+        $unitData = Unitperusahaan::where('unit', $unit)->first();
+        if (!$unitData) {
+            return Redirect::back()->with('warning', 'Data unit perusahaan tidak ditemukan');
+        }
+
+        $karyawans = Karyawan::where('unit', $unit)->orderBy('nama_lengkap')->get();
+
+        if ($karyawans->isEmpty()) {
+            return Redirect::back()->with('warning', 'Tidak ada karyawan di unit ini');
+        }
+
+        $dataKaryawan = [];
+
+        foreach ($karyawans as $k) {
+            $presensi = Presensi::where('nik', $k->nik)
+                ->whereBetween('tgl_presensi', [$startDate, $endDate])
+                ->get();
+
+            $totalHadir = $presensi->count();
+
+            $totalMenitKerja = 0;
+            foreach ($presensi as $p) {
+                if ($p->jam_out != null) {
+                    $awal = strtotime($p->jam_in);
+                    $akhir = strtotime($p->jam_out);
+                    $selisih = ($akhir - $awal) / 60;
+                    $totalMenitKerja += $selisih;
+                }
+            }
+
+            $totalJamKerja = floor($totalMenitKerja / 60);
+            $sisaMenitKerja = $totalMenitKerja % 60;
+
+            $lembur = Lembur::where('nik', $k->nik)
+                ->whereBetween('tgl_lembur', [$startDate, $endDate])
+                ->get();
+
+            $totalLembur = 0;
+            $totalProrate = 0;
+            foreach ($lembur as $item) {
+                if ($item->durasi == 'Prorate') {
+                    $totalProrate++;
+                } else {
+                    $totalLembur += (float) $item->durasi;
+                }
+            }
+
+            $wfh = Wfh::where('nik', $k->nik)
+                ->where('status', 'approved')
+                ->whereBetween('tgl_wfh', [$startDate, $endDate])
+                ->count();
+
+            $dataKaryawan[] = [
+                'nik' => $k->nik,
+                'nama_lengkap' => $k->nama_lengkap,
+                'jabatan' => $k->jabatan,
+                'totalHadir' => $totalHadir,
+                'totalJamKerja' => $totalJamKerja,
+                'sisaMenitKerja' => $sisaMenitKerja,
+                'totalLembur' => $totalLembur,
+                'totalProrate' => $totalProrate,
+                'totalWfh' => $wfh,
+            ];
+        }
+
+        return compact(
+            'namabulan', 'bulan', 'tahun', 'unitData', 'dataKaryawan',
+            'startDate', 'endDate'
         );
     }
 }

@@ -23,6 +23,7 @@ class LaporanRejected extends Notification
             'wfh_id' => $this->wfh->id,
             'tgl_wfh' => $this->wfh->tgl_wfh->format('Y-m-d'),
             'reason' => $this->reason,
+            'url' => '/wfh/' . $this->wfh->id . '/laporan/edit',
             'message' => 'Laporan WFH tanggal ' . $this->wfh->tgl_wfh->format('Y-m-d') . ' ditolak.' . ($this->reason ? ' Alasan: ' . $this->reason : ''),
         ];
     }

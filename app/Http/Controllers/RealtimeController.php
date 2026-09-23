@@ -71,9 +71,9 @@ class RealtimeController extends Controller
             $query->where('status', $request->status);
         }
 
-        $datawfh = $query->orderBy('tgl_wfh', 'desc')->paginate(5)->withQueryString();
+        $datawfh = $query->orderBy('tgl_wfh', 'desc')->paginate(10)->withQueryString();
         $html = view('admin.wfh._rows', compact('datawfh'))->render();
-        $pagination = $datawfh->setPath('/panel/wfh')->appends($request->query())->links('pagination::bootstrap-5')->render();
+        $pagination = $datawfh->setPath('/panel/wfh')->appends($request->query())->links()->render();
 
         return response()->json([
             'html' => $html,
@@ -123,9 +123,9 @@ class RealtimeController extends Controller
             $query->where('status', $request->status);
         }
 
-        $datalembur = $query->orderBy('tgl_lembur', 'desc')->paginate(5)->withQueryString();
+        $datalembur = $query->orderBy('tgl_lembur', 'desc')->paginate(10)->withQueryString();
         $html = view('admin.lembur._rows', compact('datalembur'))->render();
-        $pagination = $datalembur->setPath('/panel/lembur')->appends($request->query())->links('pagination::bootstrap-5')->render();
+        $pagination = $datalembur->setPath('/panel/lembur')->appends($request->query())->links()->render();
 
         return response()->json([
             'html' => $html,
@@ -178,9 +178,9 @@ class RealtimeController extends Controller
             $query->where('tgl_izin', $request->tanggal);
         }
 
-        $dataizin = $query->orderBy('tgl_izin', 'desc')->paginate(5)->withQueryString();
+        $dataizin = $query->orderBy('tgl_izin', 'desc')->paginate(10)->withQueryString();
         $html = view('admin.izin._rows', compact('dataizin'))->render();
-        $pagination = $dataizin->setPath('/panel/izin')->appends($request->query())->links('pagination::bootstrap-5')->render();
+        $pagination = $dataizin->setPath('/panel/izin')->appends($request->query())->links()->render();
 
         return response()->json([
             'html' => $html,

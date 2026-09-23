@@ -73,20 +73,20 @@ class LemburService
             return ['can' => false, 'message' => 'Anda sudah mengajukan lembur hari ini.'];
         }
 
-        $presensiToday = Presensi::where('nik', $karyawan->nik)
-            ->where('tgl_presensi', $hariIni)
-            ->first();
+        $jamSekarang = now('Asia/Jakarta');
+        $jam = (int) $jamSekarang->format('H');
+        $menit = (int) $jamSekarang->format('i');
+        $totalMenit = $jam * 60 + $menit;
 
-        if ($presensiToday) {
-            if (!$presensiToday->jam_out) {
-                return ['can' => false, 'message' => 'Silakan presensi pulang terlebih dahulu sebelum mengajukan lembur.'];
-            }
-        } else {
-            $jamSekarang = now('Asia/Jakarta');
-            $batasJam = \Carbon\Carbon::parse('17:00:00');
-            if ($jamSekarang->lt($batasJam)) {
-                return ['can' => false, 'message' => 'Pengajuan lembur baru bisa dilakukan mulai pukul 17:00.'];
-            }
+        // 00:01 - 16:50 = Day In (lembur hari ini, presensi pulang tidak wajib)
+        // 18:00 - 23:59 = Day In + Next Day (lembur malam)
+        // 16:51 - 17:59 = GAP, tidak boleh mengajukan
+        // 00:00 = tidak ada lembur (reset harian)
+        $dalamWindowPagi = ($totalMenit >= 1 && $totalMenit <= 1010);   // 00:01 - 16:50
+        $dalamWindowMalam = ($totalMenit >= 1080 && $totalMenit <= 1439); // 18:00 - 23:59
+
+        if (!$dalamWindowPagi && !$dalamWindowMalam) {
+            return ['can' => false, 'message' => 'Pengajuan lembur hanya bisa dilakukan pada pukul 00:01-16:50 atau 18:00-23:59.'];
         }
 
         return ['can' => true];
@@ -134,7 +134,7 @@ class LemburService
             $query->where('status', $request->status);
         }
 
-        $datalembur = $query->orderBy('tgl_lembur', 'desc')->paginate(5)->withQueryString();
+        $datalembur = $query->orderBy('tgl_lembur', 'desc')->paginate(10)->withQueryString();
         $unitperusahaan = Unitperusahaan::orderBy('unit')->get();
         $pendingLemburAdmin = Lembur::where('status', LemburStatus::PendingAdmin->value)->count();
         $pendingLaporanAdmin = Lembur::where('laporan_status', LemburStatus::PendingAdmin->value)->count();
@@ -155,6 +155,22 @@ class LemburService
 
         $initial = self::initialStatus($karyawanFresh);
 
+        $tglLembur = $request->tgl_lembur ?? now('Asia/Jakarta')->format('Y-m-d');
+        $durasiJam = (float) $request->durasi_jam;
+        $jamMulai = $request->jam_mulai;
+
+        // Validasi jam_mulai tidak di gap (16:51 - 17:59)
+        $jamMulaiParts = explode(':', $jamMulai);
+        $jamMulaiMenit = (int) $jamMulaiParts[0] * 60 + (int) $jamMulaiParts[1];
+        $validPagi = ($jamMulaiMenit >= 1 && $jamMulaiMenit <= 1010);   // 00:01 - 16:50
+        $validMalam = ($jamMulaiMenit >= 1080 && $jamMulaiMenit <= 1439); // 18:00 - 23:59
+        if (!$validPagi && !$validMalam) {
+            return ['success' => false, 'message' => 'Jam mulai lembur tidak valid. Pilih jam dalam window yang diizinkan (00:01-16:50 atau 18:00-23:59).'];
+        }
+
+        $rencanaMulai = \Carbon\Carbon::parse($tglLembur . ' ' . $jamMulai);
+        $rencanaSelesai = $rencanaMulai->copy()->addMinutes((int) ($durasiJam * 60));
+
         $pdfData = [
             'headerSuratPath' => 'assets/img/header-surat.png',
             'nik' => $nik,
@@ -163,13 +179,15 @@ class LemburService
             'posisi' => $posisi ?? '-',
             'perusahaan' => $perusahaan,
             'keterangan' => $request->keterangan,
-            'tgl_lembur' => $request->tgl_lembur ?? now('Asia/Jakarta')->format('Y-m-d'),
+            'tgl_lembur' => $tglLembur,
+            'jam_mulai' => $jamMulai,
+            'jam_selesai' => $rencanaSelesai->format('H:i'),
+            'durasi_jam' => $durasiJam,
             'nama_atasan' => $atasan?->nama_lengkap ?? '-',
             'jabatan_atasan' => $atasan?->jabatan instanceof Jabatan ? $atasan->jabatan->value : ($atasan?->jabatan ?? '-'),
         ];
 
         $stempelPath = $this->pdf->getStempelPath();
-        $tglLembur = $request->tgl_lembur ?? now('Asia/Jakarta')->format('Y-m-d');
 
         DB::beginTransaction();
         try {
@@ -187,6 +205,9 @@ class LemburService
                 'nik' => $nik,
                 'tgl_lembur' => $tglLembur,
                 'keterangan' => $request->keterangan,
+                'durasi_jam' => $durasiJam,
+                'rencana_mulai' => $rencanaMulai,
+                'rencana_selesai' => $rencanaSelesai,
                 'status' => $initial['status'],
                 'atasan_nik' => $atasanNik,
                 'atasan_status' => $initial['atasan_status'],
@@ -443,6 +464,29 @@ class LemburService
             return ['success' => false, 'message' => 'Foto ' . $type . ' lembur sudah ada!'];
         }
 
+        if ($type === 'mulai') {
+            // Cek apakah karyawan sudah presensi pulang hari ini
+            $presensiHariIni = Presensi::where('nik', $nik)
+                ->whereDate('tgl_presensi', $lembur->tgl_lembur)
+                ->whereNotNull('jam_out')
+                ->first();
+
+            // Cek apakah lembur ini untuk jam SEBELUM jam buka presensi (pre-shift lembur)
+            $jamBukaPresensi = '07:00:00';
+            $rencanaMulaiPlan = $lembur->rencana_mulai instanceof \Carbon\Carbon
+                ? $lembur->rencana_mulai->format('H:i:s')
+                : null;
+
+            $isPreShift = $rencanaMulaiPlan && $rencanaMulaiPlan < $jamBukaPresensi;
+
+            // Foto mulai boleh diambil jika:
+            // 1. Sudah ada presensi pulang hari ini, ATAU
+            // 2. Lembur ini untuk jam sebelum jam buka presensi (pre-shift)
+            if (!$presensiHariIni && !$isPreShift) {
+                return ['success' => false, 'message' => 'Silakan presensi pulang terlebih dahulu sebelum mengambil foto mulai lembur.'];
+            }
+        }
+
         if ($type === 'selesai') {
             if (empty($lembur->waktu_mulai)) {
                 return ['success' => false, 'message' => 'Foto mulai belum diambil. Silakan ambil foto mulai terlebih dahulu.'];
@@ -486,15 +530,21 @@ class LemburService
         return ['success' => true, 'message' => 'Foto ' . $type . ' lembur berhasil disimpan!', 'type' => $type];
     }
 
-    public function getLaporanData(int $id, string $nik): ?object
+    public function getLaporanData(int $id, string $nik, bool $isEdit = false): ?object
     {
         $lembur = Lembur::where('id', $id)->where('nik', $nik)
             ->where('status', LemburStatus::Approved->value)
             ->first();
         if (!$lembur) return null;
 
-        if (empty($lembur->foto_mulai) || empty($lembur->foto_selesai)) {
-            return (object) ['error' => 'Anda harus mengambil foto mulai dan selesai lembur terlebih dahulu.'];
+        if ($isEdit) {
+            if ($lembur->laporan_status !== LemburStatus::Rejected->value) {
+                return (object) ['error' => 'Laporan ini tidak dalam status ditolak.'];
+            }
+        } else {
+            if (empty($lembur->foto_mulai) || empty($lembur->foto_selesai)) {
+                return (object) ['error' => 'Anda harus mengambil foto mulai dan selesai lembur terlebih dahulu.'];
+            }
         }
 
         $karyawan = Karyawan::where('nik', $nik)->first();
@@ -509,14 +559,18 @@ class LemburService
         ];
     }
 
-    public function storeLaporanLembur(Request $request, int $id, string $nik): array
+    public function storeLaporanLembur(Request $request, int $id, string $nik, bool $isEdit = false): array
     {
         $lembur = Lembur::where('id', $id)->where('nik', $nik)
             ->where('status', LemburStatus::Approved->value)
             ->first();
         if (!$lembur) return ['success' => false, 'message' => 'Akses ditolak'];
 
-        if (empty($lembur->foto_mulai) || empty($lembur->foto_selesai)) {
+        if ($isEdit && $lembur->laporan_status !== LemburStatus::Rejected->value) {
+            return ['success' => false, 'message' => 'Laporan ini tidak dalam status ditolak'];
+        }
+
+        if (!$isEdit && (empty($lembur->foto_mulai) || empty($lembur->foto_selesai))) {
             return ['success' => false, 'message' => 'Foto mulai dan selesai lembur harus diupload terlebih dahulu.'];
         }
 
@@ -546,6 +600,13 @@ class LemburService
         try {
             $imagePaths = [];
             if ($request->hasFile('laporan_images')) {
+                if ($isEdit && !empty($lembur->laporan_images) && is_array($lembur->laporan_images)) {
+                    foreach ($lembur->laporan_images as $oldPath) {
+                        if (!empty($oldPath)) {
+                            Storage::disk('public')->delete($oldPath);
+                        }
+                    }
+                }
                 $imageService = app(ImageService::class);
                 foreach ($request->file('laporan_images') as $file) {
                     $path = $imageService->processUpload($file, 'lembur/laporan');
@@ -562,6 +623,7 @@ class LemburService
                 'laporan_status' => $initialLaporan['laporan_status'],
                 'laporan_atasan_status' => $initialLaporan['laporan_atasan_status'],
                 'laporan_admin_status' => $initialLaporan['laporan_admin_status'],
+                'laporan_rejected_reason' => null,
             ]);
 
             $pdfData = [
@@ -585,6 +647,11 @@ class LemburService
             ];
 
             $stempelPath = $this->pdf->getStempelPath();
+
+            if ($isEdit && !empty($lembur->laporan_file)) {
+                Storage::disk('public')->delete($lembur->laporan_file);
+            }
+
             $pdfPath = $this->generateLaporanPdf($pdfData, $stempelPath);
             $lembur->update(['laporan_file' => $pdfPath]);
 

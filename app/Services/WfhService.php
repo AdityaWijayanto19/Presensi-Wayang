@@ -116,7 +116,7 @@ class WfhService
             $query->where('status', $request->status);
         }
 
-        $datawfh = $query->orderBy('tgl_wfh', 'desc')->paginate(5)->withQueryString();
+        $datawfh = $query->orderBy('tgl_wfh', 'desc')->paginate(10)->withQueryString();
         $unitperusahaan = Unitperusahaan::orderBy('unit')->get();
         $pendingWfhAdmin = Wfh::where('status', WfhStatus::PendingAdmin->value)->count();
         $pendingLaporanAdmin = Wfh::where('laporan_status', WfhStatus::PendingAdmin->value)->count();
@@ -404,10 +404,17 @@ class WfhService
         return ['success' => true, 'message' => 'WFH ditolak'];
     }
 
-    public function getLaporanData(int $id, string $nik): ?object
+    public function getLaporanData(int $id, string $nik, bool $isEdit = false): ?object
     {
         $wfh = Wfh::where('id', $id)->where('nik', $nik)->where('status', WfhStatus::Approved->value)->first();
         if (!$wfh) return null;
+
+        if ($isEdit) {
+            if ($wfh->laporan_status !== WfhStatus::Rejected->value) {
+                return (object) ['error' => 'Laporan ini tidak dalam status ditolak.'];
+            }
+            return $wfh;
+        }
 
         $tglWfh = $wfh->tgl_wfh instanceof \Carbon\Carbon ? $wfh->tgl_wfh->format('Y-m-d') : (string) $wfh->tgl_wfh;
         $hariIni = now('Asia/Jakarta')->format('Y-m-d');
@@ -430,37 +437,50 @@ class WfhService
         return $wfh;
     }
 
-    public function storeLaporanWfh(Request $request, int $id, string $nik): array
+    public function storeLaporanWfh(Request $request, int $id, string $nik, bool $isEdit = false): array
     {
         $wfh = Wfh::where('id', $id)->where('nik', $nik)->where('status', WfhStatus::Approved->value)->first();
         if (!$wfh) return ['success' => false, 'message' => 'Akses ditolak'];
 
+        if ($isEdit && $wfh->laporan_status !== WfhStatus::Rejected->value) {
+            return ['success' => false, 'message' => 'Laporan ini tidak dalam status ditolak'];
+        }
+
         $karyawan = Karyawan::where('nik', $nik)->first();
         if (!$karyawan) return ['success' => false, 'message' => 'Data karyawan tidak ditemukan'];
 
-        $hariIni = now('Asia/Jakarta')->format('Y-m-d');
-        $tglWfh = $wfh->tgl_wfh instanceof \Carbon\Carbon
-            ? $wfh->tgl_wfh->format('Y-m-d')
-            : (string) $wfh->tgl_wfh;
-        if ($tglWfh !== $hariIni) {
-            return ['success' => false, 'message' => 'Laporan hanya bisa diupload pada tanggal WFH (' . $tglWfh . ')'];
-        }
+        if (!$isEdit) {
+            $hariIni = now('Asia/Jakarta')->format('Y-m-d');
+            $tglWfh = $wfh->tgl_wfh instanceof \Carbon\Carbon
+                ? $wfh->tgl_wfh->format('Y-m-d')
+                : (string) $wfh->tgl_wfh;
+            if ($tglWfh !== $hariIni) {
+                return ['success' => false, 'message' => 'Laporan hanya bisa diupload pada tanggal WFH (' . $tglWfh . ')'];
+            }
 
-        $presensiToday = Presensi::where('nik', $nik)->where('tgl_presensi', $hariIni)->first();
-        if (!$presensiToday || !$presensiToday->jam_in) {
-            return ['success' => false, 'message' => 'Data presensi hari ini tidak ditemukan. Silakan presensi terlebih dahulu.'];
-        }
+            $presensiToday = Presensi::where('nik', $nik)->where('tgl_presensi', $hariIni)->first();
+            if (!$presensiToday || !$presensiToday->jam_in) {
+                return ['success' => false, 'message' => 'Data presensi hari ini tidak ditemukan. Silakan presensi terlebih dahulu.'];
+            }
 
-        $jamMasuk = \Carbon\Carbon::parse($presensiToday->jam_in)->setTimezone('Asia/Jakarta');
-        $selisihJam = $jamMasuk->diffInHours(now('Asia/Jakarta'));
-        if ($selisihJam < 7) {
-            return ['success' => false, 'message' => 'Laporan WFH hanya bisa diajukan setelah 7 jam kerja dari jam masuk.'];
+            $jamMasuk = \Carbon\Carbon::parse($presensiToday->jam_in)->setTimezone('Asia/Jakarta');
+            $selisihJam = $jamMasuk->diffInHours(now('Asia/Jakarta'));
+            if ($selisihJam < 7) {
+                return ['success' => false, 'message' => 'Laporan WFH hanya bisa diajukan setelah 7 jam kerja dari jam masuk.'];
+            }
         }
 
         DB::beginTransaction();
         try {
             $imagePaths = [];
             if ($request->hasFile('laporan_images')) {
+                if ($isEdit && !empty($wfh->laporan_images) && is_array($wfh->laporan_images)) {
+                    foreach ($wfh->laporan_images as $oldPath) {
+                        if (!empty($oldPath)) {
+                            Storage::disk('public')->delete($oldPath);
+                        }
+                    }
+                }
                 $imageService = app(ImageService::class);
                 foreach ($request->file('laporan_images') as $idx => $file) {
                     $path = $imageService->processUpload($file, 'wfh/laporan');
@@ -485,7 +505,12 @@ class WfhService
             $weekdayMap = ['Sunday' => 'Minggu', 'Monday' => 'Senin', 'Tuesday' => 'Selasa', 'Wednesday' => 'Rabu', 'Thursday' => 'Kamis', 'Friday' => 'Jumat', 'Saturday' => 'Sabtu'];
             $hariTanggal = $weekdayMap[now('Asia/Jakarta')->format('l')] . ', ' . now('Asia/Jakarta')->format('d F Y');
 
-            $liveLocation = $this->location->reverseGeocode($presensiToday->lokasi_in ?? '-');
+            if ($isEdit) {
+                $liveLocation = $wfh->live_location ?? '-';
+            } else {
+                $presensiToday = Presensi::where('nik', $nik)->where('tgl_presensi', now('Asia/Jakarta')->format('Y-m-d'))->first();
+                $liveLocation = $this->location->reverseGeocode($presensiToday->lokasi_in ?? '-');
+            }
 
             $pdfData = [
                 'headerSuratPath' => 'assets/img/header-surat.png',
@@ -515,7 +540,12 @@ class WfhService
                 'laporan_status' => $initialLaporan['laporan_status'],
                 'laporan_atasan_status' => $initialLaporan['laporan_atasan_status'],
                 'laporan_admin_status' => $initialLaporan['laporan_admin_status'],
+                'laporan_rejected_reason' => null,
             ]);
+
+            if ($isEdit && !empty($wfh->laporan_file)) {
+                Storage::disk('public')->delete($wfh->laporan_file);
+            }
 
             $pdfPath = $this->generateLaporanPdf($pdfData, $stempelPath);
             $wfh->update(['laporan_file' => $pdfPath]);

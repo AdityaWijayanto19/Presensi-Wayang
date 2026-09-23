@@ -28,6 +28,7 @@ class IzinRejected extends Notification
             'tgl_izin' => $this->izin->tgl_izin->format('Y-m-d'),
             'jenis_izin' => $jenisLabel,
             'reason' => $this->reason,
+            'url' => '/izin/' . $this->izin->id . '/edit',
             'message' => 'Izin tanggal ' . $this->izin->tgl_izin->format('Y-m-d') . ' ditolak.' . ($this->reason ? ' Alasan: ' . $this->reason : ''),
         ];
     }

@@ -18,7 +18,6 @@ class MonitoringService
     {
         $query = Presensi::with([
                 'karyawan.unitperusahaan',
-                'lembur' => fn ($q) => $q->where('tgl_lembur', $request->tanggal),
             ])
             ->where('tgl_presensi', $request->tanggal);
 

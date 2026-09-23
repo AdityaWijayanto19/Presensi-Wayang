@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Presensi extends Model
 {
@@ -31,11 +30,6 @@ class Presensi extends Model
     public function karyawan(): BelongsTo
     {
         return $this->belongsTo(Karyawan::class, 'nik', 'nik');
-    }
-
-    public function lembur(): HasOne
-    {
-        return $this->hasOne(Lembur::class, 'nik', 'nik');
     }
 
 }

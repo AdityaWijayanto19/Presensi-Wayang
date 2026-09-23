@@ -20,6 +20,9 @@
         $hasMulai = $data->has_mulai;
         $hasSelesai = $data->has_selesai;
         $tglLembur = $lembur->tgl_lembur instanceof \Carbon\Carbon ? $lembur->tgl_lembur->format('d M Y') : $lembur->tgl_lembur;
+        $rencanaWaktu = $lembur->rencana_waktu;
+        $durasiFormatted = $lembur->durasi_formatted;
+        $isPreShift = $lembur->is_pre_shift;
     @endphp
 
     <div class="flex mt-[70px]">
@@ -61,6 +64,25 @@
                     <span class="text-[10px] {{ $hasSelesai ? 'text-emerald-600 font-medium' : 'text-[#78716c]' }} hidden sm:inline">Selesai</span>
                 </div>
             </div>
+
+            {{-- Info Rencana Waktu --}}
+            @if ($rencanaWaktu)
+                <div class="mt-2 bg-blue-50 border border-blue-200 rounded-xl px-3 py-2">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="clock" class="text-blue-500 shrink-0" style="width:16px;height:16px;"></i>
+                        <div>
+                            <span class="text-[12px] text-blue-700 font-semibold">Rencana: {{ $rencanaWaktu }}</span>
+                            <span class="text-[11px] text-blue-500">({{ $durasiFormatted }})</span>
+                        </div>
+                    </div>
+                    @if ($isPreShift)
+                        <div class="mt-1 text-[10px] text-blue-600 flex items-center gap-1">
+                            <i data-lucide="info" style="width:12px;height:12px;"></i>
+                            Lembur sebelum jam masuk (pre-shift)
+                        </div>
+                    @endif
+                </div>
+            @endif
 
             {{-- Webcam Section --}}
             <div class="mt-3 bg-white rounded-xl border border-[#f0ece8] overflow-hidden">

@@ -24,6 +24,8 @@ class Lembur extends Model
         'foto_selesai',
         'waktu_mulai',
         'waktu_selesai',
+        'rencana_mulai',
+        'rencana_selesai',
         'durasi_menit',
         'durasi_jam',
         'laporan_deskripsi',
@@ -43,6 +45,8 @@ class Lembur extends Model
         'tgl_lembur' => 'date',
         'waktu_mulai' => 'datetime',
         'waktu_selesai' => 'datetime',
+        'rencana_mulai' => 'datetime',
+        'rencana_selesai' => 'datetime',
         'dikirim_tanggal' => 'datetime',
         'approved_at' => 'datetime',
         'laporan_approved_at' => 'datetime',
@@ -70,5 +74,27 @@ class Lembur extends Model
         if ($jam > 5) return 'prorate';
         $formatted = rtrim(rtrim(number_format($jam, 1, '.', ''), '0'), '.');
         return $formatted . ' jam';
+    }
+
+    public function getRencanaWaktuAttribute(): ?string
+    {
+        if (!$this->rencana_mulai || !$this->rencana_selesai) return null;
+        $mulai = $this->rencana_mulai instanceof \Carbon\Carbon
+            ? $this->rencana_mulai->format('H:i')
+            : \Carbon\Carbon::parse($this->rencana_mulai)->format('H:i');
+        $selesai = $this->rencana_selesai instanceof \Carbon\Carbon
+            ? $this->rencana_selesai->format('H:i')
+            : \Carbon\Carbon::parse($this->rencana_selesai)->format('H:i');
+        return $mulai . ' - ' . $selesai;
+    }
+
+    public function getIsPreShiftAttribute(): bool
+    {
+        if (!$this->rencana_mulai) return false;
+        $jamBukaPresensi = '07:00:00';
+        $jamMulai = $this->rencana_mulai instanceof \Carbon\Carbon
+            ? $this->rencana_mulai->format('H:i:s')
+            : \Carbon\Carbon::parse($this->rencana_mulai)->format('H:i:s');
+        return $jamMulai < $jamBukaPresensi;
     }
 }

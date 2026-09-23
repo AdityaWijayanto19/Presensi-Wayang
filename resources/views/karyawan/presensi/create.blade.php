@@ -7,8 +7,6 @@
         <div class="right"></div>
     </div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
 @endsection
 
 
@@ -63,6 +61,7 @@
 
 @push('myscript')
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/webcamjs/1.0.26/webcam.min.js"></script>
 <script>
 
     document.addEventListener("DOMContentLoaded", function () {

@@ -10,7 +10,7 @@
         <x-admin.card>
 
             <div class="p-4">
-                <form action="/presensi/cetaklaporan" method="POST">
+                <form action="/presensi/cetaklaporan" method="POST" x-data="laporanForm()">
                     @csrf
 
                     <div class="space-y-0">
@@ -41,6 +41,41 @@
                             @endfor
                         </x-admin.select>
 
+                        {{-- Cut-off Info --}}
+                        <div class="mb-2">
+                            <label class="block text-xs font-medium text-slate-600 mb-1">Periode Cut-off</label>
+                            <div class="w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
+                                @php
+                                    $curMonth = (int) date('m');
+                                    $curYear = (int) date('Y');
+                                    $startMonth = $curMonth - 1;
+                                    $startYear = $curYear;
+                                    if ($startMonth === 0) {
+                                        $startMonth = 12;
+                                        $startYear = $curYear - 1;
+                                    }
+                                @endphp
+                                <span x-text="cutoffText">21 {{ $namabulan[$startMonth] }} {{ $startYear }} - 20 {{ $namabulan[$curMonth] }} {{ $curYear }}</span>
+                            </div>
+                        </div>
+
+                        {{-- Tipe Export --}}
+                        <div class="mb-2">
+                            <label class="block text-xs font-medium text-slate-600 mb-1">Tipe Export <span class='text-red-500'>*</span></label>
+                            <div class="flex gap-4 mt-1">
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="radio" name="tipe_export" value="perusahaan" x-model="tipeExport"
+                                        class="w-4 h-4 text-blue-600 border-slate-300 focus:ring-blue-500">
+                                    <span class="text-sm text-slate-700">Per Perusahaan</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="radio" name="tipe_export" value="karyawan" x-model="tipeExport"
+                                        class="w-4 h-4 text-blue-600 border-slate-300 focus:ring-blue-500">
+                                    <span class="text-sm text-slate-700">Per Karyawan</span>
+                                </label>
+                            </div>
+                        </div>
+
                         {{-- Unit Perusahaan --}}
                         <x-admin.select name="unit" id="unit"
                             label="Unit Perusahaan <span class='text-red-500'>*</span>" searchable required>
@@ -50,11 +85,14 @@
                             @endforeach
                         </x-admin.select>
 
-                        {{-- Karyawan --}}
-                        <x-admin.select name="nik" id="nik"
-                            label="Karyawan <span class='text-red-500'>*</span>" searchable required>
-                            <option value="">Pilih Karyawan</option>
-                        </x-admin.select>
+                        {{-- Karyawan (conditional) --}}
+                        <div x-show="tipeExport === 'karyawan'" x-transition x-cloak>
+                            <x-admin.select name="nik" id="nik"
+                                label="Karyawan <span class='text-red-500'>*</span>" searchable
+                                :required="true">
+                                <option value="">Pilih Karyawan</option>
+                            </x-admin.select>
+                        </div>
 
                         {{-- Buttons --}}
                         <div class="mt-2 flex gap-2">
@@ -78,6 +116,44 @@
 
 @push('myscript')
 <script>
+    function laporanForm() {
+        return {
+            tipeExport: 'perusahaan',
+            bulan: '{{ date("m") }}',
+            tahun: '{{ date("Y") }}',
+
+            get cutoffText() {
+                const namaBulan = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+                    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+                const b = parseInt(this.bulan) || 1;
+                const t = parseInt(this.tahun) || 2025;
+
+                let startMonth = b - 1;
+                let startYear = t;
+                if (startMonth === 0) {
+                    startMonth = 12;
+                    startYear = t - 1;
+                }
+
+                return `21 ${namaBulan[startMonth]} ${startYear} - 20 ${namaBulan[b]} ${t}`;
+            },
+
+            init() {
+                const self = this;
+                const bulanInput = document.querySelector('input[name="bulan"]');
+                const tahunInput = document.querySelector('input[name="tahun"]');
+                if (bulanInput) {
+                    bulanInput.addEventListener('change', function() { self.bulan = this.value; });
+                    bulanInput.addEventListener('input', function() { self.bulan = this.value; });
+                }
+                if (tahunInput) {
+                    tahunInput.addEventListener('change', function() { self.tahun = this.value; });
+                    tahunInput.addEventListener('input', function() { self.tahun = this.value; });
+                }
+            }
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('unit').addEventListener('change', function() {
             var unit = this.value;

@@ -38,7 +38,7 @@ class KaryawanController extends Controller
             $query->where('jabatan', $request->jabatan_filter);
         }
 
-        $karyawan = $query->paginate(5)->withQueryString();
+        $karyawan = $query->paginate(10)->withQueryString();
         $unitperusahaan = Unitperusahaan::orderBy('unit')->get();
 
         return view('admin.karyawan.index', compact('karyawan', 'unitperusahaan'));

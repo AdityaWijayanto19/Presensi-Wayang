@@ -7,7 +7,7 @@
                 <i data-lucide="chevron-left"></i>
             </a>
         </div>
-        <div class="pageTitle">Input Laporan WFH</div>
+        <div class="pageTitle">{{ $isEdit ?? false ? 'Edit Laporan WFH' : 'Input Laporan WFH' }}</div>
         <div class="right"></div>
     </div>
 @endsection
@@ -38,8 +38,20 @@
                 </div>
             @endif
 
-            <form method="POST" action="/wfh/{{ $wfh->id }}/laporan" enctype="multipart/form-data" id="form_laporan">
+            <form method="POST" action="{{ $isEdit ?? false ? '/wfh/' . $wfh->id . '/laporan/update' : '/wfh/' . $wfh->id . '/laporan' }}" enctype="multipart/form-data" id="form_laporan">
                 @csrf
+
+                @if($isEdit ?? false)
+                    @if($wfh->laporan_rejected_reason)
+                        <div class="bg-rose-50 border border-rose-200 rounded-xl p-3 mb-3 flex gap-2.5">
+                            <i data-lucide="alert-circle" class="text-rose-600 shrink-0 mt-0.5" style="width:18px;height:18px;"></i>
+                            <div>
+                                <p class="text-[12px] font-semibold text-rose-700">Laporan Ditolak</p>
+                                <p class="text-[11px] text-rose-600">{{ $wfh->laporan_rejected_reason }}</p>
+                            </div>
+                        </div>
+                    @endif
+                @endif
 
                 <x-admin.card class="p-4 mb-3">
                     {{-- items-center membuat foto persis di tengah secara vertikal --}}
@@ -122,10 +134,9 @@
 
                 <div class="form-group mt-4">
                     <button type="submit" class="btn btn-primary w-full">
-                        <i data-lucide="circle-check" style="margin-right:6px;"></i> Kirim Laporan
+                        <i data-lucide="circle-check" style="margin-right:6px;"></i> {{ $isEdit ?? false ? 'Update Laporan' : 'Kirim Laporan' }}
                     </button>
-                    <p class="text-[11px] text-[#a8a29e] text-center mt-2">Laporan akan melalui persetujuan atasan dan
-                        administrator.</p>
+                    <p class="text-[11px] text-[#a8a29e] text-center mt-2">{{ $isEdit ?? false ? 'Laporan yang diperbarui akan dikirim ulang untuk persetujuan.' : 'Laporan akan melalui persetujuan atasan dan administrator.' }}</p>
                 </div>
             </form>
         </div>
@@ -133,98 +144,8 @@
 @endsection
 
 @push('myscript')
-    <style>
-        .preview-thumb {
-            position: relative;
-            width: 72px;
-            height: 72px;
-            border-radius: 10px;
-            overflow: hidden;
-            border: 1.5px solid #f0ece8;
-            cursor: pointer;
-            flex-shrink: 0;
-            transition: border-color 0.15s;
-        }
 
-        .preview-thumb:hover {
-            border-color: #7a5234;
-        }
 
-        .preview-thumb img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
-
-        .preview-thumb .btn-remove {
-            position: absolute;
-            top: 3px;
-            right: 3px;
-            width: 20px;
-            height: 20px;
-            border-radius: 999px;
-            background: rgba(220, 38, 38, 0.9);
-            border: 1.5px solid rgba(255, 255, 255, 0.5);
-            color: #fff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 13px;
-            line-height: 1;
-            font-weight: 700;
-            z-index: 2;
-            transition: background 0.15s;
-        }
-
-        .preview-thumb .btn-remove:hover {
-            background: #dc2626;
-        }
-
-        .img-preview-modal {
-            position: fixed;
-            inset: 0;
-            z-index: 99999;
-            background: rgba(20, 12, 6, 0.7);
-            backdrop-filter: blur(6px);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 16px;
-        }
-
-        .img-preview-modal.open {
-            display: flex;
-        }
-
-        .img-preview-modal img {
-            max-width: 92vw;
-            max-height: 85vh;
-            object-fit: contain;
-            border-radius: 8px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-        }
-
-        .img-preview-modal .btn-close-preview {
-            position: absolute;
-            top: 16px;
-            right: 16px;
-            width: 40px;
-            height: 40px;
-            border-radius: 999px;
-            background: rgba(255, 255, 255, 0.9);
-            border: none;
-            color: #44403c;
-            font-size: 22px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-        }
-    </style>
 
     <div id="imgPreviewModal" class="img-preview-modal">
         <button type="button" class="btn-close-preview" id="imgPreviewClose">&times;</button>

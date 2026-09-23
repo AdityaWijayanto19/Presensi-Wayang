@@ -2,13 +2,7 @@
 
 @section('header')
     <div class="appHeader bg-coklat text-light">
-        <div class="left">
-            <a href="/dashboard" class="headerButton goBack">
-                <i data-lucide="chevron-left"></i>
-            </a>
-        </div>
         <div class="pageTitle">Pengaturan</div>
-        <div class="right"></div>
     </div>
 @endsection
 

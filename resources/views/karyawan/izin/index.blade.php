@@ -2,6 +2,11 @@
 
 @section('header')
     <div class="appHeader bg-coklat text-light">
+         <div class="left">
+            <a href="/pengajuan" class="headerButton goBack">
+                <i data-lucide="chevron-left"></i>
+            </a>
+        </div>
         <div class="pageTitle">Data Izin</div>
         <div class="right"></div>
     </div>
@@ -120,6 +125,9 @@
                             @if (!empty($d->keterangan))
                                 <div class="text-[12px] text-[#57534e] mt-1.5 leading-snug">{{ Str::limit($d->keterangan, 80) }}</div>
                             @endif
+                            @if($status === 'rejected' && !empty($d->rejected_reason))
+                                <div class="mt-1 text-[11px] text-rose-500">Alasan: {{ $d->rejected_reason }}</div>
+                            @endif
                         </div>
                     </div>
 
@@ -136,6 +144,11 @@
                             <button type="button" class="file-pill js-preview" data-url="{{ $buktiUrl }}" data-filename="{{ basename($buktiUrl) }}" data-label="Bukti Izin — {{ $displayDate }}">
                                 <i data-lucide="paperclip"></i> Bukti
                             </button>
+                        @endif
+                        @if($status === 'rejected')
+                            <a href="/izin/{{ $d->id }}/edit" class="file-pill bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100">
+                                <i data-lucide="pencil"></i> Edit
+                            </a>
                         @endif
                     </div>
                 </div>

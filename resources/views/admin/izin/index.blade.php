@@ -46,6 +46,7 @@
                             <x-admin.select name="jenis_izin" placeholder="Semua Jenis">
                                 <option value="tidak_masuk" {{ Request('jenis_izin') == 'tidak_masuk' ? 'selected' : '' }}>Izin Tidak Masuk</option>
                                 <option value="terlambat" {{ Request('jenis_izin') == 'terlambat' ? 'selected' : '' }}>Izin Terlambat</option>
+                                <option value="setengah_hari" {{ Request('jenis_izin') == 'setengah_hari' ? 'selected' : '' }}>Izin Setengah Hari</option>
                                 <option value="pulang_cepat" {{ Request('jenis_izin') == 'pulang_cepat' ? 'selected' : '' }}>Izin Pulang Cepat</option>
                                 <option value="sakit" {{ Request('jenis_izin') == 'sakit' ? 'selected' : '' }}>Sakit</option>
                             </x-admin.select>
@@ -119,9 +120,21 @@
             <x-admin.select name="jenis_izin" id="edit_jenis_izin" label="Kategori Izin <span class='text-red-500'>*</span>" required>
                 <option value="tidak_masuk">Izin Tidak Masuk</option>
                 <option value="terlambat">Izin Terlambat</option>
+                <option value="setengah_hari">Izin Setengah Hari</option>
                 <option value="pulang_cepat">Izin Pulang Cepat</option>
                 <option value="sakit">Sakit</option>
             </x-admin.select>
+
+            <div id="editJamDatangWrapper" style="display:none;">
+                <x-admin.select name="jam_datang" id="edit_jam_datang" label="Jam Datang <span class='text-red-500'>*</span>">
+                    <option value="">-- Pilih Jam --</option>
+                    <option value="08:00">08:00</option>
+                    <option value="09:00">09:00</option>
+                    <option value="10:00">10:00</option>
+                    <option value="11:00">11:00</option>
+                    <option value="12:00">12:00</option>
+                </x-admin.select>
+            </div>
 
             <div class="mt-2">
                 <x-admin.button variant="primary" icon="save" type="submit" block>Simpan Perubahan</x-admin.button>
@@ -180,6 +193,20 @@
                 });
             } catch (e) { console.warn('Filter init error:', e); }
 
+            // Toggle jam datang in edit modal
+            var editJenisSelect = document.getElementById('edit_jenis_izin');
+            var editJamWrapper = document.getElementById('editJamDatangWrapper');
+            if (editJenisSelect) {
+                editJenisSelect.addEventListener('change', function() {
+                    if (this.value === 'terlambat') {
+                        editJamWrapper.style.display = '';
+                    } else {
+                        editJamWrapper.style.display = 'none';
+                        document.getElementById('edit_jam_datang').value = '';
+                    }
+                });
+            }
+
             // Edit Izin Modal
             document.addEventListener('click', function(e) {
                 var btn = e.target.closest('.edit-izin');
@@ -187,11 +214,24 @@
                     var id = btn.dataset.id;
                     var tgl = btn.dataset.tgl_izin;
                     var jenis = btn.dataset.jenis_izin;
+                    var jamDatang = btn.dataset.jam_datang;
 
                     document.getElementById('edit_izin_id').value = id;
                     document.getElementById('edit_tgl_izin').value = tgl;
                     document.getElementById('edit_jenis_izin').value = jenis;
                     document.getElementById('formEditIzin').setAttribute('action', '/presensi/izin/' + id + '/update');
+
+                    // Toggle jam datang
+                    var editJamWrapper = document.getElementById('editJamDatangWrapper');
+                    var editJamSelect = document.getElementById('edit_jam_datang');
+                    if (jenis === 'terlambat') {
+                        editJamWrapper.style.display = '';
+                        editJamSelect.value = jamDatang || '';
+                    } else {
+                        editJamWrapper.style.display = 'none';
+                        editJamSelect.value = '';
+                    }
+
                     window.dispatchEvent(new CustomEvent('open-modal-modal-editizin'));
                 }
 

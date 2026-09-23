@@ -81,17 +81,15 @@
                 </div>
             </td>
 
-            <td class="px-2 py-1.5 text-xs">
-                {{ $p->lembur->durasi ?? '-' }}
-            </td>
-        </tr>
+        </td>
+    </tr>
 
     @endforeach
 
 @else
 
     <tr>
-        <td colspan="10"
+        <td colspan="9"
             class="px-2 py-6 text-center text-xs text-slate-500">
             Data presensi tidak ditemukan
         </td>

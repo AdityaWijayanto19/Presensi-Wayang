@@ -78,9 +78,6 @@
                             <th
                                 class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">
                                 Lokasi</th>
-                            <th
-                                class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">
-                                Lembur</th>
                         </tr>
                     </thead>
                     <tbody id="loadpresensi" class="divide-y divide-slate-200">

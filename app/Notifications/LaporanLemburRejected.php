@@ -23,6 +23,7 @@ class LaporanLemburRejected extends Notification
             'lembur_id' => $this->lembur->id,
             'rejected_reason' => $this->rejectedReason,
             'tgl_lembur' => $this->lembur->tgl_lembur->format('Y-m-d'),
+            'url' => '/lembur/' . $this->lembur->id . '/laporan/edit',
             'message' => 'Laporan lembur ditolak: ' . $this->rejectedReason,
         ];
     }

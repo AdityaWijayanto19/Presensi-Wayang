@@ -247,6 +247,19 @@
                 </td>
             </tr>
 
+            @if (!empty($jam_mulai) && !empty($jam_selesai))
+            <tr>
+                <td class="info-cell">
+                    <span class="info-label">Rencana Waktu:</span>
+                    {{ $jam_mulai }} - {{ $jam_selesai }}
+                </td>
+                <td class="info-cell">
+                    <span class="info-label">Durasi:</span>
+                    {{ number_format($durasi_jam, 1, ',', '') }} jam
+                </td>
+            </tr>
+            @endif
+
         </table>
 
 

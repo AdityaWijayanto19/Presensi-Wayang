@@ -2,6 +2,11 @@
 
 @section('header')
     <div class="appHeader bg-coklat text-light">
+         <div class="left">
+            <a href="/pengajuan" class="headerButton goBack">
+                <i data-lucide="chevron-left"></i>
+            </a>
+        </div>
         <div class="pageTitle">Riwayat Lembur</div>
         <div class="right"></div>
     </div>
@@ -90,12 +95,18 @@
                             <div class="flex items-center gap-1.5 mt-1">
                                 <i data-lucide="calendar" class="text-[#a8a29e]" style="width:12px;height:12px;"></i>
                                 <span class="text-[12px] font-medium text-[#78716c]">{{ $weekday }}</span>
+                                @if ($d->rencana_waktu)
+                                    <span class="text-[11px] text-[#a8a29e]">• {{ $d->rencana_waktu }}</span>
+                                @endif
                             </div>
                             @if (!empty($d->keterangan))
                                 <div class="mt-1 text-[12px] text-[#78716c] line-clamp-2">{{ $d->keterangan }}</div>
                             @endif
                             @if ($status === 'rejected' && !empty($d->rejected_reason))
                                 <div class="mt-1 text-[11px] text-rose-500">Alasan: {{ $d->rejected_reason }}</div>
+                            @endif
+                            @if(($d->laporan_status && ($d->laporan_status instanceof \App\Enums\LemburStatus ? $d->laporan_status->value : $d->laporan_status) === 'rejected') && !empty($d->laporan_rejected_reason))
+                                <div class="mt-1 text-[11px] text-rose-500">Alasan penolakan laporan: {{ $d->laporan_rejected_reason }}</div>
                             @endif
                         </div>
                     </div>
@@ -114,6 +125,11 @@
                             <a href="/presensi/showfilelembur/{{ basename($d->laporan_file) }}" target="_blank"
                                class="file-pill">
                                 <i data-lucide="file-check"></i> Laporan
+                            </a>
+                        @endif
+                        @if(($d->laporan_status && ($d->laporan_status instanceof \App\Enums\LemburStatus ? $d->laporan_status->value : $d->laporan_status) === 'rejected'))
+                            <a href="/lembur/{{ $d->id }}/laporan/edit" class="file-pill bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100">
+                                <i data-lucide="pencil"></i> Edit Laporan
                             </a>
                         @endif
                     </div>

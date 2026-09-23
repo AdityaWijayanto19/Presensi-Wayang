@@ -14,6 +14,11 @@ Route::get('/proseslogout', [\App\Http\Controllers\AuthController::class, 'prose
 // Dashboard
 Route::get('/dashboard', [DashboardController::class, 'index']);
 
+// Pengajuan (grouping page)
+Route::get('/pengajuan', function () {
+    return view('karyawan.pengajuan.index');
+});
+
 // Settings
 Route::get('/settings', [UserPermissionController::class, 'karyawanSettings']);
 Route::get('/api/user/permissions', [UserPermissionController::class, 'getPermissions']);
@@ -30,6 +35,8 @@ Route::get('/izin', [KaryawanPresensiController::class, 'izin']);
 Route::get('/izin/create', [KaryawanPresensiController::class, 'buatizin']);
 Route::post('/izin/store', [KaryawanPresensiController::class, 'storeizin']);
 Route::delete('/izin/{id}', [KaryawanPresensiController::class, 'deleteizin']);
+Route::get('/izin/{id}/edit', [KaryawanPresensiController::class, 'editIzin']);
+Route::post('/izin/{id}/update', [KaryawanPresensiController::class, 'updateIzin']);
 Route::post('/izin/{id}/approve-atasan', [KaryawanPresensiController::class, 'approveIzinAtasan']);
 Route::post('/izin/{id}/reject-atasan', [KaryawanPresensiController::class, 'rejectIzinAtasan']);
 Route::get('/presensi/showfileizin/{file}', [KaryawanPresensiController::class, 'showfileizin']);
@@ -43,6 +50,8 @@ Route::get('/lembur/{id}/foto', [KaryawanPresensiController::class, 'fotoLembur'
 Route::post('/lembur/{id}/foto', [KaryawanPresensiController::class, 'storeFotoLembur']);
 Route::get('/lembur/{id}/laporan', [KaryawanPresensiController::class, 'buatLaporanLembur']);
 Route::post('/lembur/{id}/laporan', [KaryawanPresensiController::class, 'storeLaporanLembur']);
+Route::get('/lembur/{id}/laporan/edit', [KaryawanPresensiController::class, 'editLaporanLembur']);
+Route::post('/lembur/{id}/laporan/update', [KaryawanPresensiController::class, 'updateLaporanLembur']);
 Route::post('/lembur/{id}/approve-atasan', [KaryawanPresensiController::class, 'approveLemburAtasan']);
 Route::post('/lembur/{id}/reject-atasan', [KaryawanPresensiController::class, 'rejectLemburAtasan']);
 Route::post('/lembur/{id}/approve-laporan-atasan', [KaryawanPresensiController::class, 'approveLaporanLemburAtasan']);
@@ -56,6 +65,8 @@ Route::post('/wfh/store', [KaryawanPresensiController::class, 'storewfh']);
 Route::delete('/wfh/{id}', [KaryawanPresensiController::class, 'deletewfh']);
 Route::get('/wfh/{id}/laporan', [KaryawanPresensiController::class, 'buatLaporanWfh']);
 Route::post('/wfh/{id}/laporan', [KaryawanPresensiController::class, 'storeLaporanWfh']);
+Route::get('/wfh/{id}/laporan/edit', [KaryawanPresensiController::class, 'editLaporanWfh']);
+Route::post('/wfh/{id}/laporan/update', [KaryawanPresensiController::class, 'updateLaporanWfh']);
 Route::post('/wfh/{id}/approve-atasan', [KaryawanPresensiController::class, 'approveWfhAtasan']);
 Route::post('/wfh/{id}/reject-atasan', [KaryawanPresensiController::class, 'rejectWfhAtasan']);
 Route::post('/wfh/{id}/approve-laporan-atasan', [KaryawanPresensiController::class, 'approveLaporanAtasan']);

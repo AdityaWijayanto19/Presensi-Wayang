@@ -71,7 +71,7 @@
                         LAPORAN PRESENSI KARYAWAN
                         <br>
 
-                        PERIODE {{ strtoupper($namabulan[$bulan]) }} {{ $tahun }}
+                        PERIODE {{ strtoupper($startDate->format('d M Y')) }} - {{ strtoupper($endDate->format('d M Y')) }}
                         <br>
 
                         PT WAYANG ARTHASENA GROUP

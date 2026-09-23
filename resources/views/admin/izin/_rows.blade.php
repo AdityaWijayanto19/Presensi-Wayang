@@ -19,6 +19,7 @@
         $jenisLabel = match ($jenisValue) {
             'tidak_masuk' => 'Izin Tidak Masuk',
             'terlambat' => 'Izin Terlambat',
+            'setengah_hari' => 'Izin Setengah Hari',
             'pulang_cepat' => 'Izin Pulang Cepat',
             'sakit' => 'Sakit',
             default => $jenisValue,
@@ -26,6 +27,7 @@
         $jenisBadgeClass = match ($jenisValue) {
             'tidak_masuk' => 'bg-amber-50 text-amber-700 border border-amber-200',
             'terlambat' => 'bg-orange-50 text-orange-700 border border-orange-200',
+            'setengah_hari' => 'bg-indigo-50 text-indigo-700 border border-indigo-200',
             'pulang_cepat' => 'bg-cyan-50 text-cyan-700 border border-cyan-200',
             'sakit' => 'bg-rose-50 text-rose-700 border border-rose-200',
             default => 'bg-slate-50 text-slate-600 border border-slate-200',
@@ -70,6 +72,9 @@
         </td>
         <td class="px-2 py-2 text-xs">
             <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold {{ $jenisBadgeClass }}">{{ $jenisLabel }}</span>
+            @if (!empty($d->jam_datang))
+                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-600 border border-slate-200 mt-1">{{ $d->jam_datang }}</span>
+            @endif
         </td>
         <td class="px-2 py-2 text-xs">
             <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold {{ $badgeClass }}">{{ $label }}</span>
@@ -125,6 +130,7 @@
                         data-id="{{ $d->id }}"
                         data-tgl_izin="{{ $d->tgl_izin instanceof \Carbon\Carbon ? $d->tgl_izin->format('Y-m-d') : $d->tgl_izin }}"
                         data-jenis_izin="{{ $jenisValue }}"
+                        data-jam_datang="{{ $d->jam_datang ?? '' }}"
                         @click="open = false">
                         <i data-lucide="pencil" style="width:12px;height:12px;"></i> Edit
                     </button>

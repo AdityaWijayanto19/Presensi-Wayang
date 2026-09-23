@@ -183,6 +183,7 @@ class IzinService
                 'nik' => $nik,
                 'tgl_izin' => $request->tgl_izin,
                 'jenis_izin' => $jenisIzin,
+                'jam_datang' => $request->jam_datang,
                 'keterangan' => $request->keterangan,
                 'bukti_file' => $buktiFilePath,
                 'atasan_nik' => $atasanNik,
@@ -205,6 +206,7 @@ class IzinService
                 'tgl_izin' => $request->tgl_izin,
                 'jenis_izin' => $jenisIzin,
                 'jenis_izin_label' => $this->getJenisIzinLabel($jenisIzin),
+                'jam_datang' => $request->jam_datang,
                 'keterangan' => $request->keterangan,
                 'nama_atasan' => $atasan?->nama_lengkap ?? '-',
                 'jabatan_atasan' => $atasan?->jabatan instanceof Jabatan ? $atasan->jabatan->value : ($atasan?->jabatan ?? '-'),
@@ -420,6 +422,102 @@ class IzinService
         return ['success' => true, 'message' => 'Data izin berhasil dihapus!'];
     }
 
+    public function getEditIzinData(int $id, string $nik): ?Izin
+    {
+        $izin = Izin::where('id', $id)->where('nik', $nik)->first();
+        if (!$izin) return null;
+
+        if ($izin->status !== IzinStatus::Rejected) {
+            return null;
+        }
+
+        return $izin;
+    }
+
+    public function updateIzin(Request $request, int $id, string $nik): array
+    {
+        $izin = Izin::where('id', $id)->where('nik', $nik)->first();
+        if (!$izin) {
+            return ['success' => false, 'message' => 'Data tidak ditemukan'];
+        }
+
+        if ($izin->status !== IzinStatus::Rejected) {
+            return ['success' => false, 'message' => 'Hanya izin dengan status ditolak yang bisa diedit'];
+        }
+
+        $karyawan = Karyawan::where('nik', $nik)->first();
+        if (!$karyawan) {
+            return ['success' => false, 'message' => 'Data karyawan tidak ditemukan'];
+        }
+
+        $initialStatus = self::initialStatus($karyawan);
+        $atasanNik = self::determineAtasanNik($karyawan);
+
+        DB::beginTransaction();
+        try {
+            $buktiFilePath = $izin->bukti_file;
+            if ($request->hasFile('bukti_file')) {
+                if (!empty($izin->bukti_file)) {
+                    Storage::disk('public')->delete('uploads/izin/' . $izin->bukti_file);
+                }
+                $file = $request->file('bukti_file');
+                $namaFile = time() . '_' . $nik . '.' . $file->getClientOriginalExtension();
+                $file->storeAs('uploads/izin', $namaFile, 'public');
+                $buktiFilePath = $namaFile;
+            }
+
+            $izin->update([
+                'tgl_izin' => $request->tgl_izin,
+                'jenis_izin' => $request->jenis_izin,
+                'jam_datang' => $request->jenis_izin === 'terlambat' ? $request->jam_datang : null,
+                'keterangan' => $request->keterangan,
+                'bukti_file' => $buktiFilePath,
+                'atasan_nik' => $atasanNik,
+                'status' => $initialStatus['status'],
+                'atasan_status' => $initialStatus['atasan_status'],
+                'admin_status' => $initialStatus['admin_status'],
+                'rejected_reason' => null,
+            ]);
+
+            $jabatan = $karyawan->jabatan instanceof Jabatan ? $karyawan->jabatan->value : $karyawan->jabatan;
+            $perusahaan = Unitperusahaan::where('unit', $karyawan->unit)->value('perusahaan') ?? '-';
+            $jenisIzin = $request->jenis_izin;
+            $atasan = $atasanNik ? Karyawan::where('nik', $atasanNik)->first() : null;
+
+            $pdfData = [
+                'headerSuratPath' => 'assets/img/header-surat.png',
+                'nama_lengkap' => $karyawan->nama_lengkap,
+                'jabatan' => $jabatan,
+                'posisi' => $karyawan->posisi ?? '-',
+                'perusahaan' => $perusahaan,
+                'tgl_izin' => $izin->tgl_izin,
+                'jenis_izin' => $jenisIzin,
+                'jenis_izin_label' => $this->getJenisIzinLabel($jenisIzin),
+                'jam_datang' => $request->jenis_izin === 'terlambat' ? $request->jam_datang : null,
+                'keterangan' => $izin->keterangan,
+                'nama_atasan' => $atasan?->nama_lengkap ?? '-',
+                'jabatan_atasan' => $atasan?->jabatan instanceof Jabatan ? $atasan->jabatan->value : ($atasan?->jabatan ?? '-'),
+            ];
+
+            if (!empty($izin->pdf_form_path)) {
+                Storage::disk('public')->delete($izin->pdf_form_path);
+            }
+
+            $stempelPath = $this->pdf->getStempelPath();
+            $pdfPath = $this->generatePdf($pdfData, $stempelPath);
+            $izin->update(['pdf_form_path' => $pdfPath]);
+
+            DB::commit();
+            cache()->forget('pending_izin_admin_count');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('updateIzin failed: ' . $e->getMessage());
+            return ['success' => false, 'message' => 'Gagal memperbarui izin. Silakan coba lagi.'];
+        }
+
+        return ['success' => true, 'message' => 'Izin berhasil diperbarui dan dikirim ulang untuk persetujuan.'];
+    }
+
     public function deleteIzinAdmin(int $id): array
     {
         $izin = Izin::find($id);
@@ -448,6 +546,7 @@ class IzinService
         $izin->update([
             'tgl_izin' => $request->tgl_izin,
             'jenis_izin' => $request->jenis_izin,
+            'jam_datang' => $request->jam_datang,
         ]);
 
         return ['success' => true, 'message' => 'Data izin berhasil diperbarui'];
@@ -490,7 +589,7 @@ class IzinService
             $query->where('tgl_izin', $request->tanggal);
         }
 
-        return $query->orderBy('tgl_izin', 'desc')->paginate(5)->withQueryString();
+        return $query->orderBy('tgl_izin', 'desc')->paginate(10)->withQueryString();
     }
 
     public function generatePdf(array $data, ?string $stempelPath = null): string
@@ -576,6 +675,7 @@ class IzinService
         return match ($jenis) {
             'tidak_masuk' => 'Izin Tidak Masuk',
             'terlambat' => 'Izin Terlambat',
+            'setengah_hari' => 'Izin Setengah Hari',
             'pulang_cepat' => 'Izin Pulang Cepat',
             'sakit' => 'Sakit',
             default => $jenis,

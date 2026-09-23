@@ -7,12 +7,17 @@
                 <i data-lucide="chevron-left"></i>
             </a>
         </div>
-        <div class="pageTitle">Pengajuan Izin</div>
+        <div class="pageTitle">Edit Izin</div>
         <div class="right"></div>
     </div>
 @endsection
 
 @section('content')
+    @php
+        $jenisValue = $izin->jenis_izin instanceof \App\Enums\JenisIzin ? $izin->jenis_izin->value : $izin->jenis_izin;
+        $tglIzin = $izin->tgl_izin instanceof \Carbon\Carbon ? $izin->tgl_izin->format('Y-m-d') : $izin->tgl_izin;
+    @endphp
+
     <div class="flex mt-[70px]">
         <div class="w-full px-3">
             @if (Session::get('success'))
@@ -33,13 +38,24 @@
                 </div>
             @endif
 
-            <form method="POST" action="/izin/store" id="form_izin" enctype="multipart/form-data" autocomplete="off">
+            @if(!empty($izin->rejected_reason))
+                <div class="bg-rose-50 border border-rose-200 rounded-xl p-3 mb-3 flex gap-2.5">
+                    <i data-lucide="alert-circle" class="text-rose-600 shrink-0 mt-0.5" style="width:18px;height:18px;"></i>
+                    <div>
+                        <p class="text-[12px] font-semibold text-rose-700">Izin Ditolak</p>
+                        <p class="text-[11px] text-rose-600">{{ $izin->rejected_reason }}</p>
+                    </div>
+                </div>
+            @endif
+
+            <form method="POST" action="/izin/{{ $izin->id }}/update" id="form_izin" enctype="multipart/form-data" autocomplete="off">
                 @csrf
 
                 {{-- Auto Info --}}
                 <x-admin.card class="p-4 mb-3">
                     <div class="flex items-center gap-3">
                         @php
+                            $karyawan = Auth::guard('karyawan')->user();
                             $pathFoto = \Illuminate\Support\Facades\Storage::url('uploads/karyawan/' . $karyawan->foto);
                         @endphp
                         @if ($karyawan->foto && $karyawan->foto !== 'nophoto.png')
@@ -72,11 +88,11 @@
                         <select name="jenis_izin" id="jenis_izin" required
                             class="w-full pl-10 pr-3 py-2 text-sm bg-white border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
                             <option value="">-- Pilih Kategori --</option>
-                            <option value="tidak_masuk" {{ old('jenis_izin') == 'tidak_masuk' ? 'selected' : '' }}>Izin Tidak Masuk</option>
-                            <option value="terlambat" {{ old('jenis_izin') == 'terlambat' ? 'selected' : '' }}>Izin Terlambat</option>
-                            <option value="setengah_hari" {{ old('jenis_izin') == 'setengah_hari' ? 'selected' : '' }}>Izin Setengah Hari</option>
-                            <option value="pulang_cepat" {{ old('jenis_izin') == 'pulang_cepat' ? 'selected' : '' }}>Izin Pulang Cepat</option>
-                            <option value="sakit" {{ old('jenis_izin') == 'sakit' ? 'selected' : '' }}>Sakit</option>
+                            <option value="tidak_masuk" {{ $jenisValue == 'tidak_masuk' ? 'selected' : '' }}>Izin Tidak Masuk</option>
+                            <option value="terlambat" {{ $jenisValue == 'terlambat' ? 'selected' : '' }}>Izin Terlambat</option>
+                            <option value="setengah_hari" {{ $jenisValue == 'setengah_hari' ? 'selected' : '' }}>Izin Setengah Hari</option>
+                            <option value="pulang_cepat" {{ $jenisValue == 'pulang_cepat' ? 'selected' : '' }}>Izin Pulang Cepat</option>
+                            <option value="sakit" {{ $jenisValue == 'sakit' ? 'selected' : '' }}>Sakit</option>
                         </select>
                     </div>
                     <small id="jenisHelp" class="text-[11px] text-[#a8a29e] block mt-1">Pilih kategori izin yang sesuai.</small>
@@ -94,19 +110,9 @@
                         <input type="text"
                             class="w-full pl-10 pr-3 py-2 text-sm bg-white border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                             name="tgl_izin" id="tgl_izin" placeholder="Pilih Tanggal Izin" autocomplete="off" required
-                            value="{{ old('tgl_izin') }}">
+                            value="{{ $tglIzin }}">
                     </div>
-                    <div class="mt-1">
-                        @if ($disableToday)
-                            <small class="text-[11px] text-red-500 block">
-                                Pengajuan untuk hari ini sudah lewat batas. Silakan pilih tanggal lain (besok/dst).
-                            </small>
-                        @else
-                            <small class="text-[11px] text-[#a8a29e] block">
-                                Hari ini maksimal 1 jam setelah jam masuk. Tanggal lain bisa dipilih kapan saja.
-                            </small>
-                        @endif
-                    </div>
+                    <small class="text-[11px] text-[#a8a29e] block mt-1">Pilih tanggal izin yang diinginkan.</small>
                 </div>
 
                 {{-- Jam Datang (hanya untuk Izin Terlambat) --}}
@@ -121,11 +127,11 @@
                         <select name="jam_datang" id="jam_datang"
                             class="w-full pl-10 pr-3 py-2 text-sm bg-white border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
                             <option value="">-- Pilih Jam Datang --</option>
-                            <option value="08:00" {{ old('jam_datang') == '08:00' ? 'selected' : '' }}>08:00</option>
-                            <option value="09:00" {{ old('jam_datang') == '09:00' ? 'selected' : '' }}>09:00</option>
-                            <option value="10:00" {{ old('jam_datang') == '10:00' ? 'selected' : '' }}>10:00</option>
-                            <option value="11:00" {{ old('jam_datang') == '11:00' ? 'selected' : '' }}>11:00</option>
-                            <option value="12:00" {{ old('jam_datang') == '12:00' ? 'selected' : '' }}>12:00</option>
+                            <option value="08:00" {{ ($izin->jam_datang ?? '') == '08:00' ? 'selected' : '' }}>08:00</option>
+                            <option value="09:00" {{ ($izin->jam_datang ?? '') == '09:00' ? 'selected' : '' }}>09:00</option>
+                            <option value="10:00" {{ ($izin->jam_datang ?? '') == '10:00' ? 'selected' : '' }}>10:00</option>
+                            <option value="11:00" {{ ($izin->jam_datang ?? '') == '11:00' ? 'selected' : '' }}>11:00</option>
+                            <option value="12:00" {{ ($izin->jam_datang ?? '') == '12:00' ? 'selected' : '' }}>12:00</option>
                         </select>
                     </div>
                     <small class="text-[11px] text-[#a8a29e] block mt-1">Pilih jam Anda akan datang di kantor.</small>
@@ -135,29 +141,32 @@
                 <div class="form-group mt-3">
                     <label class="text-[12px] font-semibold text-[#44403c] mb-1 block">Keterangan <span class="text-red-500">*</span></label>
                     <textarea name="keterangan" id="keterangan" rows="3" maxlength="500" class="w-full rounded-md border border-slate-300 px-2.5 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                        placeholder="Jelaskan alasan izin Anda..." required>{{ old('keterangan') }}</textarea>
+                        placeholder="Jelaskan alasan izin Anda..." required>{{ old('keterangan', $izin->keterangan) }}</textarea>
                     <small class="text-[11px] text-[#a8a29e]"><span id="charCount">0</span>/500 karakter</small>
                 </div>
 
                 {{-- Bukti File --}}
                 <div class="form-group mt-3">
-                    <label class="text-[12px] font-semibold text-[#44403c] mb-1 block">Bukti File <span class="text-red-500">*</span></label>
-                    <input type="file" name="bukti_file" id="bukti_file" required
+                    <label class="text-[12px] font-semibold text-[#44403c] mb-1 block">Bukti File <span class="text-[#a8a29e]">(Opsional jika tidak diubah)</span></label>
+                    <input type="file" name="bukti_file" id="bukti_file"
                         accept=".jpg,.jpeg,.png,.pdf"
                         class="w-full rounded-md border border-slate-300 px-2.5 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-coklat file:text-white hover:file:bg-coklat-dark">
-                    <small class="text-[11px] text-[#a8a29e]">Format: JPG, JPEG, PNG, PDF (Maks 4MB)</small>
+                    <small class="text-[11px] text-[#a8a29e]">Format: JPG, JPEG, PNG, PDF (Maks 4MB). Kosongkan jika tidak ingin mengubah bukti file.</small>
+                    @if(!empty($izin->bukti_file))
+                        <div class="mt-2 text-[11px] text-[#78716c]">File saat ini: <span class="font-medium">{{ $izin->bukti_file }}</span></div>
+                    @endif
                 </div>
 
                 <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 mt-3 flex gap-2.5">
                     <i data-lucide="info"
                         class="text-amber-600 shrink-0 mt-0.5" style="width:18px;height:18px;"></i>
-                    <p class="text-[11px] leading-relaxed text-amber-800">Setelah submit, pengajuan izin akan menunggu
+                    <p class="text-[11px] leading-relaxed text-amber-800">Setelah update, pengajuan izin akan dikirim ulang untuk
                         persetujuan atasan terlebih dahulu, kemudian diteruskan ke HR.</p>
                 </div>
 
                 <div class="form-group mt-4">
                     <button type="submit" class="btn btn-primary w-full">
-                        <i data-lucide="send" style="margin-right:6px;"></i> Ajukan Izin
+                        <i data-lucide="send" style="margin-right:6px;"></i> Update Izin
                     </button>
                 </div>
             </form>
@@ -168,9 +177,6 @@
 @push('myscript')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            var SERVER_TODAY = '{{ now("Asia/Jakarta")->format("Y-m-d") }}';
-            var SERVER_DISABLE_TODAY = {{ $disableToday ? 'true' : 'false' }};
-
             flatpickr("#tgl_izin", {
                 locale: "id",
                 dateFormat: "Y-m-d",
@@ -178,34 +184,6 @@
                 altFormat: "j F Y",
                 allowInput: true,
                 disableMobile: true,
-                minDate: SERVER_TODAY,
-                disable: [
-                    function(date) {
-                        if (SERVER_DISABLE_TODAY) {
-                            var dateStr = date.getFullYear() + '-'
-                                + String(date.getMonth() + 1).padStart(2, '0') + '-'
-                                + String(date.getDate()).padStart(2, '0');
-                            if (dateStr === SERVER_TODAY) return true;
-                        }
-                        return false;
-                    }
-                ],
-                onDayCreate: function(dObj, dStr, fp, dayElem) {
-                    if (SERVER_DISABLE_TODAY) {
-                        var dateStr = dayElem.dateObj.getFullYear() + '-'
-                            + String(dayElem.dateObj.getMonth() + 1).padStart(2, '0') + '-'
-                            + String(dayElem.dateObj.getDate()).padStart(2, '0');
-                        if (dateStr === SERVER_TODAY) {
-                            dayElem.classList.add('fp-today-disabled', 'flatpickr-disabled');
-                            dayElem.style.setProperty('background', '#fee2e2', 'important');
-                            dayElem.style.setProperty('border-color', '#fca5a5', 'important');
-                            dayElem.style.setProperty('color', '#991b1b', 'important');
-                            dayElem.style.setProperty('text-decoration', 'line-through', 'important');
-                            dayElem.style.setProperty('opacity', '0.7', 'important');
-                            dayElem.style.setProperty('cursor', 'not-allowed', 'important');
-                        }
-                    }
-                }
             });
 
             // Char count
@@ -267,19 +245,17 @@
                     Swal.fire({ icon: "warning", text: "Keterangan minimal 5 karakter", confirmButtonColor: "#7a5234" });
                     return;
                 }
-                if (!fileInput.files || fileInput.files.length === 0) {
-                    Swal.fire({ icon: "warning", text: "Bukti file wajib diupload", confirmButtonColor: "#7a5234" });
-                    return;
-                }
-                var allowedTypes = ['image/jpeg','image/png','application/pdf'];
-                var file = fileInput.files[0];
-                if (!allowedTypes.includes(file.type)) {
-                    Swal.fire({ icon: "warning", text: "Format file tidak valid. Gunakan JPG, PNG, atau PDF.", confirmButtonColor: "#7a5234" });
-                    return;
-                }
-                if (file.size > 4 * 1024 * 1024) {
-                    Swal.fire({ icon: "warning", text: "Ukuran file maksimal 4MB", confirmButtonColor: "#7a5234" });
-                    return;
+                if (fileInput.files && fileInput.files.length > 0) {
+                    var allowedTypes = ['image/jpeg','image/png','application/pdf'];
+                    var file = fileInput.files[0];
+                    if (!allowedTypes.includes(file.type)) {
+                        Swal.fire({ icon: "warning", text: "Format file tidak valid. Gunakan JPG, PNG, atau PDF.", confirmButtonColor: "#7a5234" });
+                        return;
+                    }
+                    if (file.size > 4 * 1024 * 1024) {
+                        Swal.fire({ icon: "warning", text: "Ukuran file maksimal 4MB", confirmButtonColor: "#7a5234" });
+                        return;
+                    }
                 }
 
                 var jenisLabels = {
@@ -291,13 +267,13 @@
                 };
 
                 Swal.fire({
-                    title: "Ajukan Izin?",
-                    text: "Kategori: " + (jenisLabels[jenis] || jenis) + ". Data akan diproses dan dikirim untuk persetujuan.",
+                    title: "Update Izin?",
+                    text: "Kategori: " + (jenisLabels[jenis] || jenis) + ". Data akan dikirim ulang untuk persetujuan.",
                     icon: "question",
                     showCancelButton: true,
                     confirmButtonColor: "#7a5234",
                     cancelButtonColor: "#d33",
-                    confirmButtonText: "Ya, Ajukan",
+                    confirmButtonText: "Ya, Update",
                     cancelButtonText: "Batal"
                 }).then(function(r) {
                     if (r.isConfirmed) document.getElementById('form_izin').submit();

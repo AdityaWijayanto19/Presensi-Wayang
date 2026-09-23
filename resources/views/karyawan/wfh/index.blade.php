@@ -2,6 +2,11 @@
 
 @section('header')
     <div class="appHeader bg-coklat text-light">
+         <div class="left">
+            <a href="/pengajuan" class="headerButton goBack">
+                <i data-lucide="chevron-left"></i>
+            </a>
+        </div>
         <div class="pageTitle">Data Work From Home</div>
         <div class="right"></div>
     </div>
@@ -104,6 +109,9 @@
                                 <i data-lucide="calendar" class="text-[#a8a29e]" style="width:12px;height:12px;"></i>
                                 <span class="text-[12px] font-medium text-[#78716c]">{{ $weekday }}</span>
                             </div>
+                            @if(($d->laporan_status && ($d->laporan_status instanceof \App\Enums\WfhStatus ? $d->laporan_status->value : $d->laporan_status) === 'rejected') && !empty($d->laporan_rejected_reason))
+                                <div class="mt-1 text-[11px] text-rose-500">Alasan penolakan laporan: {{ $d->laporan_rejected_reason }}</div>
+                            @endif
                         </div>
                     </div>
 
@@ -124,6 +132,11 @@
                             <button type="button" class="file-pill js-preview-laporan" data-deskripsi="{{ $d->laporan_deskripsi }}" data-tgl="{{ $displayDate }}" data-label="Laporan WFH — {{ $displayDate }}">
                                 <i data-lucide="clipboard"></i> Laporan
                             </button>
+                        @endif
+                        @if($d->laporan_status && ($d->laporan_status instanceof \App\Enums\WfhStatus ? $d->laporan_status->value : $d->laporan_status) === 'rejected')
+                            <a href="/wfh/{{ $d->id }}/laporan/edit" class="file-pill bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100">
+                                <i data-lucide="pencil"></i> Edit Laporan
+                            </a>
                         @endif
                     </div>
                 </div>
