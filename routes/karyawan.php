@@ -21,6 +21,13 @@ Route::get('/pengajuan', function () {
 
 // Settings
 Route::get('/settings', [UserPermissionController::class, 'karyawanSettings']);
+
+// Guideline (Panduan)
+Route::get('/guideline', [\App\Http\Controllers\GuidelineController::class, 'index']);
+Route::get('/guideline/wfh', [\App\Http\Controllers\GuidelineController::class, 'wfh']);
+Route::get('/guideline/izin', [\App\Http\Controllers\GuidelineController::class, 'izin']);
+Route::get('/guideline/lembur', [\App\Http\Controllers\GuidelineController::class, 'lembur']);
+Route::get('/guideline/cuti', [\App\Http\Controllers\GuidelineController::class, 'cuti']);
 Route::get('/api/user/permissions', [UserPermissionController::class, 'getPermissions']);
 Route::post('/api/user/permissions/toggle', [UserPermissionController::class, 'togglePermission']);
 

@@ -246,17 +246,83 @@ class LaporanService
             return Redirect::back()->with('warning', 'Tidak ada karyawan di unit ini');
         }
 
+        $niks = $karyawans->pluck('nik');
+        $startKey = $startDate->format('Y-m-d');
+        $endKey = $endDate->format('Y-m-d');
+
+        $presensis = Presensi::whereIn('nik', $niks)
+            ->whereBetween('tgl_presensi', [$startDate, $endDate])
+            ->get()
+            ->groupBy('nik');
+
+        $lemburs = Lembur::whereIn('nik', $niks)
+            ->where('status', 'approved')
+            ->whereBetween('tgl_lembur', [$startDate, $endDate])
+            ->get()
+            ->groupBy('nik');
+
+        $wfhs = Wfh::whereIn('nik', $niks)
+            ->where('status', 'approved')
+            ->whereBetween('tgl_wfh', [$startDate, $endDate])
+            ->get()
+            ->groupBy('nik');
+
+        $wfhUnpaid = Wfh::whereIn('nik', $niks)
+            ->where('status', 'unpaid')
+            ->whereBetween('tgl_wfh', [$startDate, $endDate])
+            ->get()
+            ->groupBy('nik');
+
+        $izinGroups = Izin::whereIn('nik', $niks)
+            ->where('status', 'approved')
+            ->whereBetween('tgl_izin', [$startDate, $endDate])
+            ->get()
+            ->groupBy('nik');
+
+        $cutiDates = [];
+        foreach (Cuti::whereIn('nik', $niks)->get() as $cuti) {
+            foreach ((array) $cuti->tanggal_cuti as $tgl) {
+                $ts = strtotime($tgl);
+                if ($ts === false) {
+                    continue;
+                }
+                $key = date('Y-m-d', $ts);
+                if ($key >= $startKey && $key <= $endKey) {
+                    $cutiDates[$cuti->nik][$key] = true;
+                }
+            }
+        }
+
         $dataKaryawan = [];
+        $grand = [
+            'totalHadir' => 0,
+            'totalMenitKerja' => 0,
+            'totalLembur' => 0.0,
+            'totalProrate' => 0,
+            'totalWfh' => 0,
+            'totalTerlambatMenit' => 0,
+            'totalIzin' => 0,
+            'totalSakit' => 0,
+            'totalUnpaid' => 0,
+            'totalCuti' => 0,
+        ];
 
         foreach ($karyawans as $k) {
-            $presensi = Presensi::where('nik', $k->nik)
-                ->whereBetween('tgl_presensi', [$startDate, $endDate])
-                ->get();
+            $nikCuti = $cutiDates[$k->nik] ?? [];
+            $isCutiDate = fn (string $key): bool => isset($nikCuti[$key]);
 
-            $totalHadir = $presensi->count();
-
+            $totalHadir = 0;
             $totalMenitKerja = 0;
-            foreach ($presensi as $p) {
+            $totalTerlambatMenit = 0;
+
+            foreach ($presensis->get($k->nik, collect()) as $p) {
+                if ($isCutiDate($p->tgl_presensi->format('Y-m-d'))) {
+                    continue;
+                }
+
+                $totalHadir++;
+                $totalTerlambatMenit += (int) $p->terlambat;
+
                 if ($p->jam_out != null) {
                     $awal = strtotime($p->jam_in);
                     $akhir = strtotime($p->jam_out);
@@ -268,14 +334,9 @@ class LaporanService
             $totalJamKerja = floor($totalMenitKerja / 60);
             $sisaMenitKerja = $totalMenitKerja % 60;
 
-            $lembur = Lembur::where('nik', $k->nik)
-                ->where('status', 'approved')
-                ->whereBetween('tgl_lembur', [$startDate, $endDate])
-                ->get();
-
             $totalLembur = 0;
             $totalProrate = 0;
-            foreach ($lembur as $item) {
+            foreach ($lemburs->get($k->nik, collect()) as $item) {
                 if ($item->durasi_jam > 5) {
                     $totalProrate++;
                 } else {
@@ -283,10 +344,20 @@ class LaporanService
                 }
             }
 
-            $wfh = Wfh::where('nik', $k->nik)
-                ->where('status', 'approved')
-                ->whereBetween('tgl_wfh', [$startDate, $endDate])
-                ->count();
+            $totalWfh = $wfhs->get($k->nik, collect())->count();
+            $totalUnpaid = $wfhUnpaid->get($k->nik, collect())->count();
+
+            $totalIzin = 0;
+            $totalSakit = 0;
+            foreach ($izinGroups->get($k->nik, collect()) as $item) {
+                if ($item->jenis_izin->value === 'sakit') {
+                    $totalSakit++;
+                } else {
+                    $totalIzin++;
+                }
+            }
+
+            $totalCuti = count($nikCuti);
 
             $dataKaryawan[] = [
                 'nik' => $k->nik,
@@ -297,12 +368,42 @@ class LaporanService
                 'sisaMenitKerja' => $sisaMenitKerja,
                 'totalLembur' => $totalLembur,
                 'totalProrate' => $totalProrate,
-                'totalWfh' => $wfh,
+                'totalWfh' => $totalWfh,
+                'totalTerlambatMenit' => $totalTerlambatMenit,
+                'totalIzin' => $totalIzin,
+                'totalSakit' => $totalSakit,
+                'totalUnpaid' => $totalUnpaid,
+                'totalCuti' => $totalCuti,
             ];
+
+            $grand['totalHadir'] += $totalHadir;
+            $grand['totalMenitKerja'] += $totalMenitKerja;
+            $grand['totalLembur'] += $totalLembur;
+            $grand['totalProrate'] += $totalProrate;
+            $grand['totalWfh'] += $totalWfh;
+            $grand['totalTerlambatMenit'] += $totalTerlambatMenit;
+            $grand['totalIzin'] += $totalIzin;
+            $grand['totalSakit'] += $totalSakit;
+            $grand['totalUnpaid'] += $totalUnpaid;
+            $grand['totalCuti'] += $totalCuti;
         }
 
+        $grandTotal = [
+            'totalHadir' => $grand['totalHadir'],
+            'totalJamKerja' => (int) floor($grand['totalMenitKerja'] / 60),
+            'sisaMenitKerja' => (int) ($grand['totalMenitKerja'] % 60),
+            'totalLembur' => $grand['totalLembur'],
+            'totalProrate' => $grand['totalProrate'],
+            'totalWfh' => $grand['totalWfh'],
+            'totalTerlambatMenit' => $grand['totalTerlambatMenit'],
+            'totalIzin' => $grand['totalIzin'],
+            'totalSakit' => $grand['totalSakit'],
+            'totalUnpaid' => $grand['totalUnpaid'],
+            'totalCuti' => $grand['totalCuti'],
+        ];
+
         return compact(
-            'namabulan', 'bulan', 'tahun', 'unitData', 'dataKaryawan',
+            'namabulan', 'bulan', 'tahun', 'unitData', 'dataKaryawan', 'grandTotal',
             'startDate', 'endDate'
         );
     }

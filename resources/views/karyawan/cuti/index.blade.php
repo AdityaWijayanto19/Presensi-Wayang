@@ -162,8 +162,8 @@
             e.preventDefault();
             Swal.fire({
                 icon: 'warning',
-                title: 'Kuota Cuti Habis',
-                text: 'Kuota cuti Anda sudah habis. Silakan hubungi HR.',
+                title: 'Kuota Cuti Anda 0',
+                text: 'Anda tidak dapat mengajukan cuti tahunan karena kuota cuti Anda sudah habis.',
                 confirmButtonColor: '#7a5234',
                 confirmButtonText: 'OK'
             });

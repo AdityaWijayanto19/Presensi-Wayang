@@ -21,26 +21,30 @@
         .tabelringkasan {
             width: 100%;
             border-collapse: collapse;
-            font-size: 10px;
+            font-size: 9px;
         }
         .tabelringkasan th,
         .tabelringkasan td {
             border: 1px solid #94a3b8;
-            padding: 5px 6px;
+            padding: 4px 3px;
             text-align: center;
             vertical-align: middle;
         }
         .tabelringkasan th {
             background-color: #f1f5f9;
             font-weight: 600;
-            font-size: 10px;
+            font-size: 9px;
             color: #334155;
         }
         .tabelringkasan td {
-            font-size: 10px;
+            font-size: 9px;
         }
         .tabelringkasan td.text-left {
             text-align: left;
+        }
+        .tabelringkasan tr.baris-total td {
+            background-color: #f1f5f9;
+            font-weight: 700;
         }
         .info-unit {
             margin-bottom: 12px;
@@ -147,6 +151,11 @@
                 <th>Total Lembur (Jam)</th>
                 <th>Total Prorate</th>
                 <th>Total WFH (Hari)</th>
+                <th>Total Keterlambatan (Menit)</th>
+                <th>Total Izin</th>
+                <th>Total Sakit</th>
+                <th>Total Unpaid</th>
+                <th>Total Cuti</th>
 
             </tr>
 
@@ -189,8 +198,76 @@
                         {{ $dk['totalWfh'] }}
                     </td>
 
+                    <td align="center">
+                        {{ $dk['totalTerlambatMenit'] }}
+                    </td>
+
+                    <td align="center">
+                        {{ $dk['totalIzin'] }}
+                    </td>
+
+                    <td align="center">
+                        {{ $dk['totalSakit'] }}
+                    </td>
+
+                    <td align="center">
+                        {{ $dk['totalUnpaid'] }}
+                    </td>
+
+                    <td align="center">
+                        {{ $dk['totalCuti'] }}
+                    </td>
+
                 </tr>
             @endforeach
+
+            <tr class="baris-total">
+
+                <td colspan="4" align="center">
+                    TOTAL
+                </td>
+
+                <td align="center">
+                    {{ $grandTotal['totalHadir'] }}
+                </td>
+
+                <td align="center">
+                    {{ $grandTotal['totalJamKerja'] }} Jam {{ $grandTotal['sisaMenitKerja'] }} Menit
+                </td>
+
+                <td align="center">
+                    {{ $grandTotal['totalLembur'] }}
+                </td>
+
+                <td align="center">
+                    {{ $grandTotal['totalProrate'] }}x
+                </td>
+
+                <td align="center">
+                    {{ $grandTotal['totalWfh'] }}
+                </td>
+
+                <td align="center">
+                    {{ $grandTotal['totalTerlambatMenit'] }}
+                </td>
+
+                <td align="center">
+                    {{ $grandTotal['totalIzin'] }}
+                </td>
+
+                <td align="center">
+                    {{ $grandTotal['totalSakit'] }}
+                </td>
+
+                <td align="center">
+                    {{ $grandTotal['totalUnpaid'] }}
+                </td>
+
+                <td align="center">
+                    {{ $grandTotal['totalCuti'] }}
+                </td>
+
+            </tr>
 
         </table>
 

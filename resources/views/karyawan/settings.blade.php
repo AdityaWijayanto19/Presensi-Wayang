@@ -42,6 +42,20 @@
             </x-admin.card>
         @endforeach
 
+        {{-- Guideline --}}
+        <x-admin.card class="mt-3">
+            <a href="/guideline" class="flex items-center gap-3 p-4 no-underline active:scale-[0.99] transition-transform">
+                <div class="w-10 h-10 rounded-xl bg-sky-100 border border-sky-200 flex items-center justify-center text-sky-700 shrink-0">
+                    <i data-lucide="book-open" class="text-xl"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="text-[14px] font-bold text-[#1c1917]">Panduan & Ketentuan</div>
+                    <div class="text-[11px] text-[#78716c]">Pahami aturan WFH, lembur, izin, dan cuti</div>
+                </div>
+                <i data-lucide="chevron-right" class="text-[#a8a29e] shrink-0" style="width:18px;height:18px;"></i>
+            </a>
+        </x-admin.card>
+
         {{-- Logout --}}
         <x-admin.card class="mt-6">
                 <a href="#" id="btnLogout" class="flex items-center gap-3 text-rose-600 no-underline p-4">
