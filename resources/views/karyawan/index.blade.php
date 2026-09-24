@@ -17,19 +17,10 @@
     {{-- HEADER USER — SVG Pattern (exact code as provided) --}}
     <div class="section overflow-hidden" id="user-section"
         style="height:220px;padding:20px;position:relative;margin-top:-60px;padding-top:80px;">
-        <svg xmlns="http://www.w3.org/2000/svg" class="absolute inset-0 w-full h-full" aria-hidden="true">
-            <defs>
-                <pattern id="a" width="35.584" height="30.585" patternTransform="scale(2)"
-                    patternUnits="userSpaceOnUse">
-                    <rect width="100%" height="100%" fill="#795234" />
-                    <path fill="#65452f"
-                        d="M36.908 9.243c-5.014 0-7.266 3.575-7.266 7.117 0 3.376 2.45 5.726 5.959 5.726 1.307 0 2.45-.463 3.244-1.307.744-.811 1.125-1.903 1.042-3.095-.066-.811-.546-1.655-1.274-2.185-.596-.447-1.639-.894-3.162-.546a.87.87 0 0 0-.662 1.06c.1.48.58.777 1.06.661.695-.149 1.274-.066 1.705.249.364.265.546.645.562.893.05.679-.165 1.308-.579 1.755-.446.48-1.125.744-1.936.744-2.55 0-4.188-1.538-4.188-3.938 0-2.466 1.44-5.347 5.495-5.347 2.897 0 6.008 1.888 6.388 6.058.166 1.804.067 5.147-2.598 7.034a1 1 0 0 0-.142.122c-1.311.783-2.87 1.301-4.972 1.301-4.088 0-6.123-1.952-8.275-4.021-2.317-2.218-4.7-4.518-9.517-4.518-4.094 0-6.439 1.676-8.479 3.545.227-1.102.289-2.307.17-3.596-.496-5.263-4.567-7.662-8.159-7.662-5.015 0-7.265 3.574-7.265 7.116 0 3.377 2.45 5.727 5.958 5.727 1.307 0 2.449-.463 3.243-1.308.745-.81 1.126-1.903 1.043-3.095-.066-.81-.546-1.654-1.274-2.184-.596-.447-1.639-.894-3.161-.546a.87.87 0 0 0-.662 1.06.866.866 0 0 0 1.059.66c.695-.148 1.275-.065 1.705.25.364.264.546.645.563.893.05.679-.166 1.307-.58 1.754-.447.48-1.125.745-1.936.745-2.549 0-4.188-1.539-4.188-3.939 0-2.466 1.44-5.345 5.495-5.345 2.897 0 6.008 1.87 6.389 6.057.163 1.781.064 5.06-2.504 6.96-1.36.864-2.978 1.447-5.209 1.447-4.088 0-6.124-1.952-8.275-4.021-2.317-2.218-4.7-4.518-9.516-4.518v1.787c4.088 0 6.123 1.953 8.275 4.022 2.317 2.218 4.7 4.518 9.516 4.518 4.8 0 7.2-2.3 9.517-4.518 2.151-2.069 4.187-4.022 8.275-4.022s6.124 1.953 8.275 4.022c2.318 2.218 4.701 4.518 9.517 4.518 4.8 0 7.2-2.3 9.516-4.518 2.152-2.069 4.188-4.022 8.276-4.022s6.123 1.953 8.275 4.022c2.317 2.218 4.7 4.518 9.517 4.518v-1.788c-4.088 0-6.124-1.952-8.275-4.021-2.318-2.218-4.701-4.518-9.517-4.518-4.103 0-6.45 1.683-8.492 3.556.237-1.118.304-2.343.184-3.656-.497-5.263-4.568-7.663-8.16-7.663" />
-                    <path fill="#65452f"
-                        d="M23.42 41.086a.9.9 0 0 1-.729-.38.883.883 0 0 1 .215-1.242c2.665-1.887 2.764-5.23 2.599-7.034-.38-4.187-3.492-6.058-6.389-6.058-4.055 0-5.495 2.88-5.495 5.346 0 2.4 1.639 3.94 4.188 3.94.81 0 1.49-.265 1.936-.745.414-.447.63-1.076.58-1.755-.017-.248-.2-.629-.547-.893-.43-.315-1.026-.398-1.704-.249a.87.87 0 0 1-1.06-.662.87.87 0 0 1 .662-1.059c1.523-.348 2.566.1 3.161.546.729.53 1.209 1.374 1.275 2.185.083 1.191-.298 2.284-1.043 3.095-.794.844-1.936 1.307-3.244 1.307-3.508 0-5.958-2.35-5.958-5.726 0-3.542 2.25-7.117 7.266-7.117 3.591 0 7.663 2.4 8.16 7.663.347 3.79-.828 6.868-3.344 8.656a.82.82 0 0 1-.53.182zm0-30.585a.9.9 0 0 1-.729-.38.883.883 0 0 1 .215-1.242c2.665-1.887 2.764-5.23 2.599-7.034-.381-4.187-3.493-6.058-6.389-6.058-4.055 0-5.495 2.88-5.495 5.346 0 2.4 1.639 3.94 4.188 3.94.81 0 1.49-.266 1.936-.746.414-.446.629-1.075.58-1.754-.017-.248-.2-.629-.547-.894-.43-.314-1.026-.397-1.705-.248A.87.87 0 0 1 17.014.77a.87.87 0 0 1 .662-1.06c1.523-.347 2.566.1 3.161.547.729.53 1.209 1.374 1.275 2.185.083 1.191-.298 2.284-1.043 3.095-.794.844-1.936 1.307-3.244 1.307-3.508 0-5.958-2.35-5.958-5.726 0-3.542 2.25-7.117 7.266-7.117 3.591 0 7.663 2.4 8.16 7.663.347 3.79-.828 6.868-3.344 8.656a.82.82 0 0 1-.53.182zm29.956 1.572c-4.8 0-7.2-2.3-9.517-4.518-2.151-2.069-4.187-4.022-8.275-4.022S29.46 5.486 27.31 7.555c-2.317 2.218-4.7 4.518-9.517 4.518-4.8 0-7.2-2.3-9.516-4.518C6.124 5.486 4.088 3.533 0 3.533s-6.124 1.953-8.275 4.022c-2.317 2.218-4.7 4.518-9.517 4.518-4.8 0-7.2-2.3-9.516-4.518-2.152-2.069-4.188-4.022-8.276-4.022V1.746c4.8 0 7.2 2.3 9.517 4.518 2.152 2.069 4.187 4.022 8.275 4.022s6.124-1.953 8.276-4.022C-7.2 4.046-4.816 1.746 0 1.746c4.8 0 7.2 2.3 9.517 4.518 2.151 2.069 4.187 4.022 8.275 4.022s6.124-1.953 8.275-4.022c2.318-2.218 4.7-4.518 9.517-4.518 4.8 0 7.2 2.3 9.517 4.518 2.151 2.069 4.187 4.022 8.275 4.022s6.124-1.953 8.275-4.022c2.317-2.218 4.7-4.518 9.517-4.518v1.787c-4.088 0-6.124 1.953-8.275 4.022-2.317 2.234-4.717 4.518-9.517 4.518" />
-                </pattern>
-            </defs>
-            <rect width="800%" height="800%" fill="url(#a)" transform="translate(0 -.17)" />
-        </svg>
+        <div class="absolute inset-0 bg-[#5e3e27] bg-cover bg-center"
+            style="background-image: linear-gradient(rgba(45, 27, 15, 0.30), rgba(45, 27, 15, 0.30)), url('{{ asset('assets/img/bg-mega-mendung.webp') }}');"
+            aria-hidden="true">
+        </div>
 
         <div class="absolute right-[15px] flex items-center gap-3 z-20">
             <a href="/notifications" id="btnNotif"
@@ -74,7 +65,8 @@
 
                 {{-- Hadir --}}
                 <div class="w-1/2 sm:w-1/4 px-2 mb-2">
-                    <a href="/presensi" class="card text-center py-3 px-2 rounded-[10px] h-full relative overflow-hidden block no-underline active:scale-[0.97] transition-transform">
+                    <a href="/presensi"
+                        class="card text-center py-3 px-2 rounded-[10px] h-full relative overflow-hidden block no-underline active:scale-[0.97] transition-transform">
                         <div class="p-3">
                             <i data-lucide="person-standing" class="text-green-500 mb-1 mx-auto"
                                 style="width:28px;height:28px;"></i>
@@ -91,7 +83,8 @@
 
                 {{-- WFH --}}
                 <div class="w-1/2 sm:w-1/4 px-2 mb-2">
-                    <a href="/wfh" class="card text-center py-3 px-2 rounded-[10px] h-full relative overflow-hidden block no-underline active:scale-[0.97] transition-transform">
+                    <a href="/wfh"
+                        class="card text-center py-3 px-2 rounded-[10px] h-full relative overflow-hidden block no-underline active:scale-[0.97] transition-transform">
                         <div class="p-3">
                             <i data-lucide="home" class="text-blue-500 mb-1 mx-auto" style="width:28px;height:28px;"></i>
                             <span class="text-center text-xs font-bold block mt-1 leading-[1.2] text-[#141515]">WFH</span>
@@ -107,10 +100,13 @@
 
                 {{-- Lembur --}}
                 <div class="w-1/2 sm:w-1/4 px-2 mb-2">
-                    <a href="/lembur" class="card text-center py-3 px-2 rounded-[10px] h-full relative overflow-hidden block no-underline active:scale-[0.97] transition-transform">
+                    <a href="/lembur"
+                        class="card text-center py-3 px-2 rounded-[10px] h-full relative overflow-hidden block no-underline active:scale-[0.97] transition-transform">
                         <div class="p-3">
-                            <i data-lucide="hourglass" class="text-yellow-500 mb-1 mx-auto" style="width:28px;height:28px;"></i>
-                            <span class="text-center text-xs font-bold block mt-1 leading-[1.2] text-[#141515]">Lembur</span>
+                            <i data-lucide="hourglass" class="text-yellow-500 mb-1 mx-auto"
+                                style="width:28px;height:28px;"></i>
+                            <span
+                                class="text-center text-xs font-bold block mt-1 leading-[1.2] text-[#141515]">Lembur</span>
                         </div>
                         @if (($rekaplembur->jmllembur ?? 0) > 0)
                             <span id="rekap-lembur"
@@ -123,10 +119,13 @@
 
                 {{-- Izin / Sakit --}}
                 <div class="w-1/2 sm:w-1/4 px-2 mb-2">
-                    <a href="/izin" class="card text-center py-3 px-2 rounded-[10px] h-full relative overflow-hidden block no-underline active:scale-[0.97] transition-transform">
+                    <a href="/izin"
+                        class="card text-center py-3 px-2 rounded-[10px] h-full relative overflow-hidden block no-underline active:scale-[0.97] transition-transform">
                         <div class="p-3">
-                            <i data-lucide="file-text" class="text-red-500 mb-1 mx-auto" style="width:28px;height:28px;"></i>
-                            <span class="text-center text-xs font-bold block mt-1 leading-[1.2] text-[#141515]">Izin / Sakit</span>
+                            <i data-lucide="file-text" class="text-red-500 mb-1 mx-auto"
+                                style="width:28px;height:28px;"></i>
+                            <span class="text-center text-xs font-bold block mt-1 leading-[1.2] text-[#141515]">Izin /
+                                Sakit</span>
                         </div>
                         @if ($rekapizin->jmlizin > 0)
                             <span id="rekap-izin"
@@ -225,12 +224,15 @@
                             <div class="card-body p-3">
                                 <div class="flex items-start justify-between gap-3">
                                     <div class="flex-1 min-w-0">
-                                        <div class="text-[13px] font-bold text-[#1c1917]">{{ $p->karyawan->nama_lengkap ?? '-' }} <span
-                                                class="text-[11px] font-normal text-[#78716c]">• {{ $p->karyawan->jabatan ?? '-' }} •
+                                        <div class="text-[13px] font-bold text-[#1c1917]">
+                                            {{ $p->karyawan->nama_lengkap ?? '-' }} <span
+                                                class="text-[11px] font-normal text-[#78716c]">•
+                                                {{ $p->karyawan->jabatan ?? '-' }} •
                                                 {{ $p->karyawan->posisi ?? '-' }}</span></div>
                                         <div class="text-[11px] text-[#78716c]">
                                             {{ date('d M Y', strtotime($p->tgl_wfh)) }} •
-                                            {{ $p->karyawan->unit ?? '-' }} ({{ $p->karyawan->unitperusahaan->perusahaan ?? '-' }})</div>
+                                            {{ $p->karyawan->unit ?? '-' }}
+                                            ({{ $p->karyawan->unitperusahaan->perusahaan ?? '-' }})</div>
                                         <div class="text-[11px] text-[#57534e] mt-1">Laporan WFH menunggu persetujuan Anda
                                         </div>
                                         @if (!empty($p->laporan_file))
@@ -324,37 +326,65 @@
                 <div class="mt-6">
                     <div class="flex items-center justify-between mb-2">
                         <h3 class="text-[15px] font-bold text-[#1c1917] flex items-center gap-2">
-                            <span class="w-8 h-8 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center text-amber-700"><i data-lucide="file-text"></i></span>
+                            <span
+                                class="w-8 h-8 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center text-amber-700"><i
+                                    data-lucide="file-text"></i></span>
                             Pengajuan Izin Perlu Persetujuan ({{ $pendingAtasanIzin->count() }})
                         </h3>
                     </div>
                     @foreach ($pendingAtasanIzin as $p)
                         @php
-                            $jenisLabels = ['tidak_masuk' => 'Tidak Masuk', 'terlambat' => 'Terlambat', 'setengah_hari' => 'Setengah Hari', 'pulang_cepat' => 'Pulang Cepat', 'sakit' => 'Sakit'];
-                            $jenisBadgeClasses = ['tidak_masuk' => 'bg-amber-100 text-amber-700', 'terlambat' => 'bg-orange-100 text-orange-700', 'setengah_hari' => 'bg-indigo-100 text-indigo-700', 'pulang_cepat' => 'bg-cyan-100 text-cyan-700', 'sakit' => 'bg-rose-100 text-rose-700'];
-                            $jenis = $p->jenis_izin instanceof \App\Enums\JenisIzin ? $p->jenis_izin->value : ($p->jenis_izin ?? '');
+                            $jenisLabels = [
+                                'tidak_masuk' => 'Tidak Masuk',
+                                'terlambat' => 'Terlambat',
+                                'setengah_hari' => 'Setengah Hari',
+                                'pulang_cepat' => 'Pulang Cepat',
+                                'sakit' => 'Sakit',
+                            ];
+                            $jenisBadgeClasses = [
+                                'tidak_masuk' => 'bg-amber-100 text-amber-700',
+                                'terlambat' => 'bg-orange-100 text-orange-700',
+                                'setengah_hari' => 'bg-indigo-100 text-indigo-700',
+                                'pulang_cepat' => 'bg-cyan-100 text-cyan-700',
+                                'sakit' => 'bg-rose-100 text-rose-700',
+                            ];
+                            $jenis =
+                                $p->jenis_izin instanceof \App\Enums\JenisIzin
+                                    ? $p->jenis_izin->value
+                                    : $p->jenis_izin ?? '';
                         @endphp
                         <div class="card mb-2 border-l-4 border-l-amber-400 bg-amber-50/50">
                             <div class="card-body p-3">
                                 <div class="flex items-start justify-between gap-3">
                                     <div class="flex-1 min-w-0">
                                         <div class="text-[13px] font-bold text-[#1c1917]">
-                                            {{ $p->karyawan->nama_lengkap ?? '-' }} <span class="text-[11px] font-normal text-[#78716c]">• {{ $p->karyawan->jabatan ?? '-' }} • {{ $p->karyawan->posisi ?? '-' }}</span></div>
+                                            {{ $p->karyawan->nama_lengkap ?? '-' }} <span
+                                                class="text-[11px] font-normal text-[#78716c]">•
+                                                {{ $p->karyawan->jabatan ?? '-' }} •
+                                                {{ $p->karyawan->posisi ?? '-' }}</span></div>
                                         <div class="text-[11px] text-[#78716c]">
                                             {{ date('d M Y', strtotime($p->tgl_izin)) }} •
-                                            {{ $p->karyawan->unit ?? '-' }} ({{ $p->karyawan->unitperusahaan->perusahaan ?? '-' }})
-                                            <span class="inline-flex items-center rounded-full border text-[10px] px-2 py-0.5 {{ $jenisBadgeClasses[$jenis] ?? 'bg-gray-100 text-gray-700' }}">{{ $jenisLabels[$jenis] ?? $jenis }}</span>
+                                            {{ $p->karyawan->unit ?? '-' }}
+                                            ({{ $p->karyawan->unitperusahaan->perusahaan ?? '-' }})
+                                            <span
+                                                class="inline-flex items-center rounded-full border text-[10px] px-2 py-0.5 {{ $jenisBadgeClasses[$jenis] ?? 'bg-gray-100 text-gray-700' }}">{{ $jenisLabels[$jenis] ?? $jenis }}</span>
                                         </div>
-                                        <div class="text-[11px] text-[#57534e] mt-1 line-clamp-2">{{ Str::limit($p->keterangan ?? '', 70) }}</div>
+                                        <div class="text-[11px] text-[#57534e] mt-1 line-clamp-2">
+                                            {{ Str::limit($p->keterangan ?? '', 70) }}</div>
                                     </div>
                                     <div class="flex flex-col gap-1.5 shrink-0">
-                                        <button type="button" class="btn btn-sm bg-emerald-500 text-white rounded-full px-3 py-1 text-[11px] w-full btn-approve-atasan-izin" data-id="{{ $p->id }}">Setujui</button>
-                                        <button type="button" class="btn btn-sm bg-white border border-rose-200 text-rose-700 rounded-full px-3 py-1 text-[11px] w-full btn-reject-atasan-izin" data-id="{{ $p->id }}">Tolak</button>
+                                        <button type="button"
+                                            class="btn btn-sm bg-emerald-500 text-white rounded-full px-3 py-1 text-[11px] w-full btn-approve-atasan-izin"
+                                            data-id="{{ $p->id }}">Setujui</button>
+                                        <button type="button"
+                                            class="btn btn-sm bg-white border border-rose-200 text-rose-700 rounded-full px-3 py-1 text-[11px] w-full btn-reject-atasan-izin"
+                                            data-id="{{ $p->id }}">Tolak</button>
                                     </div>
                                 </div>
                                 @if (!empty($p->pdf_form_path))
                                     <div class="flex mt-1">
-                                        <a href="{{ Storage::url($p->pdf_form_path) }}" target="_blank" class="text-[11px] text-sky-700 hover:underline">Form Pengajuan</a>
+                                        <a href="{{ Storage::url($p->pdf_form_path) }}" target="_blank"
+                                            class="text-[11px] text-sky-700 hover:underline">Form Pengajuan</a>
                                     </div>
                                 @endif
                             </div>
@@ -370,7 +400,9 @@
                 <div class="mt-6">
                     <div class="flex items-center justify-between mb-2">
                         <h3 class="text-[15px] font-bold text-[#1c1917] flex items-center gap-2">
-                            <span class="w-8 h-8 rounded-xl bg-rose-100 border border-rose-200 flex items-center justify-center text-rose-700"><i data-lucide="file-text"></i></span>
+                            <span
+                                class="w-8 h-8 rounded-xl bg-rose-100 border border-rose-200 flex items-center justify-center text-rose-700"><i
+                                    data-lucide="file-text"></i></span>
                             Izin Saya
                         </h3>
                         <a href="/izin" class="text-[11px] font-semibold text-rose-700">Lihat Semua</a>
@@ -391,21 +423,34 @@
                                 'rejected' => 'Ditolak',
                                 default => $i->status?->value ?? '',
                             };
-                            $jenisLabels = ['tidak_masuk' => 'Tidak Masuk', 'terlambat' => 'Terlambat', 'setengah_hari' => 'Setengah Hari', 'pulang_cepat' => 'Pulang Cepat', 'sakit' => 'Sakit'];
-                            $jenis = $i->jenis_izin instanceof \App\Enums\JenisIzin ? $i->jenis_izin->value : ($i->jenis_izin ?? '');
+                            $jenisLabels = [
+                                'tidak_masuk' => 'Tidak Masuk',
+                                'terlambat' => 'Terlambat',
+                                'setengah_hari' => 'Setengah Hari',
+                                'pulang_cepat' => 'Pulang Cepat',
+                                'sakit' => 'Sakit',
+                            ];
+                            $jenis =
+                                $i->jenis_izin instanceof \App\Enums\JenisIzin
+                                    ? $i->jenis_izin->value
+                                    : $i->jenis_izin ?? '';
                         @endphp
                         <div class="card mb-2">
                             <div class="card-body p-3 flex items-center justify-between">
                                 <div class="flex-1 min-w-0">
                                     <div class="text-[13px] font-bold text-[#1c1917]">
-                                        {{ date('d M Y', strtotime($i->tgl_izin)) }} <span class="ml-1 inline-flex items-center rounded-full border text-[10px] px-2 py-0.5 {{ $iBadge }}">{{ $iLabel }}</span>
-                                        <span class="ml-1 inline-flex items-center rounded-full bg-gray-100 text-gray-700 text-[10px] px-2 py-0.5">{{ $jenisLabels[$jenis] ?? $jenis }}</span>
+                                        {{ date('d M Y', strtotime($i->tgl_izin)) }} <span
+                                            class="ml-1 inline-flex items-center rounded-full border text-[10px] px-2 py-0.5 {{ $iBadge }}">{{ $iLabel }}</span>
+                                        <span
+                                            class="ml-1 inline-flex items-center rounded-full bg-gray-100 text-gray-700 text-[10px] px-2 py-0.5">{{ $jenisLabels[$jenis] ?? $jenis }}</span>
                                     </div>
                                     @if (!empty($i->keterangan))
-                                        <div class="text-[11px] text-[#78716c] mt-0.5 italic">{{ Str::limit($i->keterangan, 50) }}</div>
+                                        <div class="text-[11px] text-[#78716c] mt-0.5 italic">
+                                            {{ Str::limit($i->keterangan, 50) }}</div>
                                     @endif
                                     @if (!empty($i->rejected_reason) && $i->status?->value === 'rejected')
-                                        <div class="text-[11px] text-rose-600 mt-0.5">Alasan tolak: {{ Str::limit($i->rejected_reason, 50) }}</div>
+                                        <div class="text-[11px] text-rose-600 mt-0.5">Alasan tolak:
+                                            {{ Str::limit($i->rejected_reason, 50) }}</div>
                                     @endif
                                 </div>
                             </div>
@@ -688,7 +733,11 @@
                                         <a href="/lembur/{{ $l->id }}/foto"
                                             class="btn btn-sm bg-orange-500 text-white rounded-full px-3 py-1 text-[11px] font-semibold">Foto
                                             Selesai</a>
-                                    @elseif ($l->status?->value === 'approved' && !empty($l->foto_mulai) && !empty($l->foto_selesai) && empty($l->laporan_deskripsi))
+                                    @elseif (
+                                        $l->status?->value === 'approved' &&
+                                            !empty($l->foto_mulai) &&
+                                            !empty($l->foto_selesai) &&
+                                            empty($l->laporan_deskripsi))
                                         <a href="/lembur/{{ $l->id }}/laporan"
                                             class="btn btn-sm bg-emerald-500 text-white rounded-full px-3 py-1 text-[11px] font-semibold">Upload
                                             Laporan</a>
@@ -1270,7 +1319,8 @@
                         // 6. Update presensi jam in/out + foto
                         if (data.presensi) {
                             var p = data.presensi;
-                            if (p.jam_in && window._tglCountdown === "{{ now('Asia/Jakarta')->format('Y-m-d') }}") {
+                            if (p.jam_in && window._tglCountdown ===
+                                "{{ now('Asia/Jakarta')->format('Y-m-d') }}") {
                                 window._alreadyAbsen = true;
                                 var alertH1CardLive = document.getElementById('alertH1');
                                 if (alertH1CardLive) alertH1CardLive.style.display = 'none';
@@ -1635,22 +1685,54 @@
                                     section.innerHTML = '';
                                 } else {
                                     let iBadgeMap = {
-                                        'pending_atasan': ['bg-amber-100 text-amber-700 border-amber-200', 'Menunggu Persetujuan'],
-                                        'pending_admin': ['bg-sky-100 text-sky-700 border-sky-200', 'Menunggu Persetujuan HR'],
-                                        'approved': ['bg-emerald-100 text-emerald-700 border-emerald-200', 'Disetujui'],
+                                        'pending_atasan': ['bg-amber-100 text-amber-700 border-amber-200',
+                                            'Menunggu Persetujuan'
+                                        ],
+                                        'pending_admin': ['bg-sky-100 text-sky-700 border-sky-200',
+                                            'Menunggu Persetujuan HR'
+                                        ],
+                                        'approved': ['bg-emerald-100 text-emerald-700 border-emerald-200',
+                                            'Disetujui'
+                                        ],
                                         'rejected': ['bg-rose-100 text-rose-700 border-rose-200', 'Ditolak']
                                     };
-                                    let jenisLabels = {'tidak_masuk': 'Tidak Masuk', 'terlambat': 'Terlambat', 'setengah_hari': 'Setengah Hari', 'pulang_cepat': 'Pulang Cepat', 'sakit': 'Sakit'};
-                                    let html = '<div class="mt-6"><div class="flex items-center justify-between mb-2"><h3 class="text-[15px] font-bold text-[#1c1917] flex items-center gap-2"><span class="w-8 h-8 rounded-xl bg-rose-100 border border-rose-200 flex items-center justify-center text-rose-700"><i data-lucide="file-text"></i></span>Izin Saya</h3><a href="/izin" class="text-[11px] font-semibold text-rose-700">Lihat Semua</a></div>';
+                                    let jenisLabels = {
+                                        'tidak_masuk': 'Tidak Masuk',
+                                        'terlambat': 'Terlambat',
+                                        'setengah_hari': 'Setengah Hari',
+                                        'pulang_cepat': 'Pulang Cepat',
+                                        'sakit': 'Sakit'
+                                    };
+                                    let html =
+                                        '<div class="mt-6"><div class="flex items-center justify-between mb-2"><h3 class="text-[15px] font-bold text-[#1c1917] flex items-center gap-2"><span class="w-8 h-8 rounded-xl bg-rose-100 border border-rose-200 flex items-center justify-center text-rose-700"><i data-lucide="file-text"></i></span>Izin Saya</h3><a href="/izin" class="text-[11px] font-semibold text-rose-700">Lihat Semua</a></div>';
                                     data.izinSaya.forEach(function(i) {
-                                        var b = iBadgeMap[i.status] || ['bg-gray-100 text-gray-700 border-gray-200', i.status];
+                                        var b = iBadgeMap[i.status] || [
+                                            'bg-gray-100 text-gray-700 border-gray-200', i.status
+                                        ];
                                         var jenisLabel = jenisLabels[i.jenis_izin] || i.jenis_izin || '';
                                         var tglParts = (i.tgl_izin || '').substring(0, 10).split('-');
-                                        var months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-                                        var dateStr = parseInt(tglParts[2]) + ' ' + (months[parseInt(tglParts[1]) - 1] || '') + ' ' + tglParts[0];
-                                        var keterangan = i.keterangan ? '<div class="text-[11px] text-[#78716c] mt-0.5 italic">' + esc((i.keterangan.length > 50 ? i.keterangan.substring(0, 50) + '...' : i.keterangan)) + '</div>' : '';
-                                        var rejectNote = (i.rejected_reason && i.status === 'rejected') ? '<div class="text-[11px] text-rose-600 mt-0.5">Alasan tolak: ' + esc((i.rejected_reason.length > 50 ? i.rejected_reason.substring(0, 50) + '...' : i.rejected_reason)) + '</div>' : '';
-                                        html += '<div class="card mb-2"><div class="card-body p-3 flex items-center justify-between"><div class="flex-1 min-w-0"><div class="text-[13px] font-bold text-[#1c1917]">' + dateStr + ' <span class="ml-1 inline-flex items-center rounded-full border text-[10px] px-2 py-0.5 ' + b[0] + '">' + esc(b[1]) + '</span> <span class="ml-1 inline-flex items-center rounded-full bg-gray-100 text-gray-700 text-[10px] px-2 py-0.5">' + esc(jenisLabel) + '</span></div>' + keterangan + rejectNote + '</div></div></div>';
+                                        var months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul',
+                                            'Agu', 'Sep', 'Okt', 'Nov', 'Des'
+                                        ];
+                                        var dateStr = parseInt(tglParts[2]) + ' ' + (months[parseInt(
+                                            tglParts[1]) - 1] || '') + ' ' + tglParts[0];
+                                        var keterangan = i.keterangan ?
+                                            '<div class="text-[11px] text-[#78716c] mt-0.5 italic">' + esc((
+                                                i.keterangan.length > 50 ? i.keterangan.substring(0,
+                                                50) + '...' : i.keterangan)) + '</div>' : '';
+                                        var rejectNote = (i.rejected_reason && i.status === 'rejected') ?
+                                            '<div class="text-[11px] text-rose-600 mt-0.5">Alasan tolak: ' +
+                                            esc((i.rejected_reason.length > 50 ? i.rejected_reason
+                                                .substring(0, 50) + '...' : i.rejected_reason)) + '</div>' :
+                                            '';
+                                        html +=
+                                            '<div class="card mb-2"><div class="card-body p-3 flex items-center justify-between"><div class="flex-1 min-w-0"><div class="text-[13px] font-bold text-[#1c1917]">' +
+                                            dateStr +
+                                            ' <span class="ml-1 inline-flex items-center rounded-full border text-[10px] px-2 py-0.5 ' +
+                                            b[0] + '">' + esc(b[1]) +
+                                            '</span> <span class="ml-1 inline-flex items-center rounded-full bg-gray-100 text-gray-700 text-[10px] px-2 py-0.5">' +
+                                            esc(jenisLabel) + '</span></div>' + keterangan + rejectNote +
+                                            '</div></div></div>';
                                     });
                                     html += '</div>';
                                     updateSection(section, html, 'izinSaya');
@@ -1666,15 +1748,49 @@
                                 if (count === 0) {
                                     updateSection(section, '', 'pendingAtasanIzin');
                                 } else {
-                                    let jenisLabels = {'tidak_masuk': 'Tidak Masuk', 'terlambat': 'Terlambat', 'setengah_hari': 'Setengah Hari', 'pulang_cepat': 'Pulang Cepat', 'sakit': 'Sakit'};
-                                    let jenisBadgeClasses = {'tidak_masuk': 'bg-amber-100 text-amber-700', 'terlambat': 'bg-orange-100 text-orange-700', 'setengah_hari': 'bg-indigo-100 text-indigo-700', 'pulang_cepat': 'bg-cyan-100 text-cyan-700', 'sakit': 'bg-rose-100 text-rose-700'};
-                                    let html = '<div class="mt-6"><div class="flex items-center justify-between mb-2"><h3 class="text-[15px] font-bold text-[#1c1917] flex items-center gap-2"><span class="w-8 h-8 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center text-amber-700"><i data-lucide="file-text"></i></span>Pengajuan Izin Perlu Persetujuan (' + count + ')</h3></div>';
+                                    let jenisLabels = {
+                                        'tidak_masuk': 'Tidak Masuk',
+                                        'terlambat': 'Terlambat',
+                                        'setengah_hari': 'Setengah Hari',
+                                        'pulang_cepat': 'Pulang Cepat',
+                                        'sakit': 'Sakit'
+                                    };
+                                    let jenisBadgeClasses = {
+                                        'tidak_masuk': 'bg-amber-100 text-amber-700',
+                                        'terlambat': 'bg-orange-100 text-orange-700',
+                                        'setengah_hari': 'bg-indigo-100 text-indigo-700',
+                                        'pulang_cepat': 'bg-cyan-100 text-cyan-700',
+                                        'sakit': 'bg-rose-100 text-rose-700'
+                                    };
+                                    let html =
+                                        '<div class="mt-6"><div class="flex items-center justify-between mb-2"><h3 class="text-[15px] font-bold text-[#1c1917] flex items-center gap-2"><span class="w-8 h-8 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center text-amber-700"><i data-lucide="file-text"></i></span>Pengajuan Izin Perlu Persetujuan (' +
+                                        count + ')</h3></div>';
                                     data.pendingAtasanIzin.forEach(function(p) {
                                         var k = p.karyawan || {};
                                         var up = k.unitperusahaan || {};
                                         var jenisLabel = jenisLabels[p.jenis_izin] || p.jenis_izin || '';
-                                        var jenisBadge = jenisBadgeClasses[p.jenis_izin] || 'bg-gray-100 text-gray-700';
-                                        html += '<div class="card mb-2 border-l-4 border-l-amber-400 bg-amber-50/50"><div class="card-body p-3"><div class="flex items-start justify-between gap-3"><div class="flex-1 min-w-0"><div class="text-[13px] font-bold text-[#1c1917]">' + esc(k.nama_lengkap || '-') + ' <span class="text-[11px] font-normal text-[#78716c]">• ' + esc(k.jabatan || '-') + ' • ' + esc(k.posisi || '-') + '</span></div><div class="text-[11px] text-[#78716c]">' + esc((p.tgl_izin || '').substring(0, 10)) + ' • ' + esc(k.unit || '-') + ' (' + esc(up.perusahaan || '-') + ') <span class="inline-flex items-center rounded-full border text-[10px] px-2 py-0.5 ' + jenisBadge + '">' + esc(jenisLabel) + '</span></div><div class="text-[11px] text-[#57534e] mt-1 line-clamp-2">' + esc((p.keterangan || '').substring(0, 70)) + '</div></div><div class="flex flex-col gap-1.5 shrink-0"><button type="button" class="btn btn-sm bg-emerald-500 text-white rounded-full px-3 py-1 text-[11px] w-full btn-approve-atasan-izin" data-id="' + esc(p.id) + '">Setujui</button><button type="button" class="btn btn-sm bg-white border border-rose-200 text-rose-700 rounded-full px-3 py-1 text-[11px] w-full btn-reject-atasan-izin" data-id="' + esc(p.id) + '">Tolak</button></div></div>' + (p.pdf_form_path ? '<div class="flex mt-1"><a href="/storage/' + esc(p.pdf_form_path) + '" target="_blank" class="text-[11px] text-sky-700 hover:underline">Form Pengajuan</a></div>' : '') + '</div></div>';
+                                        var jenisBadge = jenisBadgeClasses[p.jenis_izin] ||
+                                            'bg-gray-100 text-gray-700';
+                                        html +=
+                                            '<div class="card mb-2 border-l-4 border-l-amber-400 bg-amber-50/50"><div class="card-body p-3"><div class="flex items-start justify-between gap-3"><div class="flex-1 min-w-0"><div class="text-[13px] font-bold text-[#1c1917]">' +
+                                            esc(k.nama_lengkap || '-') +
+                                            ' <span class="text-[11px] font-normal text-[#78716c]">• ' +
+                                            esc(k.jabatan || '-') + ' • ' + esc(k.posisi || '-') +
+                                            '</span></div><div class="text-[11px] text-[#78716c]">' + esc((p
+                                                .tgl_izin || '').substring(0, 10)) + ' • ' + esc(k.unit ||
+                                                '-') + ' (' + esc(up.perusahaan || '-') +
+                                            ') <span class="inline-flex items-center rounded-full border text-[10px] px-2 py-0.5 ' +
+                                            jenisBadge + '">' + esc(jenisLabel) +
+                                            '</span></div><div class="text-[11px] text-[#57534e] mt-1 line-clamp-2">' +
+                                            esc((p.keterangan || '').substring(0, 70)) +
+                                            '</div></div><div class="flex flex-col gap-1.5 shrink-0"><button type="button" class="btn btn-sm bg-emerald-500 text-white rounded-full px-3 py-1 text-[11px] w-full btn-approve-atasan-izin" data-id="' +
+                                            esc(p.id) +
+                                            '">Setujui</button><button type="button" class="btn btn-sm bg-white border border-rose-200 text-rose-700 rounded-full px-3 py-1 text-[11px] w-full btn-reject-atasan-izin" data-id="' +
+                                            esc(p.id) + '">Tolak</button></div></div>' + (p.pdf_form_path ?
+                                                '<div class="flex mt-1"><a href="/storage/' + esc(p
+                                                    .pdf_form_path) +
+                                                '" target="_blank" class="text-[11px] text-sky-700 hover:underline">Form Pengajuan</a></div>' :
+                                                '') + '</div></div>';
                                     });
                                     html += '</div>';
                                     updateSection(section, html, 'pendingAtasanIzin');
@@ -2271,16 +2387,26 @@
                                         timer: 1500,
                                         showConfirmButton: false
                                     });
-                                    setTimeout(function() { pollRealtime(); }, 300);
+                                    setTimeout(function() {
+                                        pollRealtime();
+                                    }, 300);
                                 } else {
                                     btnApproveIzin.disabled = false;
                                     btnApproveIzin.textContent = 'Setujui';
-                                    Swal.fire({ icon: 'error', title: 'Gagal', text: data.message });
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Gagal',
+                                        text: data.message
+                                    });
                                 }
                             }).catch(function() {
                                 btnApproveIzin.disabled = false;
                                 btnApproveIzin.textContent = 'Setujui';
-                                Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan jaringan.' });
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: 'Terjadi kesalahan jaringan.'
+                                });
                             });
                         }
                     });
@@ -2315,7 +2441,9 @@
                                     'Content-Type': 'application/json'
                                 },
                                 credentials: 'same-origin',
-                                body: JSON.stringify({ rejected_reason: r.value })
+                                body: JSON.stringify({
+                                    rejected_reason: r.value
+                                })
                             }).then(function(resp) {
                                 return resp.json();
                             }).then(function(data) {
@@ -2327,16 +2455,26 @@
                                         timer: 1500,
                                         showConfirmButton: false
                                     });
-                                    setTimeout(function() { pollRealtime(); }, 300);
+                                    setTimeout(function() {
+                                        pollRealtime();
+                                    }, 300);
                                 } else {
                                     btnRejectIzin.disabled = false;
                                     btnRejectIzin.textContent = 'Tolak';
-                                    Swal.fire({ icon: 'error', title: 'Gagal', text: data.message });
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Gagal',
+                                        text: data.message
+                                    });
                                 }
                             }).catch(function() {
                                 btnRejectIzin.disabled = false;
                                 btnRejectIzin.textContent = 'Tolak';
-                                Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan jaringan.' });
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: 'Terjadi kesalahan jaringan.'
+                                });
                             });
                         }
                     });

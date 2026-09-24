@@ -35,6 +35,9 @@ class RolePermissionSeeder extends Seeder
             'wfh-view',
             'wfh-delete',
             'wfh-approve',
+            'cuti-view',
+            'cuti-edit',
+            'cuti-delete',
             'laporan-view',
             'user-manage',
         ];
@@ -60,6 +63,8 @@ class RolePermissionSeeder extends Seeder
             'izin-view',
             'lembur-view',
             'wfh-view',
+            'cuti-view',
+            'cuti-edit',
             'laporan-view',
         ];
         $admin->syncPermissions($adminPermissions);
@@ -75,6 +80,7 @@ class RolePermissionSeeder extends Seeder
             'izin-view',
             'lembur-view',
             'wfh-view',
+            'cuti-view',
             'laporan-view',
         ];
         $owner->syncPermissions($ownerPermissions);

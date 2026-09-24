@@ -1,154 +1,140 @@
 <!doctype html>
-<html lang="en">
+<html lang="id">
 
 <head>
-
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-
-    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, viewport-fit=cover" />
-
-    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta charset="utf-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#7A5234">
-
     <title>WAG - Presensi Digital</title>
-
     <meta name="description" content="Aplikasi Presensi Digital untuk Karyawan WAG berbasis web mobile">
-    <meta name="keywords" content="presensi digital, absensi karyawan, aplikasi absensi, WAG" />
+    <meta name="keywords" content="presensi digital, absensi karyawan, aplikasi absensi, WAG">
 
     <link rel="icon" type="image/png" href="{{ asset('assets/img/login/logo_aplikasi.png') }}" sizes="32x32">
     <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('assets/img/login/logo_aplikasi.png') }}">
-
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            corePlugins: { preflight: false },
-            theme: {
-                extend: {
-                    colors: {
-                        coklat: '#7a5234',
-                        'coklat-dark': '#5e3e27',
-                    }
-                }
-            }
-        }
-    </script>
-
-    <style>
-        @import url("https://fonts.googleapis.com/css?family=Inter:400,500,700&display=swap");
-
-        *, *::before, *::after { box-sizing: border-box; }
-        body, h1, h2, h3, h4, h5, h6, p, ul, ol, figure, blockquote, dl, dd { margin: 0; }
-        ul, ol { padding: 0; list-style: none; }
-        img, video, canvas, svg { display: block; max-width: 100%; }
-        img { height: auto; }
-        a { color: inherit; text-decoration: none; }
-        input, button, textarea, select { font: inherit; }
-        table { border-collapse: collapse; border-spacing: 0; }
-
-        body {
-            font-family: "Inter", sans-serif;
-            font-size: 15px;
-            line-height: 1.55rem;
-            letter-spacing: -0.015rem;
-            width: 100%;
-            height: 100%;
-            overflow-x: hidden;
-            overscroll-behavior-y: none;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        ::-webkit-scrollbar { width: 0; }
-        button { outline: 0 !important; }
-        i[data-lucide] { width: 22px; height: 22px; stroke-width: 2; vertical-align: middle; }
-
-        :is(h1, h2, h3, h4, h5, h6) {
-            color: #141515;
-            margin: 0 0 10px 0;
-            letter-spacing: -0.02em;
-            line-height: 1.3em;
-        }
-        h3 { font-size: 17px; font-weight: 700; }
-        strong, b { font-weight: 500; }
-
-        .swal2-close:focus { box-shadow: none !important; }
-        .swal2-confirm {
-            background-color: #7a5234 !important;
-            border-color: #7a5234 !important;
-            color: white !important;
-        }
-        .swal2-confirm:hover {
-            background-color: #5e3e27 !important;
-        }
-    </style>
-
     <link rel="manifest" href="/manifest.json">
 
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="bg-white" x-data="loginPage()">
+<body x-data="loginPage()" class="h-[100svh] overflow-hidden bg-white antialiased">
+    <div id="appCapsule" class="h-[100svh] overflow-hidden">
+        <main class="flex h-full flex-col md:flex-row">
 
-    <div id="appCapsule" class="pt-0">
+            {{-- Mega Mendung --}}
+            <section
+                class="relative h-[38svh] min-h-[250px] shrink-0 overflow-hidden bg-[#0a192f] md:h-full md:min-h-0 md:w-1/2">
+                <img src="{{ asset('assets/img/login/mega-mendung-brown.webp') }}" alt=""
+                    class="absolute inset-0 h-full w-full object-cover object-center">
 
-        <div class="max-w-[500px] mx-auto text-center mt-1">
+                <div class="absolute inset-0 bg-[#0a192f]/10"></div>
 
-            <div class="px-4">
-                <img src="{{ asset('assets/img/login/logo_aplikasi.png') }}" alt="image" class="w-full max-w-[200px] h-auto mx-auto">
-                <h3>Silahkan masuk dengan akunmu!</h3>
-            </div>
-
-            <div class="px-4 mt-1 mb-5">
-
-                @php
-                    $messagewarning = Session::get('warning');
-                @endphp
-
-                @if (Session::get('warning'))
-                    <div class="bg-transparent text-[#ec4433] border border-[#ec4433] text-[13px] rounded-md py-1.5 px-4">
-                        {{ $messagewarning }}
+                {{-- Branding --}}
+                <div class="absolute inset-0 z-20 flex items-center justify-center">
+                    <div class="flex flex-col items-center text-center">
+                        <img src="{{ asset('assets/img/login/logo_aplikasi.png') }}" alt="WAG Presensi Digital"
+                            class="w-[120px] rounded-[8px] drop-shadow-[0_8px_20px_rgba(0,0,0,0.18)] sm:w-[165px] md:w-[190px]">
                     </div>
-                @endif
+                </div>
 
-                <form action="/proseslogin" method="POST" autocomplete="off">
+                {{-- Mobile Wave --}}
+                <div class="absolute bottom-0 left-0 z-30 h-20 w-full md:hidden">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320" preserveAspectRatio="none"
+                        class="block h-full w-full">
+                        <path fill="#ffffff"
+                            d="M0,64L48,53.3C96,43,192,21,288,37.3C384,53,480,107,576,128C672,149,768,139,864,122.7C960,107,1056,85,1152,90.7C1248,96,1344,128,1392,144L1440,160L1440,320L0,320Z">
+                        </path>
+                    </svg>
+                </div>
+            </section>
 
-                    @csrf
+            {{-- Login --}}
+            <section class="relative z-40 -mt-[2px] flex min-h-0 flex-1 items-center justify-center bg-white px-6 py-6 md:mt-0 md:w-1/2 md:px-12 lg:px-20">
+                <div class="w-full max-w-[460px]">
 
-                    <div class="w-full px-0 py-2">
-                        <div class="relative">
-                            <input type="text" name="nik" class="w-full h-[42px] rounded-md py-0 pl-4 pr-10 border border-gray-200 text-[15px] text-gray-900 bg-white" id="nik" placeholder="NIK">
+                    <div class="mb-6 md:mb-8">
+                        <h1
+                            class="mb-1.5 text-[25px] font-bold leading-tight tracking-[-0.025em] text-[#172033] md:text-[34px]">
+                            Selamat Datang
+                        </h1>
+                        <p class="text-[12px] leading-relaxed text-[#7b8492] md:text-[14px]">
+                            Silakan masuk dengan akunmu untuk melanjutkan ke aplikasi.
+                        </p>
+                    </div>
+
+                    @php
+                        $messagewarning = Session::get('warning');
+                    @endphp
+
+                    @if (Session::get('warning'))
+                        <div class="mb-4 border border-[#ec4433] bg-[#ec4433]/5 px-3 py-2 text-[12px] text-[#d63b2d]">
+                            {{ $messagewarning }}
                         </div>
-                    </div>
+                    @endif
 
-                    <div class="w-full px-0 py-2">
-                        <div class="relative">
-                            <input :type="showPassword ? 'text' : 'password'" class="w-full h-[42px] rounded-md py-0 pl-4 pr-10 border border-gray-200 text-[15px] text-gray-900 bg-white" id="password" name="password" placeholder="Password">
-                            <button type="button" @click="showPassword = !showPassword" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 z-10 hover:text-[#9c6b43]">
-                                <i x-show="!showPassword" data-lucide="eye"></i>
-                                <i x-show="showPassword" data-lucide="eye-off"></i>
-                            </button>
+                    <form action="/proseslogin" method="POST" autocomplete="off">
+                        @csrf
+
+                        <div class="mb-4">
+                            <label for="nik"
+                                class="mb-1.5 block text-[11px] font-semibold text-[#344054] md:text-[12px]">
+                                NIK
+                            </label>
+                            <input type="text" name="nik" id="nik" placeholder="Masukkan NIK"
+                                autocomplete="username"
+                                class="h-11 w-full rounded-[5px] border border-[#d9dde3] bg-white px-3 text-[13px] text-[#172033] outline-none transition placeholder:text-[#a2aab6] focus:border-coklat focus:ring-2 focus:ring-coklat/10 md:h-12 md:text-[14px]">
                         </div>
-                    </div>
 
-                    <div class="text-right mt-2.5">
-                        <a href="#" @click.prevent="showForgotPassword()" class="text-sm text-coklat no-underline">Lupa Password?</a>
-                    </div>
+                        <div class="mb-4">
+                            <label for="password"
+                                class="mb-1.5 block text-[11px] font-semibold text-[#344054] md:text-[12px]">
+                                Password
+                            </label>
+                            <div class="relative">
+                                <input :type="showPassword ? 'text' : 'password'" id="password" name="password"
+                                    placeholder="Masukkan password" autocomplete="current-password"
+                                    class="h-11 w-full rounded-[5px] border border-[#d9dde3] bg-white px-3 pr-11 text-[13px] text-[#172033] outline-none transition placeholder:text-[#a2aab6] focus:border-coklat focus:ring-2 focus:ring-coklat/10 md:h-12 md:text-[14px]">
+                                <button type="button" @click="showPassword = !showPassword"
+                                    class="absolute right-2.5 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center border-0 bg-transparent p-0 text-[#8b95a5] hover:text-coklat"
+                                    aria-label="Tampilkan atau sembunyikan password">
+                                    <i x-show="!showPassword" data-lucide="eye" class="h-[18px] w-[18px]"></i>
+                                    <i x-show="showPassword" data-lucide="eye-off" class="h-[18px] w-[18px]"></i>
+                                </button>
+                            </div>
+                        </div>
 
-                    <div class="fixed bottom-0 left-0 right-0 w-full px-4 bg-white min-h-[84px] flex items-center justify-center pb-[env(safe-area-inset-bottom)]">
-                        <button type="submit" class="w-full h-12 px-6 text-lg font-medium rounded-md border-0 bg-[#91623d] text-white hover:bg-coklat">
+                        <div class="mb-6 flex justify-end md:mb-7">
+                            <a href="#" @click.prevent="showForgotPassword()"
+                                class="text-[11px] font-medium text-coklat hover:text-coklat-dark md:text-[12px]">
+                                Lupa Password?
+                            </a>
+                        </div>
+
+                        <button type="submit"
+                            class="flex h-11 w-full items-center justify-center gap-2 rounded-[5px] border-0 bg-coklat px-5 text-[13px] font-semibold text-white transition hover:bg-coklat-dark active:translate-y-px md:h-12 md:text-[14px]">
                             Masuk
+                            <i data-lucide="arrow-right" class="h-4 w-4"></i>
                         </button>
+                    </form>
+
+                    <div class="mt-7 hidden items-center gap-3 md:flex">
+                        <span class="h-px flex-1 bg-[#e2e5e8]"></span>
+                        <span class="text-[10px] text-[#98a0ab]">WAG Presensi Digital</span>
+                        <span class="h-px flex-1 bg-[#e2e5e8]"></span>
                     </div>
-
-                </form>
-
-            </div>
-
-        </div>
-
+                </div>
+            </section>
+        </main>
     </div>
-
     <script src="https://unpkg.com/lucide@0.344.0/dist/umd/lucide.min.js"></script>
-    <script>document.addEventListener('DOMContentLoaded',function(){if(window.lucide)lucide.createIcons();});</script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.lucide) lucide.createIcons();
+        });
+    </script>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -173,18 +159,17 @@
 
     <script>
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function () {
+            window.addEventListener('load', function() {
                 navigator.serviceWorker.register('/sw.js')
-                    .then(function (registration) {
+                    .then(function(registration) {
                         console.log('Service Worker Registered');
                     })
-                    .catch(function (error) {
+                    .catch(function(error) {
                         console.log('Service Worker Failed', error);
                     });
             });
         }
     </script>
-
 </body>
 
 </html>

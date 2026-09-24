@@ -9,6 +9,7 @@ use App\Services\WfhService;
 use App\Services\PresensiService;
 use App\Services\IzinService;
 use App\Services\LemburService;
+use App\Services\CutiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -22,6 +23,7 @@ use App\Http\Requests\Service\StoreWfhRequest;
 use App\Http\Requests\Service\StoreLaporanWfhRequest;
 use App\Http\Requests\Service\StoreFotoLemburRequest;
 use App\Http\Requests\Service\StoreLaporanLemburRequest;
+use App\Http\Requests\Service\StoreCutiRequest;
 use App\Http\Requests\Service\UpdateIzinKaryawanRequest;
 
 class KaryawanPresensiController extends Controller
@@ -395,6 +397,71 @@ class KaryawanPresensiController extends Controller
             return response()->json($result, $result['success'] ? 200 : 422);
         }
         return redirect()->back()->with($result['success'] ? 'success' : 'error', $result['message']);
+    }
+
+    // ==================== CUTI TAHUNAN ====================
+
+    public function cuti(CutiService $cutiService)
+    {
+        $karyawan = Auth::guard('karyawan')->user();
+        $datacuti = $cutiService->getHistory($karyawan->nik);
+        $jatahCuti = (int) $karyawan->jatah_cuti;
+        $terpakai = (int) $datacuti->sum('durasi_hari');
+        $sisaCuti = max(0, $jatahCuti - $terpakai);
+
+        return view('karyawan.cuti.index', compact('datacuti', 'jatahCuti', 'terpakai', 'sisaCuti'));
+    }
+
+    public function buatCuti()
+    {
+        $karyawan = Auth::guard('karyawan')->user()->load('unitperusahaan');
+        $jatahCuti = (int) $karyawan->jatah_cuti;
+        $terpakai = $karyawan->totalCutiTerpakai();
+        $sisaCuti = max(0, $jatahCuti - $terpakai);
+
+        if ($sisaCuti <= 0) {
+            return redirect('/cuti')->with('error', 'Kuota cuti Anda sudah habis. Silakan hubungi HR.');
+        }
+
+        $maxDurasi = min(CutiService::MAX_DURASI_PER_UPLOAD, $sisaCuti);
+        $usedDates = CutiService::getUsedDates($karyawan->nik);
+
+        return view('karyawan.cuti.create', compact('karyawan', 'jatahCuti', 'terpakai', 'sisaCuti', 'maxDurasi', 'usedDates'));
+    }
+
+    public function storeCuti(StoreCutiRequest $request, CutiService $cutiService)
+    {
+        $karyawan = Auth::guard('karyawan')->user();
+        $result = $cutiService->storeCuti($request, $karyawan);
+
+        if ($result['success']) {
+            return redirect('/cuti')->with('success', $result['message']);
+        }
+        return redirect()->back()->with('error', $result['message'])->withInput();
+    }
+
+    public function showfilecuti(string $file)
+    {
+        $nik = Auth::guard('karyawan')->user()->nik;
+        $path = CutiService::showFileCuti($file, $nik);
+        if (!$path) abort(404);
+
+        $abs = storage_path('app/public/' . $path);
+        if (file_exists($abs)) {
+            $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+            $mimeMap = [
+                'pdf' => 'application/pdf',
+                'jpg' => 'image/jpeg',
+                'jpeg' => 'image/jpeg',
+                'png' => 'image/png',
+            ];
+            $contentType = $mimeMap[$ext] ?? 'application/octet-stream';
+            return response()->file($abs, [
+                'Content-Type' => $contentType,
+                'Content-Disposition' => 'inline; filename="' . basename($path) . '"',
+            ]);
+        }
+        abort(404);
     }
 
     // ==================== WFH ====================

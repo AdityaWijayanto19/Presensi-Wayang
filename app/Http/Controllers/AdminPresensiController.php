@@ -11,6 +11,7 @@ use App\Models\Unitperusahaan;
 use App\Services\WfhService;
 use App\Services\IzinService;
 use App\Services\LemburService;
+use App\Services\CutiService;
 use App\Services\MonitoringService;
 use App\Services\LaporanService;
 use App\Http\Requests\RejectRequest;
@@ -18,6 +19,7 @@ use App\Http\Requests\Presensi\UpdatePresensiAdminRequest;
 use App\Http\Requests\Presensi\UpdateIzinAdminRequest;
 use App\Http\Requests\Presensi\UpdateLemburAdminRequest;
 use App\Http\Requests\Presensi\UpdateWfhAdminRequest;
+use App\Http\Requests\Presensi\UpdateCutiAdminRequest;
 use Illuminate\Http\Request;
 
 class AdminPresensiController extends Controller
@@ -219,6 +221,28 @@ class AdminPresensiController extends Controller
         }
 
         return redirect()->back()->with('success', 'Data lembur berhasil diperbarui');
+    }
+
+    // ==================== DATA CUTI ====================
+
+    public function datacuti(Request $request, CutiService $cutiService)
+    {
+        $datacuti = $cutiService->getDataCutiAdmin($request);
+        $unitperusahaan = Unitperusahaan::orderBy('unit')->get();
+
+        return view('admin.cuti.index', compact('datacuti', 'unitperusahaan'));
+    }
+
+    public function updatecutiadmin(UpdateCutiAdminRequest $request, int $id, CutiService $cutiService)
+    {
+        $result = $cutiService->updateCuti($id, $request);
+        return redirect()->back()->with($result['success'] ? 'success' : 'error', $result['message']);
+    }
+
+    public function deletecutiadmin(int $id, CutiService $cutiService)
+    {
+        $result = $cutiService->deleteCuti($id);
+        return redirect()->back()->with($result['success'] ? 'success' : 'error', $result['message']);
     }
 
     // ==================== DATA WFH ====================

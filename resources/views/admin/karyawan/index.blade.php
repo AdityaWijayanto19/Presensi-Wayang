@@ -216,6 +216,7 @@
                 'atasan_nik' => $k->atasan_nik,
                 'unit' => $k->unit,
                 'no_hp' => $k->no_hp,
+                'jatah_cuti' => $k->jatah_cuti,
                 'foto' => $k->foto,
                 'page' => request()->get('page', 1),
             ],
@@ -292,6 +293,8 @@
             form.querySelector('[name="unit"]').value = k.unit || '';
             form.querySelector('[name="role_approved"]').value = k.role_approved || '';
             form.querySelector('[name="no_hp"]').value = k.no_hp;
+            var jatahCutiInput = form.querySelector('[name="jatah_cuti"]');
+            if (jatahCutiInput) jatahCutiInput.value = k.jatah_cuti ?? 12;
             form.querySelector('[name="password"]').placeholder = 'Kosongkan jika tidak diubah';
             form.querySelector('[name="password"]').removeAttribute('required');
 

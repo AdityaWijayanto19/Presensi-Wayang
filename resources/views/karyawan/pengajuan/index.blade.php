@@ -48,5 +48,18 @@
             </div>
             <i data-lucide="chevron-right" class="text-[#a8a29e] shrink-0" style="width:18px;height:18px;"></i>
         </a>
+
+        {{-- Cuti Tahunan --}}
+        <a href="/cuti"
+            class="flex items-center gap-4 bg-white rounded-2xl p-4 mb-3 shadow-[0_1px_3px_rgba(0,0,0,0.06)] no-underline active:scale-[0.98] transition-transform">
+            <div class="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center shrink-0">
+                <i data-lucide="palmtree" class="text-emerald-600" style="width:22px;height:22px;"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+                <div class="text-[14px] font-bold text-[#1c1917]">Cuti Tahunan</div>
+                <div class="text-[11px] text-[#78716c] mt-0.5">Upload file cuti yang sudah ditandatangani</div>
+            </div>
+            <i data-lucide="chevron-right" class="text-[#a8a29e] shrink-0" style="width:18px;height:18px;"></i>
+        </a>
     </div>
 @endsection

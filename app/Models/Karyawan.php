@@ -28,6 +28,7 @@ class Karyawan extends Authenticatable
         'unit_id',
         'no_hp',
         'foto',
+        'jatah_cuti',
         'password',
     ];
 
@@ -68,5 +69,20 @@ class Karyawan extends Authenticatable
     public function wfh(): HasMany
     {
         return $this->hasMany(Wfh::class, 'nik', 'nik');
+    }
+
+    public function cuti(): HasMany
+    {
+        return $this->hasMany(Cuti::class, 'nik', 'nik');
+    }
+
+    public function totalCutiTerpakai(): int
+    {
+        return (int) $this->cuti()->sum('durasi_hari');
+    }
+
+    public function sisaCuti(): int
+    {
+        return max(0, (int) $this->jatah_cuti - $this->totalCutiTerpakai());
     }
 }

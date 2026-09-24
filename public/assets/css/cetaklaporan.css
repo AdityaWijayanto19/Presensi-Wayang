@@ -45,6 +45,97 @@ body {
     font-size: 10px;
 }
 
+/* Badge hari Minggu */
+.hari-minggu {
+    display: inline-block;
+    background-color: #dc2626;
+    color: #ffffff;
+    font-weight: 700;
+    padding: 1px 6px;
+}
+
+/* Baris Minggu (opsional penekan visual) */
+.baris-minggu td {
+    background-color: #fef2f2;
+}
+
+/* Warna Keterangan */
+.ket-tepat {
+    display: inline-block;
+    background-color: #dcfce7;
+    color: #15803d;
+    font-weight: 600;
+    padding: 1px 5px;
+}
+.ket-terlambat {
+    display: inline-block;
+    background-color: #ffedd5;
+    color: #c2410c;
+    font-weight: 600;
+    padding: 1px 5px;
+}
+.ket-belum {
+    display: inline-block;
+    background-color: #fef9c3;
+    color: #a16207;
+    font-weight: 600;
+    padding: 1px 5px;
+}
+.ket-tidakmasuk {
+    display: inline-block;
+    background-color: #fee2e2;
+    color: #b91c1c;
+    font-weight: 600;
+    padding: 1px 5px;
+}
+.ket-izin {
+    display: inline-block;
+    background-color: #dbeafe;
+    color: #1d4ed8;
+    font-weight: 600;
+    padding: 1px 5px;
+}
+.ket-cuti {
+    display: inline-block;
+    background-color: #ede9fe;
+    color: #6d28d9;
+    font-weight: 600;
+    padding: 1px 5px;
+}
+.ket-wfh {
+    display: inline-block;
+    background-color: #cffafe;
+    color: #0e7490;
+    font-weight: 600;
+    padding: 1px 5px;
+}
+.ket-libur {
+    display: inline-block;
+    background-color: #f1f5f9;
+    color: #64748b;
+    font-weight: 600;
+    padding: 1px 5px;
+}
+
+/* Badge WFH */
+.wfh-badge {
+    display: inline-block;
+    font-weight: 600;
+    padding: 1px 5px;
+}
+.wfh-approved {
+    background-color: #dcfce7;
+    color: #15803d;
+}
+.wfh-rejected {
+    background-color: #fee2e2;
+    color: #b91c1c;
+}
+.wfh-unpaid {
+    background-color: #e2e8f0;
+    color: #475569;
+}
+
 /* Tanda tangan */
 .ttd {
     width: 100%;

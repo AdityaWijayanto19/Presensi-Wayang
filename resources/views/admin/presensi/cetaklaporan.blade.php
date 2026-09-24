@@ -161,21 +161,35 @@
             <tr>
 
                 <th>No.</th>
+                <th>Hari</th>
                 <th>Tanggal</th>
                 <th>Jam Masuk</th>
                 <th>Jam Pulang</th>
+                <th>Durasi Terlambat</th>
                 <th>Keterangan</th>
                 <th>Durasi Kerja</th>
                 <th>Lembur</th>
-                <th>Prorate</th>
                 <th>WFH</th>
 
             </tr>
 
-            @foreach ($presensi as $p)
-                @php $tglKey = $p->tgl_presensi->format('Y-m-d'); @endphp
+            @foreach ($days as $day)
+                @php
+                    $ket = $day['keterangan'];
+                    $ketClass = match (true) {
+                        str_starts_with($ket, 'Tepat') => 'ket-tepat',
+                        str_starts_with($ket, 'Terlambat') => 'ket-terlambat',
+                        $ket === 'Belum Absen Pulang' => 'ket-belum',
+                        $ket === 'Tidak Masuk Kerja' => 'ket-tidakmasuk',
+                        str_starts_with($ket, 'Izin') || $ket === 'Sakit' => 'ket-izin',
+                        $ket === 'Cuti' => 'ket-cuti',
+                        $ket === 'WFH' => 'ket-wfh',
+                        $ket === 'Libur' => 'ket-libur',
+                        default => '',
+                    };
+                @endphp
 
-                <tr>
+                <tr class="{{ $day['is_minggu'] ? 'baris-minggu' : '' }}">
 
                     <td align="center">
 
@@ -185,49 +199,63 @@
 
                     <td align="center">
 
-                        {{ date('d-m-Y', strtotime($p->tgl_presensi)) }}
-
-                    </td>
-
-                    <td align="center">
-
-                        {{ $p->jam_in }}
-
-                    </td>
-
-                    <td align="center">
-
-                        {{ $p->jam_out != null ? $p->jam_out : 'Belum Presensi' }}
-
-                    </td>
-
-                    <td>
-
-                        @if ($p->jam_out == null)
-
-                            Belum Presensi Pulang
-
-                        @elseif ($p->terlambat > 0)
-
-                            Terlambat {{ $p->terlambat }} Menit
-
+                        @if ($day['is_minggu'])
+                            <span class="hari-minggu">{{ $day['hari'] }}</span>
                         @else
-
-                            Tepat Waktu
-
+                            {{ $day['hari'] }}
                         @endif
 
                     </td>
 
                     <td align="center">
 
-                        @if ($p->jam_out != null)
+                        {{ $day['tanggal']->format('d-m-Y') }}
 
-                            @php
-                                $jmljamkerja = selisih($p->jam_in, $p->jam_out);
-                            @endphp
+                    </td>
 
-                            {{ $jmljamkerja }}
+                    <td align="center">
+
+                        {{ $day['presensi'] ? $day['presensi']->jam_in : '-' }}
+
+                    </td>
+
+                    <td align="center">
+
+                        {{ $day['presensi'] && $day['presensi']->jam_out != null ? $day['presensi']->jam_out : '-' }}
+
+                    </td>
+
+                    {{-- ================================================== --}}
+                    {{-- Durasi Terlambat --}}
+                    {{-- ================================================== --}}
+                    <td align="center">
+
+                        @if ($day['presensi'] && $day['presensi']->terlambat > 0)
+
+                            {{ $day['presensi']->terlambat }} Menit
+
+                        @else
+
+                            -
+
+                        @endif
+
+                    </td>
+
+                    {{-- ================================================== --}}
+                    {{-- Keterangan --}}
+                    {{-- ================================================== --}}
+                    <td align="center">
+
+                        <span class="{{ $ketClass }}">{{ $ket }}</span>
+
+                    </td>
+
+                    <td align="center">
+
+                        @if ($day['presensi'] && $day['presensi']->jam_out != null)
+
+                            {{ selisih($day['presensi']->jam_in, $day['presensi']->jam_out) }}
 
                         @else
 
@@ -242,28 +270,9 @@
                     {{-- ================================================== --}}
                     <td align="center">
 
-                        @if (isset($lembur[$tglKey]) &&
-                                $lembur[$tglKey]->durasi_jam <= 5)
+                        @if ($day['lembur_jam'] !== null)
 
-                            {{ $lembur[$tglKey]->durasi_formatted }}
-
-                        @else
-
-                            -
-
-                        @endif
-
-                    </td>
-
-                    {{-- ================================================== --}}
-                    {{-- Prorate --}}
-                    {{-- ================================================== --}}
-                    <td align="center">
-
-                        @if (isset($lembur[$tglKey]) &&
-                                $lembur[$tglKey]->durasi_jam > 5)
-
-                            1
+                            {{ $day['lembur_jam'] }} jam
 
                         @else
 
@@ -278,9 +287,14 @@
                     {{-- ================================================== --}}
                     <td align="center">
 
-                        @if(isset($wfh[$tglKey]))
+                        @if ($day['wfh'])
 
-                            ✓
+                            @php $wfhStatus = $day['wfh']->status; @endphp
+
+                            <span
+                                class="wfh-badge {{ $wfhStatus->value === 'approved' ? 'wfh-approved' : ($wfhStatus->value === 'rejected' ? 'wfh-rejected' : 'wfh-unpaid') }}">
+                                {{ $wfhStatus->label() }}
+                            </span>
 
                         @else
 
@@ -299,7 +313,7 @@
                     {{-- ================================================== --}}
                     <tr>
 
-                        <td colspan="5"
+                        <td colspan="7"
                             style="text-align: center;">
 
                             <b>TOTAL</b>
@@ -326,20 +340,8 @@
 
                             <b>
 
-                                {{ $totalLembur }} Jam
-
-                            </b>
-
-                        </td>
-
-                        {{-- ================================================== --}}
-                        {{-- Total Prorate --}}
-                        {{-- ================================================== --}}
-                        <td style="text-align: center;">
-
-                            <b>
-
-                                {{ $totalProrate }}x
+                                {{ str_replace('.', ',', rtrim(rtrim(number_format((float) $totalLembur, 1, '.', ''), '0'), '.')) }}
+                                Jam
 
                             </b>
 

@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
 use App\Services\LemburService;
 use App\Services\WfhService;
+use App\Services\CutiService;
 use App\Services\ImageService;
 use App\Http\Requests\Karyawan\StoreKaryawanRequest;
 use App\Http\Requests\Karyawan\UpdateKaryawanRequest;
@@ -82,6 +83,7 @@ class KaryawanController extends Controller
             'atasan_nik' => $atasanNik,
             'no_hp' => $request->no_hp,
             'foto' => $foto,
+            'jatah_cuti' => (int) $request->jatah_cuti,
             'password' => Hash::make($request->password),
         ]);
 
@@ -131,6 +133,7 @@ class KaryawanController extends Controller
             'atasan_nik' => $atasanNik,
             'no_hp' => $request->no_hp,
             'foto' => $foto,
+            'jatah_cuti' => (int) $request->jatah_cuti,
         ];
 
         if (!empty($request->password)) {
@@ -216,6 +219,12 @@ class KaryawanController extends Controller
                 WfhService::deleteWfhFiles($w);
             }
             $karyawan->wfh()->delete();
+
+            // Hapus dokumen cuti
+            foreach ($karyawan->cuti as $c) {
+                CutiService::deleteCutiFile($c);
+            }
+            $karyawan->cuti()->delete();
 
             // Null-kan atasan yang dipegang karyawan ini
             Karyawan::where('atasan_nik', $nik)->update(['atasan_nik' => null]);

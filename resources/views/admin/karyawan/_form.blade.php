@@ -90,6 +90,13 @@
         autocomplete="off"
         icon="phone" />
 
+    {{-- Jatah Cuti --}}
+    <x-admin.input type="number" name="jatah_cuti" id="jatah_cuti"
+        value="{{ $karyawan?->jatah_cuti ?? 12 }}" placeholder="Jatah Cuti"
+        min="0" max="12" required
+        icon="calendar" />
+    <small class="text-slate-500 -mt-1 block mb-2">Jatah cuti tahunan (maksimal 12 hari).</small>
+
     {{-- Upload Foto --}}
     <x-admin.image-crop name="foto" id="foto" currentImage="{{ $karyawan?->foto }}" />
 

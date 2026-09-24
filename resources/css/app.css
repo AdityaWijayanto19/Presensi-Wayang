@@ -1,12 +1,13 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 @source '../../storage/framework/views/*.php';
 @source "../**/*.blade.php";
 @source "../**/*.js";
 
 @theme {
-    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans:
+        "Inter", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+        "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
     --color-coklat: #7a5234;
     --color-coklat-dark: #5e3e27;
 }
@@ -16,7 +17,9 @@
    Resets, typography, body defaults
    ========================================================== */
 @layer base {
-    [x-cloak] { display: none !important; }
+    [x-cloak] {
+        display: none !important;
+    }
 
     body {
         font-family: var(--font-sans);
@@ -31,10 +34,18 @@
         -moz-osx-font-smoothing: grayscale;
     }
 
-    ::-webkit-scrollbar { width: 0; }
+    ::-webkit-scrollbar {
+        width: 0;
+    }
 
-    button { outline: 0 !important; }
-    button:hover, button:active, button:focus { outline: 0 !important; }
+    button {
+        outline: 0 !important;
+    }
+    button:hover,
+    button:active,
+    button:focus {
+        outline: 0 !important;
+    }
 
     :is(h1, h2, h3, h4, h5, h6) {
         color: #141515;
@@ -42,13 +53,34 @@
         letter-spacing: -0.02em;
         line-height: 1.3em;
     }
-    h1 { font-size: 34px; font-weight: 700; }
-    h2 { font-size: 24px; font-weight: 700; }
-    h3 { font-size: 17px; font-weight: 700; }
-    h4 { font-size: 15px; font-weight: 500; }
-    h5 { font-size: 13px; font-weight: 500; }
-    h6 { font-size: 11px; font-weight: 500; }
-    strong, b { font-weight: 500; }
+    h1 {
+        font-size: 34px;
+        font-weight: 700;
+    }
+    h2 {
+        font-size: 24px;
+        font-weight: 700;
+    }
+    h3 {
+        font-size: 17px;
+        font-weight: 700;
+    }
+    h4 {
+        font-size: 15px;
+        font-weight: 500;
+    }
+    h5 {
+        font-size: 13px;
+        font-weight: 500;
+    }
+    h6 {
+        font-size: 11px;
+        font-weight: 500;
+    }
+    strong,
+    b {
+        font-weight: 500;
+    }
 }
 
 /* ==========================================================
@@ -56,11 +88,22 @@
    All custom component classes
    ========================================================== */
 @layer components {
-    .icon { width: 1.25rem; height: 1.25rem; stroke-width: 1.5; }
-    .icon svg { width: 100%; height: 100%; }
+    .icon {
+        width: 1.25rem;
+        height: 1.25rem;
+        stroke-width: 1.5;
+    }
+    .icon svg {
+        width: 100%;
+        height: 100%;
+    }
 
-    .text-green { color: #059669; }
-    .text-red { color: #dc2626; }
+    .text-green {
+        color: #059669;
+    }
+    .text-red {
+        color: #dc2626;
+    }
 
     /* ========================
        APP HEADER
@@ -75,23 +118,53 @@
         left: 0;
         right: 0;
         z-index: 999;
-        background: #fff;
+
+        background: #5e3e27;
         color: #141515;
-        box-shadow: 0 3px 6px 0 rgba(0, 0, 0, 0.1), 0 1px 3px 0 rgba(0, 0, 0, 0.08);
+
+        box-shadow:
+            0 3px 6px 0 rgba(0, 0, 0, 0.1),
+            0 1px 3px 0 rgba(0, 0, 0, 0.08);
+
+        overflow: hidden;
     }
+
+    /* Mega Mendung background */
+    .appHeader::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+
+        background-image:
+            linear-gradient(rgba(45, 25, 14, 0.30), rgba(45, 25, 14, 0.30)),
+            var(--header-pattern);
+
+        background-repeat: no-repeat, repeat;
+        background-size:
+            100% 100%,
+            420px auto;
+        background-position: center, center;
+
+        pointer-events: none;
+    }
+
+    /* Header content */
     .appHeader .left,
     .appHeader .right {
         height: 56px;
         display: flex;
         align-items: center;
         position: absolute;
+        z-index: 1;
     }
+
     .appHeader .left i[data-lucide],
     .appHeader .right i[data-lucide] {
         width: 26px;
         height: 26px;
         stroke-width: 2.5;
     }
+
     .appHeader .left .headerButton,
     .appHeader .right .headerButton {
         min-width: 36px;
@@ -102,23 +175,46 @@
         padding: 10px;
         color: #141515;
         position: relative;
+        z-index: 1;
     }
-    .appHeader .left { left: 8px; top: 0; }
-    .appHeader .right { right: 8px; top: 0; }
+
+    .appHeader .left {
+        left: 8px;
+        top: 0;
+    }
+
+    .appHeader .right {
+        right: 8px;
+        top: 0;
+    }
+
     .appHeader .pageTitle {
         font-size: 17px;
         font-weight: 500;
         padding: 0 10px;
+        position: relative;
+        z-index: 1;
     }
-    .appHeader.text-light { color: #fff; }
+
+    .appHeader.text-light {
+        color: #fff;
+    }
+
     .appHeader.text-light .headerButton,
-    .appHeader.text-light .pageTitle { color: #fff; }
-    .appHeader[class*="bg-"] { border: 0; }
+    .appHeader.text-light .pageTitle {
+        color: #fff;
+    }
+
+    .appHeader[class*="bg-"] {
+        border: 0;
+    }
 
     /* ========================
        SECTION
        ======================== */
-    .section { padding: 0 16px; }
+    .section {
+        padding: 0 16px;
+    }
 
     /* ========================
        APP BOTTOM MENU
@@ -136,7 +232,9 @@
         border-top: 1px solid #e7e5e4;
         padding-bottom: env(safe-area-inset-bottom);
     }
-    .appBottomMenu .disabled { pointer-events: none; }
+    .appBottomMenu .disabled {
+        pointer-events: none;
+    }
 
     .appBottomMenu .item {
         flex: 1;
@@ -177,7 +275,9 @@
         font-weight: 400;
         color: #78716c;
         letter-spacing: 0;
-        transition: color 180ms ease, font-weight 180ms ease;
+        transition:
+            color 180ms ease,
+            font-weight 180ms ease;
     }
 
     /* Active state — outline hidden, solid visible */
@@ -219,7 +319,9 @@
         align-items: center;
         justify-content: center;
         box-shadow: 0 2px 10px rgba(122, 82, 52, 0.35);
-        transition: transform 180ms ease, box-shadow 180ms ease;
+        transition:
+            transform 180ms ease,
+            box-shadow 180ms ease;
         z-index: 10;
     }
     .appBottomMenu .item.fab-center:active .fab-circle {
@@ -276,13 +378,21 @@
         content: "";
         display: block;
         position: absolute;
-        left: 0; right: 0; bottom: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
         height: 1px;
         background: #e1e1e1;
     }
-    .listview > li:last-child::after { display: none; }
-    .image-listview > li { padding: 0; }
-    .image-listview > li::after { left: 68px; }
+    .listview > li:last-child::after {
+        display: none;
+    }
+    .image-listview > li {
+        padding: 0;
+    }
+    .image-listview > li::after {
+        left: 68px;
+    }
     .image-listview > li .item {
         padding: 10px 16px;
         width: 100%;
@@ -311,7 +421,9 @@
         background: #ffffff;
         border-radius: 6px;
         border: 0;
-        box-shadow: 0 3px 6px 0 rgba(0, 0, 0, 0.1), 0 1px 3px 0 rgba(0, 0, 0, 0.08);
+        box-shadow:
+            0 3px 6px 0 rgba(0, 0, 0, 0.1),
+            0 1px 3px 0 rgba(0, 0, 0, 0.08);
     }
     .card .card-body {
         padding: 24px 16px;
@@ -362,7 +474,10 @@
         padding: 3px 24px;
         font-size: 18px;
     }
-    .btn-lg i[data-lucide] { width: 26px; height: 26px; }
+    .btn-lg i[data-lucide] {
+        width: 26px;
+        height: 26px;
+    }
     .btn-primary {
         background: #91623d !important;
         border-color: #91623d !important;
@@ -398,15 +513,33 @@
         font-size: 13px;
         border-radius: 6px;
     }
-    .alert-success { background: #34c759; color: #fff; border: 1px solid #34c759; }
-    .alert-danger { background: #ec4433; color: #fff; border: 1px solid #ec4433; }
-    .alert-outline-warning { background: transparent; color: #fe9500; border: 1px solid #fe9500; }
-    .alert-outline-danger { background: transparent; color: #ec4433; border: 1px solid #ec4433; }
+    .alert-success {
+        background: #34c759;
+        color: #fff;
+        border: 1px solid #34c759;
+    }
+    .alert-danger {
+        background: #ec4433;
+        color: #fff;
+        border: 1px solid #ec4433;
+    }
+    .alert-outline-warning {
+        background: transparent;
+        color: #fe9500;
+        border: 1px solid #fe9500;
+    }
+    .alert-outline-danger {
+        background: transparent;
+        color: #ec4433;
+        border: 1px solid #ec4433;
+    }
 
     /* ========================
        FORM
        ======================== */
-    .form-group { width: 100%; }
+    .form-group {
+        width: 100%;
+    }
     textarea,
     .form-control {
         background-clip: padding-box;
@@ -424,15 +557,24 @@
         background-color: #fff;
         border: 1px solid #ced4da;
         border-radius: 0.25rem;
-        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        transition:
+            border-color 0.15s ease-in-out,
+            box-shadow 0.15s ease-in-out;
     }
-    input:focus, textarea:focus, select:focus { outline: none; }
+    input:focus,
+    textarea:focus,
+    select:focus {
+        outline: none;
+    }
 
     /* ========================
        FAB BUTTON
        ======================== */
     .fab-button .fab {
-        box-shadow: 0 4px 5px 0 rgba(0, 0, 0, 0.14), 0 1px 10px 0 rgba(0, 0, 0, 0.12), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+        box-shadow:
+            0 4px 5px 0 rgba(0, 0, 0, 0.14),
+            0 1px 10px 0 rgba(0, 0, 0, 0.12),
+            0 2px 4px -1px rgba(0, 0, 0, 0.2);
         width: 56px;
         height: 56px;
         display: flex;
@@ -501,7 +643,9 @@
     }
     .nav-tabs.style1 .nav-item .nav-link.active {
         color: #141515;
-        box-shadow: 0 3px 6px 0 rgba(0, 0, 0, 0.1), 0 1px 3px 0 rgba(0, 0, 0, 0.08);
+        box-shadow:
+            0 3px 6px 0 rgba(0, 0, 0, 0.1),
+            0 1px 3px 0 rgba(0, 0, 0, 0.08);
     }
 
     /* ========================
@@ -515,9 +659,14 @@
         line-height: 0;
     }
     @media (min-width: 768px) {
-        .webcam-capture { max-width: 100%; border-radius: 15px; }
+        .webcam-capture {
+            max-width: 100%;
+            border-radius: 15px;
+        }
     }
-    .webcam-capture > div:empty { display: none; }
+    .webcam-capture > div:empty {
+        display: none;
+    }
     .webcam-capture video {
         width: 100% !important;
         height: 100% !important;
@@ -535,7 +684,9 @@
         overflow: hidden;
     }
     @media (min-width: 768px) {
-        #map { height: 400px; }
+        #map {
+            height: 400px;
+        }
     }
 
     /* ========================
@@ -562,76 +713,173 @@
         background: #fff;
         border: 1px solid #f0ece8;
         border-radius: 16px;
-        box-shadow: 0 1px 3px rgba(122,82,52,0.06), 0 4px 12px rgba(0,0,0,0.04);
+        box-shadow:
+            0 1px 3px rgba(122, 82, 52, 0.06),
+            0 4px 12px rgba(0, 0, 0, 0.04);
         padding: 14px 14px 12px;
-        transition: box-shadow 0.2s ease, transform 0.15s ease;
+        transition:
+            box-shadow 0.2s ease,
+            transform 0.15s ease;
     }
     .presensi-card:hover {
-        box-shadow: 0 4px 12px rgba(122,82,52,0.10), 0 8px 24px rgba(0,0,0,0.06);
+        box-shadow:
+            0 4px 12px rgba(122, 82, 52, 0.1),
+            0 8px 24px rgba(0, 0, 0, 0.06);
         transform: translateY(-1px);
     }
-    .presensi-card:active { transform: translateY(0); }
+    .presensi-card:active {
+        transform: translateY(0);
+    }
     .presensi-icon-box {
-        width: 44px; height: 44px;
+        width: 44px;
+        height: 44px;
         border-radius: 12px;
-        display: flex; align-items: center; justify-content: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         flex-shrink: 0;
         border: 1.5px solid;
     }
-    .presensi-icon-box i[data-lucide] { width: 22px; height: 22px; stroke-width: 1.75; }
-    .icon-izin { background: #fff7ed; border-color: #ffedd5; color: #c0842a; }
-    .icon-sakit { background: #fff1f2; border-color: #ffe4e6; color: #e11d48; }
-    .icon-lembur { background: #f5f3ff; border-color: #ede9fe; color: #7c3aed; }
-    .icon-wfh { background: #f0f9ff; border-color: #e0f2fe; color: #0284c7; }
+    .presensi-icon-box i[data-lucide] {
+        width: 22px;
+        height: 22px;
+        stroke-width: 1.75;
+    }
+    .icon-izin {
+        background: #fff7ed;
+        border-color: #ffedd5;
+        color: #c0842a;
+    }
+    .icon-sakit {
+        background: #fff1f2;
+        border-color: #ffe4e6;
+        color: #e11d48;
+    }
+    .icon-lembur {
+        background: #f5f3ff;
+        border-color: #ede9fe;
+        color: #7c3aed;
+    }
+    .icon-wfh {
+        background: #f0f9ff;
+        border-color: #e0f2fe;
+        color: #0284c7;
+    }
     .presensi-badge {
-        display: inline-flex; align-items: center; gap: 4px;
-        font-size: 11px; font-weight: 700; letter-spacing: 0.02em;
-        padding: 3px 9px; border-radius: 999px; border: 1px solid;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        padding: 3px 9px;
+        border-radius: 999px;
+        border: 1px solid;
         line-height: 1;
     }
-    .badge-izin { background: #fff7ed; border-color: #fed7aa; color: #9a5a1a; }
-    .badge-sakit { background: #fff1f2; border-color: #fecdd3; color: #be123c; }
-    .badge-lembur { background: #f5f3ff; border-color: #ddd6fe; color: #6d28d9; }
-    .badge-wfh { background: #f0f9ff; border-color: #bae6fd; color: #0369a1; }
+    .badge-izin {
+        background: #fff7ed;
+        border-color: #fed7aa;
+        color: #9a5a1a;
+    }
+    .badge-sakit {
+        background: #fff1f2;
+        border-color: #fecdd3;
+        color: #be123c;
+    }
+    .badge-lembur {
+        background: #f5f3ff;
+        border-color: #ddd6fe;
+        color: #6d28d9;
+    }
+    .badge-wfh {
+        background: #f0f9ff;
+        border-color: #bae6fd;
+        color: #0369a1;
+    }
     .badge-uploaded {
-        background: #ecfdf5; border-color: #a7f3d0; color: #065f46;
-        font-size: 10px; font-weight: 700; padding: 2px 8px;
+        background: #ecfdf5;
+        border-color: #a7f3d0;
+        color: #065f46;
+        font-size: 10px;
+        font-weight: 700;
+        padding: 2px 8px;
     }
     .file-pill {
-        display: inline-flex; align-items: center; gap: 6px;
-        padding: 6px 12px; border-radius: 999px;
-        font-size: 12px; font-weight: 600; line-height: 1;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 1;
         border: 1.5px solid #e7e5e4;
-        background: #fff; color: #44403c;
-        cursor: pointer; transition: all 0.15s ease;
+        background: #fff;
+        color: #44403c;
+        cursor: pointer;
+        transition: all 0.15s ease;
         text-decoration: none !important;
     }
     .file-pill:hover {
-        border-color: #7a5234; color: #7a5234;
-        background: #fdf8f4; transform: translateY(-1px);
+        border-color: #7a5234;
+        color: #7a5234;
+        background: #fdf8f4;
+        transform: translateY(-1px);
     }
-    .file-pill:active { transform: translateY(0); }
-    .file-pill i[data-lucide] { width: 15px; height: 15px; flex-shrink: 0; }
-    .presensi-divider { height: 1px; background: #f5f0eb; margin: 10px 0 10px; }
+    .file-pill:active {
+        transform: translateY(0);
+    }
+    .file-pill i[data-lucide] {
+        width: 15px;
+        height: 15px;
+        flex-shrink: 0;
+    }
+    .presensi-divider {
+        height: 1px;
+        background: #f5f0eb;
+        margin: 10px 0 10px;
+    }
     .btn-delete-card {
-        width: 32px; height: 32px; border-radius: 999px;
-        display: inline-flex; align-items: center; justify-content: center;
-        background: #fff1f2; border: 1.5px solid #ffe4e6; color: #e11d48;
-        transition: all 0.15s ease; cursor: pointer;
+        width: 32px;
+        height: 32px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: #fff1f2;
+        border: 1.5px solid #ffe4e6;
+        color: #e11d48;
+        transition: all 0.15s ease;
+        cursor: pointer;
     }
-    .btn-delete-card:hover { background: #e11d48; border-color: #e11d48; color: #fff; }
-    .btn-delete-card i[data-lucide] { width: 15px; height: 15px; }
+    .btn-delete-card:hover {
+        background: #e11d48;
+        border-color: #e11d48;
+        color: #fff;
+    }
+    .btn-delete-card i[data-lucide] {
+        width: 15px;
+        height: 15px;
+    }
 
     /* ========================
        FILE PREVIEW MODAL
        ======================== */
     .file-modal-backdrop {
-        position: fixed; inset: 0; z-index: 99999;
-        background: rgba(20,12,6,0.55); backdrop-filter: blur(6px);
-        display: none; align-items: center; justify-content: center;
+        position: fixed;
+        inset: 0;
+        z-index: 99999;
+        background: rgba(20, 12, 6, 0.55);
+        backdrop-filter: blur(6px);
+        display: none;
+        align-items: center;
+        justify-content: center;
         padding: 16px;
     }
-    .file-modal-backdrop.open { display: flex !important; }
+    .file-modal-backdrop.open {
+        display: flex !important;
+    }
 
     /* ========================
        PREVIEW THUMB / IMAGE PREVIEW MODAL
@@ -647,7 +895,9 @@
         flex-shrink: 0;
         transition: border-color 0.15s;
     }
-    .preview-thumb:hover { border-color: #7a5234; }
+    .preview-thumb:hover {
+        border-color: #7a5234;
+    }
     .preview-thumb img {
         width: 100%;
         height: 100%;
@@ -674,7 +924,9 @@
         z-index: 2;
         transition: background 0.15s;
     }
-    .preview-thumb .btn-remove:hover { background: #dc2626; }
+    .preview-thumb .btn-remove:hover {
+        background: #dc2626;
+    }
 
     .img-preview-modal {
         position: fixed;
@@ -687,7 +939,9 @@
         justify-content: center;
         padding: 16px;
     }
-    .img-preview-modal.open { display: flex !important; }
+    .img-preview-modal.open {
+        display: flex !important;
+    }
     .img-preview-modal img {
         max-width: 92vw;
         max-height: 85vh;
@@ -745,7 +999,9 @@
    ========================================================== */
 
 /* SweetAlert overrides */
-.swal2-close:focus { box-shadow: none !important; }
+.swal2-close:focus {
+    box-shadow: none !important;
+}
 .swal2-confirm {
     background-color: var(--color-coklat) !important;
     border-color: var(--color-coklat) !important;
@@ -760,7 +1016,9 @@
     background: #ffffff !important;
     border: 1px solid #e6e8e9 !important;
     border-radius: 8px !important;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+    box-shadow:
+        0 10px 25px -5px rgba(0, 0, 0, 0.1),
+        0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
     font-family: inherit !important;
     padding: 8px !important;
     width: 315px !important;
@@ -825,13 +1083,29 @@ span.flatpickr-weekday {
    ANIMATIONS & RESPONSIVE
    ========================================================== */
 @keyframes modalIn {
-    from { opacity: 0; transform: scale(0.96) translateY(8px); }
-    to { opacity: 1; transform: scale(1) translateY(0); }
+    from {
+        opacity: 0;
+        transform: scale(0.96) translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
 }
 
 @media (max-width: 370px) {
-    .presencecontent { gap: 6px; }
-    .iconpresence img { width: 38px; height: 38px; object-fit: cover; }
-    .presencetitle { font-size: 14px; }
-    .presencedetail span { font-size: 11px; }
+    .presencecontent {
+        gap: 6px;
+    }
+    .iconpresence img {
+        width: 38px;
+        height: 38px;
+        object-fit: cover;
+    }
+    .presencetitle {
+        font-size: 14px;
+    }
+    .presencedetail span {
+        font-size: 11px;
+    }
 }

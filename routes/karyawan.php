@@ -73,6 +73,12 @@ Route::post('/wfh/{id}/approve-laporan-atasan', [KaryawanPresensiController::cla
 Route::post('/wfh/{id}/reject-laporan-atasan', [KaryawanPresensiController::class, 'rejectLaporanAtasan']);
 Route::get('/presensi/showfilewfh/{file}', [KaryawanPresensiController::class, 'showfilewfh']);
 
+// Cuti Tahunan
+Route::get('/cuti', [KaryawanPresensiController::class, 'cuti']);
+Route::get('/cuti/create', [KaryawanPresensiController::class, 'buatCuti']);
+Route::post('/cuti/store', [KaryawanPresensiController::class, 'storeCuti']);
+Route::get('/presensi/showfilecuti/{file}', [KaryawanPresensiController::class, 'showfilecuti']);
+
 // Notifications
 Route::get('/notifications', [NotificationController::class, 'index']);
 Route::post('/notifications/{id}/read', [NotificationController::class, 'read']);

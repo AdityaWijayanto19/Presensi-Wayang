@@ -52,7 +52,7 @@
     </a>
 
     <a href="/pengajuan"
-        class="item {{ request()->is('pengajuan') || request()->is('izin*') || request()->is('lembur*') || request()->is('wfh*') ? 'active disabled' : '' }}">
+        class="item {{ request()->is('pengajuan') || request()->is('izin*') || request()->is('lembur*') || request()->is('wfh*') || request()->is('cuti*') ? 'active disabled' : '' }}">
         <div class="col">
             {{-- Clipboard Document Check --}}
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"

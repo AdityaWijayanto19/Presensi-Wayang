@@ -22,6 +22,7 @@ class StoreKaryawanRequest extends FormRequest
             'atasan_nik' => 'nullable|exists:karyawans,nik',
             'unit' => 'required|exists:unitperusahaans,unit',
             'no_hp' => 'required',
+            'jatah_cuti' => 'required|integer|min:0|max:12',
             'password' => 'required|min:5',
             'foto' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ];
@@ -41,6 +42,10 @@ class StoreKaryawanRequest extends FormRequest
             'unit.required' => 'Unit wajib dipilih.',
             'unit.exists' => 'Unit tidak ditemukan.',
             'no_hp.required' => 'Nomor HP wajib diisi.',
+            'jatah_cuti.required' => 'Jatah cuti wajib diisi.',
+            'jatah_cuti.integer' => 'Jatah cuti tidak valid.',
+            'jatah_cuti.min' => 'Jatah cuti minimal 0.',
+            'jatah_cuti.max' => 'Jatah cuti maksimal 12.',
             'password.required' => 'Password wajib diisi.',
             'password.min' => 'Password minimal 5 karakter.',
             'foto.image' => 'File harus berupa gambar.',

@@ -150,6 +150,17 @@
         </a>
         @endcan
 
+        {{-- Data Cuti --}}
+        @can('cuti-view')
+        <a class="flex items-center gap-2 px-2.5 py-2 rounded text-xs font-medium transition-colors {{ request()->is('panel/cuti') ? 'bg-white/10 text-white' : 'text-slate-300 hover:bg-white/5 hover:text-white' }}"
+           href="/panel/cuti">
+            <span class="flex-shrink-0 w-4 h-4">
+                <i data-lucide="palmtree" style="width:16px;height:16px;"></i>
+            </span>
+            <span>Data Cuti Karyawan</span>
+        </a>
+        @endcan
+
         {{-- Users --}}
         @can('user-manage')
         <a class="flex items-center gap-2 px-2.5 py-2 rounded text-xs font-medium transition-colors {{ request()->is('panel/users') ? 'bg-white/10 text-white' : 'text-slate-300 hover:bg-white/5 hover:text-white' }}"

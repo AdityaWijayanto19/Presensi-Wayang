@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Models\Cuti;
+use App\Models\Izin;
 use App\Models\Karyawan;
 use App\Models\Presensi;
 use App\Models\Lembur;
@@ -17,6 +19,10 @@ class LaporanService
     private const NAMA_BULAN = [
         "", "Januari", "Februari", "Maret", "April", "Mei", "Juni",
         "Juli", "Agustus", "September", "Oktober", "November", "Desember",
+    ];
+
+    private const NAMA_HARI = [
+        1 => "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu",
     ];
 
     private static function getCutoffDates(int $bulan, int $tahun): array
@@ -97,8 +103,8 @@ class LaporanService
 
         $presensi = Presensi::where('nik', $nik)
             ->whereBetween('tgl_presensi', [$startDate, $endDate])
-            ->orderBy('tgl_presensi', 'desc')
-            ->get();
+            ->get()
+            ->keyBy(fn ($item) => $item->tgl_presensi->format('Y-m-d'));
 
         $totalMenitKerja = 0;
         foreach ($presensi as $p) {
@@ -120,32 +126,100 @@ class LaporanService
             ->keyBy(fn ($item) => $item->tgl_lembur->format('Y-m-d'));
 
         $totalLembur = 0;
-        $totalProrate = 0;
         foreach ($lembur as $item) {
-            if ($item->durasi_jam > 5) {
-                $totalProrate++;
-            } else {
-                $totalLembur += (float) $item->durasi_jam;
-            }
+            $totalLembur += (float) $item->durasi_jam;
         }
 
-        $wfh = Wfh::where('nik', $nik)
+        $izin = Izin::where('nik', $nik)
             ->where('status', 'approved')
+            ->whereBetween('tgl_izin', [$startDate, $endDate])
+            ->get()
+            ->keyBy(fn ($item) => $item->tgl_izin->format('Y-m-d'));
+
+        $wfh = Wfh::where('nik', $nik)
+            ->whereIn('status', ['approved', 'rejected', 'unpaid'])
             ->whereBetween('tgl_wfh', [$startDate, $endDate])
             ->get()
             ->keyBy(fn ($item) => $item->tgl_wfh->format('Y-m-d'));
 
-        $totalWfh = $wfh->count();
+        $cutiDates = [];
+        $startKey = $startDate->format('Y-m-d');
+        $endKey = $endDate->format('Y-m-d');
+        foreach (Cuti::where('nik', $nik)->get() as $cuti) {
+            foreach ((array) $cuti->tanggal_cuti as $tgl) {
+                $ts = strtotime($tgl);
+                if ($ts === false) {
+                    continue;
+                }
+                $key = date('Y-m-d', $ts);
+                if ($key >= $startKey && $key <= $endKey) {
+                    $cutiDates[$key] = true;
+                }
+            }
+        }
 
-        if ($presensi->isEmpty()) {
-            return Redirect::back()->with('warning', 'Data presensi tidak ditemukan');
+        $totalWfh = $wfh->filter(fn ($item) => $item->status->value === 'approved')->count();
+
+        $days = [];
+        $cursor = $startDate->copy()->startOfDay();
+        $last = $endDate->copy()->startOfDay();
+        while ($cursor->lte($last)) {
+            $key = $cursor->format('Y-m-d');
+            $p = $presensi->get($key);
+            $l = $lembur->get($key);
+            $i = $izin->get($key);
+            $w = $wfh->get($key);
+            $isMinggu = $cursor->dayOfWeek === Carbon::SUNDAY;
+            $isCuti = isset($cutiDates[$key]);
+
+            if ($p) {
+                if ($p->jam_out == null) {
+                    $keterangan = 'Belum Absen Pulang';
+                } elseif ($p->terlambat > 0) {
+                    $keterangan = 'Terlambat ' . $p->terlambat . ' Menit';
+                } else {
+                    $keterangan = 'Tepat Waktu';
+                }
+            } elseif ($i) {
+                $keterangan = $i->jenis_izin->label();
+            } elseif ($w && $w->status->value === 'approved') {
+                $keterangan = 'WFH';
+            } elseif ($isCuti) {
+                $keterangan = 'Cuti';
+            } elseif ($isMinggu) {
+                $keterangan = 'Libur';
+            } else {
+                $keterangan = 'Tidak Masuk Kerja';
+            }
+
+            $days[] = [
+                'tanggal' => $cursor->copy(),
+                'hari' => self::NAMA_HARI[$cursor->dayOfWeekIso],
+                'is_minggu' => $isMinggu,
+                'presensi' => $p,
+                'lembur' => $l,
+                'lembur_jam' => $l ? self::formatJam((float) $l->durasi_jam) : null,
+                'izin' => $i,
+                'wfh' => $w,
+                'is_cuti' => $isCuti,
+                'keterangan' => $keterangan,
+            ];
+
+            $cursor->addDay();
         }
 
         return compact(
-            'bulan', 'tahun', 'namabulan', 'karyawan', 'presensi',
-            'lembur', 'wfh', 'totalLembur', 'totalProrate', 'totalWfh',
+            'bulan', 'tahun', 'namabulan', 'karyawan', 'days',
+            'lembur', 'wfh', 'totalLembur', 'totalWfh',
             'sisaMenitKerja', 'totalJamKerja', 'startDate', 'endDate'
         );
+    }
+
+    private static function formatJam(float $jam): string
+    {
+        $formatted = rtrim(rtrim(number_format($jam, 1, '.', ''), '0'), '.');
+
+        return str_replace('.', ',', $formatted);
     }
 
     private static function buildUnitLaporanData(Request $request): array|\Illuminate\Http\RedirectResponse
