@@ -23,4 +23,12 @@ if (flatpickr.defaults) {
 }
 
 createIcons({ icons });
+
+// Capture beforeinstallprompt globally (event can fire before /install is opened)
+window.__deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    window.__deferredInstallPrompt = e;
+});
+
 Alpine.start();

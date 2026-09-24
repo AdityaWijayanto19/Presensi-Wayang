@@ -3,6 +3,9 @@
 use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 
+// PWA install landing (public — di luar semua middleware auth/guest/role)
+Route::get('/install', fn () => view('install.index'))->name('install');
+
 // Admin login
 Route::middleware(['guest:user'])->group(function () {
     Route::get('/panel', function () {

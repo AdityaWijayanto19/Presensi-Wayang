@@ -33,6 +33,35 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
+    <script>
+        function offlineBanner() {
+            return {
+                isOffline: false,
+                showOnline: false,
+                _onlineTimer: null,
+
+                init() {
+                    this.isOffline = !navigator.onLine;
+                    var self = this;
+
+                    window.addEventListener('offline', function () {
+                        self.isOffline = true;
+                        self.showOnline = false;
+                    });
+
+                    window.addEventListener('online', function () {
+                        self.isOffline = false;
+                        self.showOnline = true;
+                        clearTimeout(self._onlineTimer);
+                        self._onlineTimer = setTimeout(function () {
+                            self.showOnline = false;
+                        }, 3000);
+                    });
+                }
+            };
+        }
+    </script>
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
 
@@ -45,6 +74,17 @@
             --header-pattern: url('{{ asset('assets/img/bg-mega-mendung.webp') }}');
         }
     </style>
+
+    {{-- Offline / online status banner --}}
+    <div x-data="offlineBanner()" x-init="init()" x-cloak
+        x-show="isOffline || showOnline"
+        role="status"
+        aria-live="polite"
+        class="fixed top-0 left-0 right-0 z-[1000] px-4 py-2 text-center text-[12px] font-semibold text-white shadow-sm"
+        :class="isOffline ? 'bg-[#7f1d1d]' : 'bg-emerald-700'">
+        <span x-show="isOffline">Koneksi terputus. Periksa jaringan Anda.</span>
+        <span x-show="!isOffline && showOnline">Terhubung kembali.</span>
+    </div>
 
     {{-- Sidebar Desktop (lg+) --}}
     @include('layouts.sidebarNav')
