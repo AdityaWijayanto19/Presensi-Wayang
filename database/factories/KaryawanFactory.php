@@ -29,7 +29,7 @@ class KaryawanFactory extends Factory
             'unit' => $unit,
             'unit_id' => Unitperusahaan::first()?->id ?? 1,
             'no_hp' => fake()->phoneNumber(),
-            'foto' => 'nophoto.png',
+            'foto' => null,
             'password' => Hash::make('password'),
         ];
     }

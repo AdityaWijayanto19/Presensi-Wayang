@@ -58,7 +58,7 @@ class KaryawanController extends Controller
             $atasanNik = null;
         }
 
-        $foto = 'nophoto.png';
+        $foto = null;
         if ($request->hasFile('foto')) {
             $imageService = app(ImageService::class);
             $fotoPath = $imageService->processUpload($request->file('foto'), 'karyawan', $request->nik);
@@ -110,7 +110,7 @@ class KaryawanController extends Controller
         if ($request->hasFile('foto')) {
             $imageService = app(ImageService::class);
 
-            if ($fotoLama && $fotoLama !== 'nophoto.png') {
+            if ($fotoLama) {
                 $imageService->deleteFile('uploads/karyawan/' . $fotoLama);
             }
 
@@ -185,7 +185,7 @@ class KaryawanController extends Controller
         try {
             $imageService = app(ImageService::class);
 
-            if ($karyawan->foto !== 'nophoto.png') {
+            if ($karyawan->foto) {
                 $imageService->deleteFile('uploads/karyawan/' . $karyawan->foto);
             }
 

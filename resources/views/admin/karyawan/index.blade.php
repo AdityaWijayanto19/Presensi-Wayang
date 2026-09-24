@@ -144,15 +144,21 @@
                                     {{ $k->no_hp }}
                                 </td>
                                 <td class="hidden md:table-cell px-2 py-1.5 text-xs">
-                                    @if ($k->foto == 'nophoto.png')
-                                        <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center foto-karyawan"
-                                            style="cursor:pointer;">
-                                            <i data-lucide="user" style="width:16px;height:16px;"></i>
+                                    @if ($k->foto)
+                                        <div class="relative w-8 h-8">
+                                            <img src="{{ $path }}?v={{ time() }}"
+                                                class="w-8 h-8 rounded-full foto-karyawan absolute inset-0"
+                                                style="cursor:pointer;" alt="{{ $k->nama_lengkap }}"
+                                                onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                                            <div class="w-8 h-8 rounded-full bg-slate-100 items-center justify-center absolute inset-0"
+                                                style="display:none;">
+                                                <i data-lucide="user" style="width:16px;height:16px;"></i>
+                                            </div>
                                         </div>
                                     @else
-                                        <img src="{{ $path }}?v={{ time() }}"
-                                            class="w-8 h-8 rounded-full foto-karyawan" style="cursor:pointer;"
-                                            alt="{{ $k->nama_lengkap }}">
+                                        <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
+                                            <i data-lucide="user" style="width:16px;height:16px;"></i>
+                                        </div>
                                     @endif
                                 </td>
                                 <td class="hidden md:table-cell px-2 py-1.5 text-xs truncate-cell">
@@ -305,7 +311,7 @@
             var cropPreviewImg = form.querySelector('#crop-preview-foto-img');
             var cropBtnText = form.querySelector('[data-crop-btn-text="foto"]');
             if (cropPreview && cropPreviewImg) {
-                if (k.foto && k.foto !== 'nophoto.png') {
+                if (k.foto) {
                     cropPreviewImg.src = '{{ asset('storage/uploads/karyawan/') }}/' + k.foto;
                     cropPreview.style.display = '';
                     if (cropBtnText) cropBtnText.textContent = 'Ganti Foto';

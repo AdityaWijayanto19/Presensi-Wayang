@@ -19,11 +19,11 @@ class DatabaseSeeder extends Seeder
         if (\App\Models\User::count() === 0) {
             $WayangUnit = \App\Models\Unitperusahaan::where('unit', 'Wayang')->first();
             $user = \App\Models\User::create([
-                'name' => 'Super Admin',
-                'email' => 'superadmin@gmail.com',
+                'name' => 'Team IT',
+                'email' => 'teamit@gmail.com',
                 'unit' => 'Wayang',
                 'unit_id' => $WayangUnit?->id,
-                'password' => '12345678',
+                'password' => 'itwayang^345',
             ]);
             $user->assignRole('super_admin');
         }

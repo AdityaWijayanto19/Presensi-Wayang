@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('atasan_nik')->nullable()->index();
             $table->string('unit');
             $table->string('no_hp');
-            $table->string('foto')->default('nophoto.png');
+            $table->string('foto')->nullable()->default(null);
             $table->string('password');
             $table->rememberToken();
             $table->timestamps();

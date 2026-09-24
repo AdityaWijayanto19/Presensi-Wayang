@@ -52,14 +52,21 @@
                         @php
                             $pathFoto = \Illuminate\Support\Facades\Storage::url('uploads/karyawan/' . $karyawan->foto);
                         @endphp
-                        @if ($karyawan->foto && $karyawan->foto !== 'nophoto.png')
-                            <img src="{{ url($pathFoto) }}?v={{ time() }}"
-                                class="w-12 h-12 rounded-xl object-cover border border-[#f0ece8] shrink-0"
-                                alt="{{ $karyawan->nama_lengkap }}">
+                        @if ($karyawan->foto)
+                            <div class="relative w-12 h-12 shrink-0">
+                                <img src="{{ url($pathFoto) }}?v={{ time() }}"
+                                    class="w-12 h-12 rounded-xl object-cover border border-[#f0ece8]"
+                                    alt="{{ $karyawan->nama_lengkap }}"
+                                    onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                                <div class="w-12 h-12 rounded-xl bg-slate-100 border border-[#f0ece8] items-center justify-center absolute inset-0"
+                                    style="display:none;">
+                                    <i data-lucide="user" style="width:20px;height:20px;"></i>
+                                </div>
+                            </div>
                         @else
-                            <img src="{{ asset('assets/img/sample/avatar/avatar1.jpg') }}"
-                                class="w-12 h-12 rounded-xl object-cover border border-[#f0ece8] shrink-0"
-                                alt="{{ $karyawan->nama_lengkap }}">
+                            <div class="w-12 h-12 rounded-xl bg-slate-100 border border-[#f0ece8] flex items-center justify-center shrink-0">
+                                <i data-lucide="user" style="width:20px;height:20px;"></i>
+                            </div>
                         @endif
 
                         {{-- Detail Informasi (space-y-0.5 menjaga jarak antar-baris tetap dekat/rapat) --}}

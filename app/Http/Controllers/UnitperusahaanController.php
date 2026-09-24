@@ -68,7 +68,7 @@ class UnitperusahaanController extends Controller
 
             foreach ($karyawans as $karyawan) {
                 // Hapus foto karyawan
-                if ($karyawan->foto !== 'nophoto.png') {
+                if ($karyawan->foto) {
                     $imageService->deleteFile('uploads/karyawan/' . $karyawan->foto);
                 }
 

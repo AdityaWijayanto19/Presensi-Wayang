@@ -33,12 +33,20 @@
 
         <div class="mt-5 flex relative z-10">
             <div class="avatar">
-                @if ($user->foto != null)
-                    <img src="{{ url($pathFoto) }}?v={{ time() }}" alt="avatar"
-                        class="w-16 h-16 object-cover object-[center_15%] rounded-full">
+                @if ($user->foto)
+                    <div class="relative w-16 h-16">
+                        <img src="{{ url($pathFoto) }}?v={{ time() }}" alt="avatar"
+                            class="w-16 h-16 object-cover object-[center_15%] rounded-full"
+                            onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                        <div class="w-16 h-16 rounded-full bg-white/20 items-center justify-center absolute inset-0"
+                            style="display:none;">
+                            <i data-lucide="user" style="width:28px;height:28px;"></i>
+                        </div>
+                    </div>
                 @else
-                    <img src="{{ asset('assets/img/sample/avatar/avatar1.jpg') }}" alt="avatar"
-                        class="w-16 h-16 object-cover object-[center_15%] rounded-full">
+                    <div class="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center">
+                        <i data-lucide="user" style="width:28px;height:28px;"></i>
+                    </div>
                 @endif
             </div>
             <div class="ml-[30px] leading-[2px]">
