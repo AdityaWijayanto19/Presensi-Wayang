@@ -129,6 +129,13 @@
         overflow: hidden;
     }
 
+    /* Desktop (lg+): sidebar karyawan tampil, header fixed ikut geser */
+    @media (min-width: 1024px) {
+        .appHeader {
+            left: 14rem;
+        }
+    }
+
     /* Mega Mendung background */
     .appHeader::before {
         content: "";

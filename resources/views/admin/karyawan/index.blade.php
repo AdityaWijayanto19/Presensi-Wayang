@@ -64,15 +64,15 @@
             {{-- ================================================== --}}
             {{-- Table --}}
             {{-- ================================================== --}}
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-slate-200">
+            <div class="overflow-x-auto -mx-1 px-1">
+                <table class="min-w-[720px] w-full divide-y divide-slate-200">
                     <thead>
                         <tr>
                             <th
                                 class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">
                                 No</th>
                             <th
-                                class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">
+                                class="hidden md:table-cell px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">
                                 NIK</th>
                             <th
                                 class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">
@@ -84,16 +84,16 @@
                                 class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">
                                 Posisi</th>
                             <th
-                                class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">
+                                class="hidden md:table-cell px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">
                                 Atasan</th>
                             <th
                                 class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">
                                 No. HP</th>
                             <th
-                                class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">
+                                class="hidden md:table-cell px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">
                                 Foto</th>
                             <th
-                                class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">
+                                class="hidden md:table-cell px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">
                                 Unit Perusahaan</th>
                             <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider"
                                 width="170">Actions</th>
@@ -110,7 +110,7 @@
                                 <td class="px-2 py-1.5 text-xs">
                                     {{ $loop->iteration + $karyawan->firstItem() - 1 }}
                                 </td>
-                                <td class="px-2 py-1.5 text-xs">
+                                <td class="hidden md:table-cell px-2 py-1.5 text-xs">
                                     {{ $k->nik }}
                                 </td>
                                 <td class="px-2 py-1.5 text-xs truncate-cell">
@@ -128,7 +128,7 @@
                                 <td class="px-2 py-1.5 text-xs truncate-cell">
                                     {{ $k->posisi }}
                                 </td>
-                                <td class="px-2 py-1.5 text-xs truncate-cell">
+                                <td class="hidden md:table-cell px-2 py-1.5 text-xs truncate-cell">
                                     @if ($k->jabatan == 'Direktur')
                                         <span
                                             class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">Langsung
@@ -143,7 +143,7 @@
                                 <td class="px-2 py-1.5 text-xs">
                                     {{ $k->no_hp }}
                                 </td>
-                                <td class="px-2 py-1.5 text-xs">
+                                <td class="hidden md:table-cell px-2 py-1.5 text-xs">
                                     @if ($k->foto == 'nophoto.png')
                                         <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center foto-karyawan"
                                             style="cursor:pointer;">
@@ -155,7 +155,7 @@
                                             alt="{{ $k->nama_lengkap }}">
                                     @endif
                                 </td>
-                                <td class="px-2 py-1.5 text-xs truncate-cell">
+                                <td class="hidden md:table-cell px-2 py-1.5 text-xs truncate-cell">
                                     {{ $k->unitperusahaan->perusahaan ?? '' }}
                                 </td>
                                 <td class="px-2 py-1.5 text-xs">

@@ -1,11 +1,12 @@
-<aside x-data="{ sidebarOpen: false }"
-       class="fixed inset-y-0 left-0 z-40 w-56 bg-slate-900 text-slate-300 flex flex-col lg:translate-x-0 transition-transform duration-200"
-       :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'">
+<div x-data="{ sidebarOpen: false }">
 
     <div x-show="sidebarOpen" x-cloak
          class="fixed inset-0 bg-black/50 z-30 lg:hidden"
          @click="sidebarOpen = false">
     </div>
+
+    <aside class="fixed inset-y-0 left-0 z-40 w-56 bg-slate-900 text-slate-300 flex flex-col lg:translate-x-0 transition-transform duration-200"
+           :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'">
 
     <div class="flex items-center h-12 px-3 border-b border-slate-800">
         <a href="/panel/dashboard" class="flex items-center">
@@ -176,10 +177,11 @@
 
 </aside>
 
-<div class="fixed top-3 left-3 z-50 lg:hidden" x-data="{ sidebarOpen: false }"
-     x-on:toggle-sidebar.window="sidebarOpen = !sidebarOpen; $dispatch('toggle-sidebar')">
-    <button @click="$dispatch('toggle-sidebar')"
+<div class="fixed top-3 left-3 z-50 lg:hidden">
+    <button @click="sidebarOpen = !sidebarOpen"
             class="inline-flex items-center justify-center w-8 h-8 rounded bg-white shadow-sm border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors">
         <i data-lucide="menu" style="width:16px;height:16px;"></i>
     </button>
+</div>
+
 </div>

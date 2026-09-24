@@ -46,18 +46,26 @@
         }
     </style>
 
-    {{-- Header --}}
-    @yield('header')
+    {{-- Sidebar Desktop (lg+) --}}
+    @include('layouts.sidebarNav')
 
-    {{-- App Content --}}
-    <div id="appCapsule" class="mt-[env(safe-area-inset-top)] pb-[70px]">
+    <div class="lg:pl-56">
+        {{-- Header --}}
+        @yield('header')
 
-        @yield('content')
+        {{-- App Content --}}
+        <div id="appCapsule" class="mt-[env(safe-area-inset-top)] pb-[70px] lg:pb-6">
 
+            @yield('content')
+
+        </div>
     </div>
 
     {{-- Bottom Navigation --}}
     @include('layouts.bottomNav')
+
+    {{-- Global Alert Toast (success / error / info / warning) --}}
+    <x-admin.alert />
 
     {{-- File Preview Modal (global) --}}
     <div id="filePreviewBackdrop"

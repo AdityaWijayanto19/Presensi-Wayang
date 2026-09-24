@@ -19,15 +19,6 @@
 
     <div class="flex mt-[70px]">
         <div class="w-full px-3">
-
-            @if (Session::get('success'))
-                <div class="bg-[#ecfdf5] border border-[#a7f3d0] text-[#065f46] text-[13px] rounded-xl py-2.5 px-3.5 mb-3">
-                    {{ Session::get('success') }}</div>
-            @endif
-            @if (Session::get('error'))
-                <div class="bg-[#fef2f2] border border-[#fecaca] text-[#991b1b] text-[13px] rounded-xl py-2.5 px-3.5 mb-3">
-                    {{ Session::get('error') }}</div>
-            @endif
             @if ($errors->any())
                 <div class="bg-[#fef2f2] border border-[#fecaca] text-[#991b1b] text-[13px] rounded-xl py-2.5 px-3.5 mb-3">
                     <ul class="mb-0 list-disc pl-4">

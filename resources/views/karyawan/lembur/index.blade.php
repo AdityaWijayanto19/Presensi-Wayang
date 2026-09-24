@@ -14,8 +14,6 @@
 
 @section('content')
     @php
-        $messagesuccess = Session::get('success');
-        $messageerror = Session::get('error');
         $weekdayMap = ['Sunday'=>'Minggu','Monday'=>'Senin','Tuesday'=>'Selasa','Wednesday'=>'Rabu','Thursday'=>'Kamis','Friday'=>'Jumat','Saturday'=>'Sabtu'];
         $statusLabels = [
             'pending_atasan' => 'Menunggu Persetujuan',
@@ -30,25 +28,6 @@
             'rejected' => 'bg-rose-100 text-rose-700 border-rose-200',
         ];
     @endphp
-
-    {{-- Alert --}}
-    <div class="flex mt-[70px]">
-        <div class="w-full px-3">
-            @if ($messagesuccess)
-                <div class="flex items-center gap-2.5 bg-[#ecfdf5] border border-[#a7f3d0] text-[#065f46] text-[13px] font-medium rounded-xl py-2.5 px-3.5" id="alert-success">
-                    <i data-lucide="circle-check" class="text-[#10b981] shrink-0" style="width:18px;height:18px;"></i>
-                    <span class="flex-1 leading-tight">{{ $messagesuccess }}</span>
-                    <button onclick="this.parentElement.style.display='none'" class="shrink-0 w-6 h-6 rounded-full bg-white border border-[#a7f3d0] flex items-center justify-center text-[#065f46]"><i data-lucide="x" style="width:14px;height:14px;"></i></button>
-                </div>
-            @endif
-            @if ($messageerror)
-                <div class="flex items-center gap-2.5 bg-[#fef2f2] border border-[#fecaca] text-[#991b1b] text-[13px] font-medium rounded-xl py-2.5 px-3.5">
-                    <i data-lucide="circle-alert" class="text-[#ef4444] shrink-0" style="width:18px;height:18px;"></i>
-                    <span class="flex-1 leading-tight">{{ $messageerror }}</span>
-                </div>
-            @endif
-        </div>
-    </div>
 
     @if ($datalembur->count() > 0)
         <div class="flex mt-3">
@@ -154,11 +133,4 @@
             <i data-lucide="plus"></i>
         </a>
     </div>
-
-    <script>
-        setTimeout(function () {
-            let alert = document.getElementById('alert-success');
-            if (alert) { alert.style.opacity = '0'; alert.style.transition = 'opacity 0.3s'; setTimeout(() => alert.style.display = 'none', 300); }
-        }, 3000);
-    </script>
 @endsection

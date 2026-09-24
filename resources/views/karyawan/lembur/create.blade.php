@@ -15,19 +15,6 @@
 @section('content')
     <div class="flex mt-[70px]" x-data="lemburForm()">
         <div class="w-full px-2">
-            @php
-                $messagesuccess = Session::get('success');
-                $messageerror = Session::get('error');
-            @endphp
-
-            @if (Session::get('success'))
-                <div class="bg-[#34c759] text-white border border-[#34c759] text-[13px] rounded-md py-1.5 px-4">{{ $messagesuccess }}</div>
-            @endif
-
-            @if (Session::get('error'))
-                <div class="bg-[#ec4433] text-white border border-[#ec4433] text-[13px] rounded-md py-1.5 px-4">{{ $messageerror }}</div>
-            @endif
-
             {{-- Profile Card --}}
             <div class="bg-white rounded-xl border border-[#f0ece8] p-4 mt-2">
                 <div class="flex items-center gap-3">

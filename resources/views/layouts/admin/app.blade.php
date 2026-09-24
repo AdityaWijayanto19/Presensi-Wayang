@@ -24,7 +24,7 @@
 
         @include('layouts.admin.sidebar')
 
-        <div class="flex-1 flex flex-col lg:pl-56">
+        <div class="flex-1 min-w-0 flex flex-col lg:pl-56">
 
             @include('layouts.admin.header')
 

@@ -1,4 +1,4 @@
-<div class="appBottomMenu">
+<div class="appBottomMenu lg:hidden">
 
     <a href="/dashboard" class="item {{ request()->is('dashboard') ? 'active disabled' : '' }}">
         <div class="col">

@@ -14,21 +14,12 @@
 
 @section('content')
     @php
-        $messagesuccess = Session::get('success');
-        $messageerror = Session::get('error');
         $lembur = $data->lembur;
         $tglLembur = $lembur->tgl_lembur instanceof \Carbon\Carbon ? $lembur->tgl_lembur->format('d M Y') : $lembur->tgl_lembur;
     @endphp
 
     <div class="flex mt-[70px]">
         <div class="w-full px-3">
-            @if ($messagesuccess)
-                <div class="bg-[#34c759] text-white border border-[#34c759] text-[13px] rounded-md py-1.5 px-4">{{ $messagesuccess }}</div>
-            @endif
-            @if ($messageerror)
-                <div class="bg-[#ec4433] text-white border border-[#ec4433] text-[13px] rounded-md py-1.5 px-4">{{ $messageerror }}</div>
-            @endif
-
             {{-- Info Lembur --}}
             <div class="bg-white rounded-xl border border-[#f0ece8] p-4 mt-2">
                 <div class="text-[13px] font-bold text-[#1c1917]">Info Lembur</div>
