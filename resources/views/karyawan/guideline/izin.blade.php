@@ -92,14 +92,6 @@
                         <b>disetujui atasan</b> lalu <b>HR</b>. Setelah disetujui, barulah berlaku (misalnya
                         untuk absen pulang lebih awal).
                     </p>
-
-                    <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 mt-3 flex gap-2.5">
-                        <i data-lucide="info" class="text-amber-600 shrink-0 mt-0.5" style="width:16px;height:16px;"></i>
-                        <p class="text-[12px] leading-relaxed text-amber-900">
-                            Kalau kamu <b>Direktur</b> atau tidak punya atasan, pengajuanmu <b>langsung ke HR</b>
-                            (tanpa tahap persetujuan atasan). Satu tanggal hanya boleh <b>satu</b> izin.
-                        </p>
-                    </div>
                 </section>
 
                 {{-- 2. Alur --}}

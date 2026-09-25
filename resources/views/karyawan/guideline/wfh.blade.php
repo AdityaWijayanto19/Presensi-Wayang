@@ -92,14 +92,6 @@
                         <b>atasan</b> lalu <b>HR</b>. Di hari-H, kamu tetap <b>absen masuk & pulang</b> seperti biasa
                         (foto + lokasi dari rumah), dan wajib <b>mengirim laporan</b> hasil kerja.
                     </p>
-
-                    <div class="bg-sky-50 border border-sky-200 rounded-xl p-3 mt-3 flex gap-2.5">
-                        <i data-lucide="info" class="text-sky-600 shrink-0 mt-0.5" style="width:16px;height:16px;"></i>
-                        <p class="text-[12px] leading-relaxed text-sky-900">
-                            Kalau kamu <b>Direktur</b> atau tidak punya atasan, pengajuanmu <b>langsung ke HR</b>
-                            (tanpa tahap persetujuan atasan).
-                        </p>
-                    </div>
                 </section>
 
                 {{-- 2. Alur --}}

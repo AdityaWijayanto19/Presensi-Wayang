@@ -94,15 +94,6 @@
                         <b>disetujui atasan</b> lalu <b>HR</b>. Setelah disetujui, kamu wajib
                         <b>foto mulai & selesai</b> lalu <b>mengirim laporan</b> hasil kerja.
                     </p>
-
-                    <div class="bg-violet-50 border border-violet-200 rounded-xl p-3 mt-3 flex gap-2.5">
-                        <i data-lucide="info" class="text-violet-600 shrink-0 mt-0.5" style="width:16px;height:16px;"></i>
-                        <p class="text-[12px] leading-relaxed text-violet-900">
-                            Kalau kamu <b>Direktur</b> atau tidak punya atasan, pengajuanmu <b>langsung ke HR</b>
-                            (tanpa tahap persetujuan atasan). Satu tanggal hanya boleh <b>satu</b> lembur.
-                            Lembur hanya bisa diajukan untuk <b>hari ini</b>.
-                        </p>
-                    </div>
                 </section>
 
                 {{-- 2. Alur --}}
