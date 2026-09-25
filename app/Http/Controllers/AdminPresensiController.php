@@ -12,6 +12,7 @@ use App\Services\WfhService;
 use App\Services\IzinService;
 use App\Services\LemburService;
 use App\Services\CutiService;
+use App\Services\PresensiService;
 use App\Services\MonitoringService;
 use App\Services\LaporanService;
 use App\Http\Requests\RejectRequest;
@@ -33,7 +34,8 @@ class AdminPresensiController extends Controller
     public function getpresensi(Request $request)
     {
         $presensi = MonitoringService::getPresensi($request);
-        return view('partials.getpresensi', compact('presensi'));
+        $jamMasukMap = MonitoringService::getJamMasukMap();
+        return view('partials.getpresensi', compact('presensi', 'jamMasukMap'));
     }
 
     public function tampilkanpetamasuk(Request $request)
@@ -294,15 +296,27 @@ class AdminPresensiController extends Controller
         return response()->json($presensi);
     }
 
-    public function updatePresensiAdmin(UpdatePresensiAdminRequest $request, int $id)
+    public function updatePresensiAdmin(UpdatePresensiAdminRequest $request, int $id, PresensiService $presensiService)
     {
-        $presensi = Presensi::findOrFail($id);
+        $presensi = Presensi::with('karyawan')->findOrFail($id);
+
+        $unit = $presensi->karyawan->unit ?? '';
+        $terlambat = $presensiService->hitungTerlambatPresensi($unit, $request->jam_in);
+
         $presensi->update([
             'jam_in' => $request->jam_in,
             'jam_out' => $request->jam_out,
+            'terlambat' => $terlambat,
         ]);
 
         return redirect()->back()->with('success', 'Data presensi berhasil diperbarui');
+    }
+
+    public function deletePresensiAdmin(int $id, PresensiService $presensiService)
+    {
+        $result = $presensiService->deletePresensiAdmin($id);
+
+        return redirect()->back()->with($result['success'] ? 'success' : 'error', $result['message']);
     }
 
     public function editIzinAdmin(int $id)

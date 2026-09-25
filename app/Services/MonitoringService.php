@@ -47,6 +47,17 @@ class MonitoringService
         return Presensi::with('karyawan')->find($id);
     }
 
+    public static function getJamMasukMap(): array
+    {
+        return Unitperusahaan::pluck('jam_masuk', 'unit')
+            ->map(function ($jamMasuk) {
+                return $jamMasuk instanceof \Carbon\Carbon
+                    ? $jamMasuk->format('H:i:s')
+                    : (string) $jamMasuk;
+            })
+            ->all();
+    }
+
     public static function getKaryawanByUnit(string $unit)
     {
         return Karyawan::where('unit', $unit)

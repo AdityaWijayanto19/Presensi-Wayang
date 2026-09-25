@@ -74,9 +74,21 @@
                             class="inline-flex items-center justify-center rounded bg-slate-600 px-2 py-0.5 text-[10px] font-medium text-white hover:bg-slate-700 transition-colors edit-presensi"
                             data-id="{{ $p->id }}"
                             data-jam_in="{{ $p->jam_in }}"
-                            data-jam_out="{{ $p->jam_out }}">
+                            data-jam_out="{{ $p->jam_out }}"
+                            data-unit="{{ $p->karyawan->unit ?? '' }}"
+                            data-jam_masuk="{{ $jamMasukMap[$p->karyawan->unit ?? ''] ?? '08:00:00' }}">
                             Edit
                         </button>
+                    @endcan
+
+                    @can('presensi-delete', null, 'user')
+                        <form action="/presensi/{{ $p->id }}/delete" method="POST" class="m-0">
+                            @csrf
+                            <button type="submit"
+                                class="w-full inline-flex items-center justify-center rounded bg-rose-600 px-2 py-0.5 text-[10px] font-medium text-white hover:bg-rose-700 transition-colors delete-confirm">
+                                Hapus
+                            </button>
+                        </form>
                     @endcan
                 </div>
             </td>

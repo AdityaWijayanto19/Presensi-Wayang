@@ -12,6 +12,7 @@ use App\Services\Shared\LocationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class PresensiService
 {
@@ -24,6 +25,7 @@ class PresensiService
     private const JAM_BUKA_PRESENSI = '07:00:00';
     private const MINIMAL_JAM_KERJA = 8;
     private const UNIT_TANPA_KETERLAMBATAN = 'Arthama';
+    private const DEFAULT_JAM_MASUK = '08:00:00';
 
     public function processPresensi(Request $request): array
     {
@@ -45,9 +47,7 @@ class PresensiService
             return ['success' => false, 'message' => 'Unit kerja tidak ditemukan.', 'type' => 'in'];
         }
 
-        $jamMasuk = $unitKerja->jam_masuk instanceof \Carbon\Carbon
-            ? $unitKerja->jam_masuk->format('H:i:s')
-            : (string) $unitKerja->jam_masuk;
+        $jamMasuk = $this->formatJamMasuk($unitKerja->jam_masuk);
         $terlambat = $this->hitungKeterlambatan($karyawan->unit, $jamMasuk, $jam);
 
         return DB::transaction(function () use ($nik, $tglPresensi, $jam, $karyawan, $terlambat, $request) {
@@ -126,6 +126,48 @@ class PresensiService
         }
 
         return (int) ceil($selisihMenit / 60) * 60;
+    }
+
+    public function getJamMasukUnit(string $unit): string
+    {
+        $jamMasuk = Unitperusahaan::where('unit', $unit)->value('jam_masuk');
+
+        return is_null($jamMasuk)
+            ? self::DEFAULT_JAM_MASUK
+            : $this->formatJamMasuk($jamMasuk);
+    }
+
+    public function hitungTerlambatPresensi(string $unit, string $jamAbsen): int
+    {
+        return $this->hitungKeterlambatan($unit, $this->getJamMasukUnit($unit), $jamAbsen);
+    }
+
+    public function deletePresensiAdmin(int $id): array
+    {
+        $presensi = Presensi::find($id);
+
+        if (!$presensi) {
+            return ['success' => false, 'message' => 'Data presensi tidak ditemukan'];
+        }
+
+        foreach (['foto_in', 'foto_out'] as $foto) {
+            if (!empty($presensi->{$foto})) {
+                Storage::disk('public')->delete('uploads/absensi/' . $presensi->{$foto});
+            }
+        }
+
+        $presensi->delete();
+
+        return ['success' => true, 'message' => 'Data presensi berhasil dihapus'];
+    }
+
+    private function formatJamMasuk($jamMasuk): string
+    {
+        if ($jamMasuk instanceof \Carbon\Carbon) {
+            return $jamMasuk->format('H:i:s');
+        }
+
+        return (string) $jamMasuk;
     }
 
     private function simpanFoto(string $nik, string $tglPresensi, string $status, string $image): string

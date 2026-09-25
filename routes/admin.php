@@ -121,6 +121,11 @@ Route::group(['middleware' => 'permission:presensi-edit,user'], function () {
     Route::post('/presensi/{id}/update', [AdminPresensiController::class, 'updatePresensiAdmin']);
 });
 
+// Hapus data presensi
+Route::group(['middleware' => 'permission:presensi-delete,user'], function () {
+    Route::post('/presensi/{id}/delete', [AdminPresensiController::class, 'deletePresensiAdmin']);
+});
+
 // Realtime API
 Route::get('/api/realtime/admin', [RealtimeController::class, 'admin']);
 Route::get('/api/realtime/admin/wfh-check', [RealtimeController::class, 'adminWfhCheck'])->middleware('permission:wfh-view,user');

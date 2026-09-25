@@ -26,6 +26,7 @@ class RolePermissionSeeder extends Seeder
             'monitoring-view',
             'presensi-view',
             'presensi-edit',
+            'presensi-delete',
             'izin-view',
             'izin-delete',
             'izin-approve',

@@ -114,6 +114,15 @@
         <x-admin.input type="time" name="jam_out" id="edit_jam_out" label="Jam Pulang" step="1" />
         <small class="text-slate-500 text-xs">Kosongkan jika belum presensi pulang</small>
 
+        <div class="mt-3">
+            <label class="block text-xs font-medium text-slate-600 mb-1">Keterangan Presensi</label>
+            <span id="preview_keterangan"
+                class="inline-flex items-center rounded-full bg-green-100 text-green-700 text-[10px] px-2 py-0.5 font-medium">
+                Tepat Waktu
+            </span>
+            <small class="block mt-1 text-slate-500 text-xs">Keterangan menyesuaikan jam masuk yang dipilih.</small>
+        </div>
+
         <div class="mt-2">
             <x-admin.button variant="primary" icon="save" type="submit" block>Simpan Perubahan</x-admin.button>
         </div>
@@ -200,8 +209,56 @@
         });
 
         // ==================================================
-        // Edit Presensi Modal
+        // Edit Presensi Modal + Preview Keterangan
         // ==================================================
+        var editUnit = '';
+        var editJamMasuk = '08:00:00';
+
+        function toSeconds(jam) {
+            if (!jam) return null;
+            var parts = jam.split(':');
+            var jam2 = parseInt(parts[0], 10);
+            var menit = parseInt(parts[1] || '0', 10);
+            if (isNaN(jam2) || isNaN(menit)) return null;
+            return jam2 * 3600 + menit * 60;
+        }
+
+        function hitungTerlambatPreview(unit, jamMasuk, jamAbsen) {
+            if (unit === 'Arthama') return 0;
+
+            var masuk = toSeconds(jamMasuk);
+            var absen = toSeconds(jamAbsen);
+            if (masuk === null || absen === null) return null;
+            if (absen <= masuk) return 0;
+
+            var selisihMenit = Math.floor((absen - masuk) / 60);
+            if (selisihMenit <= 60) return selisihMenit;
+
+            return Math.ceil(selisihMenit / 60) * 60;
+        }
+
+        function renderPreviewKeterangan() {
+            var el = document.getElementById('preview_keterangan');
+            if (!el) return;
+
+            var terlambat = hitungTerlambatPreview(editUnit, editJamMasuk,
+                document.getElementById('edit_jam_in').value);
+
+            if (terlambat === null) {
+                el.textContent = '-';
+                el.className = 'inline-flex items-center rounded-full bg-slate-100 text-slate-500 text-[10px] px-2 py-0.5 font-medium';
+            } else if (terlambat > 0) {
+                el.textContent = 'Terlambat ' + terlambat + 'm';
+                el.className = 'inline-flex items-center rounded-full bg-red-100 text-red-700 text-[10px] px-2 py-0.5 font-medium';
+            } else {
+                el.textContent = 'Tepat Waktu';
+                el.className = 'inline-flex items-center rounded-full bg-green-100 text-green-700 text-[10px] px-2 py-0.5 font-medium';
+            }
+        }
+
+        document.getElementById('edit_jam_in').addEventListener('input', renderPreviewKeterangan);
+        document.getElementById('edit_jam_in').addEventListener('change', renderPreviewKeterangan);
+
         document.addEventListener('click', function(e) {
             var btn = e.target.closest('.edit-presensi');
             if (btn) {
@@ -210,12 +267,42 @@
                 var jamIn = btn.dataset.jam_in;
                 var jamOut = btn.dataset.jam_out;
 
+                editUnit = btn.dataset.unit || '';
+                editJamMasuk = btn.dataset.jam_masuk || '08:00:00';
+
                 document.getElementById('edit_presensi_id').value = id;
                 document.getElementById('edit_jam_in').value = jamIn || '';
                 document.getElementById('edit_jam_out').value = jamOut || '';
                 document.getElementById('formEditPresensi').setAttribute('action', '/presensi/' + id +
                     '/update');
+                renderPreviewKeterangan();
                 window.dispatchEvent(new CustomEvent('open-modal-modal-editpresensi'));
+            }
+        });
+
+        // ==================================================
+        // Konfirmasi Hapus Presensi
+        // ==================================================
+        document.addEventListener('click', function(e) {
+            var btn = e.target.closest('.delete-confirm');
+            if (btn) {
+                var form = btn.closest('form');
+                e.preventDefault();
+
+                Swal.fire({
+                    title: 'Yakin data presensi ini akan dihapus?',
+                    text: "Data yang sudah dihapus tidak bisa dikembalikan!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Hapus Data',
+                    backdrop: false
+                }).then(function(result) {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
             }
         });
 
