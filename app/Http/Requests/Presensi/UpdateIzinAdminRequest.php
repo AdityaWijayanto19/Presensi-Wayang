@@ -17,6 +17,7 @@ class UpdateIzinAdminRequest extends FormRequest
             'tgl_izin' => 'required|date',
             'jenis_izin' => 'required|in:tidak_masuk,terlambat,setengah_hari,pulang_cepat,sakit',
             'jam_datang' => 'required_if:jenis_izin,terlambat|nullable|date_format:H:i|after_or_equal:08:00|before_or_equal:12:00',
+            'status' => 'required|string|in:pending_atasan,pending_admin,approved,rejected',
         ];
     }
 
@@ -31,6 +32,9 @@ class UpdateIzinAdminRequest extends FormRequest
             'jam_datang.date_format' => 'Format jam datang tidak valid (HH:MM).',
             'jam_datang.after_or_equal' => 'Jam datang tidak boleh sebelum 08:00.',
             'jam_datang.before_or_equal' => 'Jam datang tidak boleh setelah 12:00.',
+            'status.required' => 'Status wajib dipilih.',
+            'status.string' => 'Status tidak valid.',
+            'status.in' => 'Status tidak valid.',
         ];
     }
 }

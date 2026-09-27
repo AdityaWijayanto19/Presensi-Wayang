@@ -557,14 +557,36 @@ class IzinService
 
         $jenisIzin = $request->jenis_izin;
         $jamDatang = $jenisIzin === 'terlambat' ? $request->jam_datang : null;
+        $oldStatus = $izin->status instanceof IzinStatus ? $izin->status->value : $izin->status;
+        $newStatus = $request->status;
+
+        $updateData = [
+            'tgl_izin' => $request->tgl_izin,
+            'jenis_izin' => $jenisIzin,
+            'jam_datang' => $jamDatang,
+            'status' => $newStatus,
+        ];
+
+        if ($oldStatus !== $newStatus) {
+            if ($newStatus === IzinStatus::Approved->value) {
+                $updateData['admin_status'] = 'approved';
+                $updateData['approved_at'] = $izin->approved_at ?? now('Asia/Jakarta');
+                $updateData['rejected_reason'] = null;
+            } elseif ($newStatus === IzinStatus::Rejected->value) {
+                $updateData['admin_status'] = 'rejected';
+            } elseif ($newStatus === IzinStatus::PendingAdmin->value) {
+                $updateData['admin_status'] = 'pending';
+                $updateData['rejected_reason'] = null;
+            } elseif ($newStatus === IzinStatus::PendingAtasan->value) {
+                $updateData['admin_status'] = 'pending';
+                $updateData['atasan_status'] = 'pending';
+                $updateData['rejected_reason'] = null;
+            }
+        }
 
         DB::beginTransaction();
         try {
-            $izin->update([
-                'tgl_izin' => $request->tgl_izin,
-                'jenis_izin' => $jenisIzin,
-                'jam_datang' => $jamDatang,
-            ]);
+            $izin->update($updateData);
 
             $karyawan = Karyawan::where('nik', $izin->nik)->first();
             if ($karyawan) {
@@ -604,7 +626,44 @@ class IzinService
 
         cache()->forget('pending_izin_admin_count');
 
+        if ($oldStatus !== $newStatus) {
+            $fresh = $izin->fresh();
+            if ($fresh) {
+                $this->notifyStatusChange($fresh, $oldStatus, $newStatus);
+            }
+        }
+
         return ['success' => true, 'message' => 'Data izin berhasil diperbarui'];
+    }
+
+    private function notifyStatusChange(Izin $izin, string $oldStatus, string $newStatus): void
+    {
+        $pengaju = Karyawan::where('nik', $izin->nik)->first();
+        if (!$pengaju) {
+            return;
+        }
+
+        try {
+            if ($newStatus === IzinStatus::Approved->value) {
+                $pengaju->notify(new \App\Notifications\IzinApproved($izin));
+
+                $pesan = 'Izin ' . $this->tglIzin($izin) . ' disetujui!';
+                if ($izin->jenis_izin === JenisIzin::PulangCepat->value || $izin->jenis_izin === 'pulang_cepat') {
+                    $pesan .= ' Anda dapat melakukan presensi pulang kapan saja.';
+                }
+                $this->push->send($izin->nik, 'Izin Disetujui', $pesan, null, 'izin-approved-admin-' . $izin->id);
+            } elseif ($newStatus === IzinStatus::Rejected->value) {
+                $pengaju->notify(new \App\Notifications\IzinRejected($izin, $izin->rejected_reason));
+
+                $pesan = 'Izin ' . $this->tglIzin($izin) . ' ditolak.';
+                if (!empty($izin->rejected_reason)) {
+                    $pesan .= ' Alasan: ' . $izin->rejected_reason;
+                }
+                $this->push->send($izin->nik, 'Izin Ditolak', $pesan, null, 'izin-rejected-admin-' . $izin->id);
+            }
+        } catch (\Exception $e) {
+            Log::warning('Izin status change notification failed: ' . $e->getMessage());
+        }
     }
 
     public function getIzinHistory(string $nik)

@@ -131,6 +131,7 @@
                         data-tgl_izin="{{ $d->tgl_izin instanceof \Carbon\Carbon ? $d->tgl_izin->format('Y-m-d') : $d->tgl_izin }}"
                         data-jenis_izin="{{ $jenisValue }}"
                         data-jam_datang="{{ $d->jam_datang ?? '' }}"
+                        data-status="{{ $status }}"
                         @click="open = false">
                         <i data-lucide="pencil" style="width:12px;height:12px;"></i> Edit
                     </button>

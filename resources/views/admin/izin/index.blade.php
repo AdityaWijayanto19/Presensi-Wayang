@@ -138,6 +138,13 @@
                 <small class="block mt-1 text-[11px] text-[#a8a29e]">Rentang 08:00 - 12:00.</small>
             </div>
 
+            <x-admin.select name="status" id="edit_status" label="Status <span class='text-red-500'>*</span>" required>
+                <option value="pending_atasan">Menunggu Atasan</option>
+                <option value="pending_admin">Menunggu HR</option>
+                <option value="approved">Disetujui</option>
+                <option value="rejected">Ditolak</option>
+            </x-admin.select>
+
             <div class="mt-2">
                 <x-admin.button variant="primary" icon="save" type="submit" block>Simpan Perubahan</x-admin.button>
             </div>
@@ -217,11 +224,23 @@
                     var tgl = btn.dataset.tgl_izin;
                     var jenis = btn.dataset.jenis_izin;
                     var jamDatang = btn.dataset.jam_datang;
+                    var status = btn.dataset.status;
 
                     document.getElementById('edit_izin_id').value = id;
                     document.getElementById('edit_tgl_izin').value = tgl;
                     document.getElementById('edit_jenis_izin').value = jenis;
                     document.getElementById('formEditIzin').setAttribute('action', '/presensi/izin/' + id + '/update');
+
+                    // Set status select (Alpine component, bukan native select)
+                    var statusEl = document.getElementById('edit_status');
+                    if (statusEl) {
+                        var statusRoot = statusEl.closest('[x-data]');
+                        if (statusRoot && window.Alpine && Alpine.$data(statusRoot)) {
+                            Alpine.$data(statusRoot).value = status || 'pending_admin';
+                        } else {
+                            statusEl.value = status || 'pending_admin';
+                        }
+                    }
 
                     // Toggle jam datang
                     var editJamWrapper = document.getElementById('editJamDatangWrapper');
