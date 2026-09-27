@@ -1027,6 +1027,8 @@
             let lastPendingLaporanLembur = {{ $pendingLaporanLemburAtasan->count() ?? 0 }};
             let lastPendingAtasanIzin = {{ $pendingAtasanIzin->count() ?? 0 }};
             let isPolling = false;
+            let sessionExpired = false;
+            let sessionExpiredShown = false;
             let sectionHashes = {};
             let pollInterval = 5000;
             let pollTimer = null;
@@ -1048,12 +1050,20 @@
             }
 
             function pollRealtime() {
-                if (isPolling) return;
+                if (isPolling || sessionExpired) return;
                 isPolling = true;
                 fetch('/api/realtime/dashboard', {
                         credentials: 'same-origin'
                     })
-                    .then(r => r.json())
+                    .then(r => {
+                        const ct = r.headers.get('content-type') || '';
+                        if (r.redirected || !ct.includes('application/json')) {
+                            const e = new Error('session_expired');
+                            e.session_expired = true;
+                            throw e;
+                        }
+                        return r.json();
+                    })
                     .then(data => {
                         // 1. Update notifikasi badge
                         if (badge) {
@@ -1819,14 +1829,31 @@
 
                         isPolling = false;
                         pollInterval = 5000;
-                    }).catch(() => {
+                    }).catch(err => {
                         isPolling = false;
+                        if (err && err.session_expired) {
+                            sessionExpired = true;
+                            if (window.Swal && !sessionExpiredShown) {
+                                sessionExpiredShown = true;
+                                Swal.fire({
+                                    icon: 'warning',
+                                    title: 'Sesi Berakhir',
+                                    text: 'Sesi Anda telah berakhir. Silakan login kembali.',
+                                    confirmButtonText: 'Login Ulang',
+                                    allowOutsideClick: false
+                                }).then(() => {
+                                    window.location.href = '/';
+                                });
+                            }
+                            return;
+                        }
                         pollInterval = Math.min(pollInterval * 2, 30000);
                     });
             }
 
             // Poll dengan backoff
             function startPoll() {
+                if (sessionExpired) return;
                 setTimeout(function() {
                     pollRealtime();
                     startPoll();

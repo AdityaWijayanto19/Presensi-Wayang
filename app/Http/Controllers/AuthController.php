@@ -22,7 +22,7 @@ class AuthController extends Controller
             Auth::guard('user')->attempt([
                 'email' => $request->email,
                 'password' => $request->password
-            ])
+            ], true)
         ) {
             return redirect('/panel/dashboard');
         }
@@ -57,7 +57,7 @@ class AuthController extends Controller
             Auth::guard('karyawan')->attempt([
                 'nik' => $request->nik,
                 'password' => $request->password
-            ])
+            ], true)
         ) {
             return redirect('/dashboard');
         }
