@@ -165,7 +165,7 @@ class KaryawanController extends Controller
             return response()->json([]);
         }
 
-        $query = Karyawan::where('jabatan', $targetPosisi)
+        $query = Karyawan::where('role_approved', $targetPosisi)
             ->select('nik', 'nama_lengkap', 'jabatan', 'posisi')
             ->orderBy('nama_lengkap');
 

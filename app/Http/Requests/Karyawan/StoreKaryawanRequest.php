@@ -37,7 +37,7 @@ class StoreKaryawanRequest extends FormRequest
             'jabatan.required' => 'Jabatan wajib dipilih.',
             'jabatan.in' => 'Jabatan tidak valid.',
             'posisi.required' => 'Posisi wajib diisi.',
-            'role_approved.in' => 'Jabatan atasan tidak valid.',
+            'role_approved.in' => 'Role Approved tidak valid.',
             'atasan_nik.exists' => 'Atasan tidak ditemukan.',
             'unit.required' => 'Unit wajib dipilih.',
             'unit.exists' => 'Unit tidak ditemukan.',

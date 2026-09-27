@@ -55,14 +55,14 @@
 
     {{-- Atasan --}}
     @php
-        $showAtasan = $karyawan && !empty($karyawan->role_approved);
+        $showAtasan = $karyawan && !empty($karyawan->role_approved) && $karyawan->role_approved !== 'Direktur';
         $atasanList = collect();
         if ($showAtasan) {
             $atasanMap = ['Staff' => 'Manager', 'Manager' => 'GM', 'GM' => 'Direktur', 'Direktur' => null];
             $targetPosisi = $atasanMap[$karyawan->role_approved] ?? null;
             if ($targetPosisi) {
                 $atasanList = DB::table('karyawans')
-                    ->where('jabatan', $targetPosisi)
+                    ->where('role_approved', $targetPosisi)
                     ->where('nik', '!=', $karyawan->nik)
                     ->get();
             }

@@ -371,7 +371,7 @@
         // Fetch Atasan untuk Edit Mode
         // =====================================================
         function fetchAtasanForEdit(roleApproved, targetAtasanNik, excludeNik) {
-            if (!roleApproved) return;
+            if (!roleApproved || roleApproved === 'Direktur') return;
             fetch('/karyawan/get-atasan?role_approved=' + encodeURIComponent(roleApproved) +
                 '&exclude_nik=' + encodeURIComponent(excludeNik), {
                     credentials: 'same-origin'
@@ -496,7 +496,7 @@
                 var nikInput = form.querySelector('[name="nik"]');
                 var excludeNik = nikInput ? nikInput.value : '';
 
-                if (!roleApproved || roleApproved === '') {
+                if (!roleApproved || roleApproved === '' || roleApproved === 'Direktur') {
                     wrapper.style.display = 'none';
                     formContainer.dispatchEvent(new CustomEvent('options-updated', {
                         detail: {

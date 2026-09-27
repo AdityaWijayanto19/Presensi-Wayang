@@ -44,7 +44,7 @@ class UpdateKaryawanRequest extends FormRequest
             'jabatan.required' => 'Jabatan wajib dipilih.',
             'jabatan.in' => 'Jabatan tidak valid.',
             'posisi.required' => 'Posisi wajib diisi.',
-            'role_approved.in' => 'Jabatan atasan tidak valid.',
+            'role_approved.in' => 'Role Approved tidak valid.',
             'atasan_nik.exists' => 'Atasan tidak ditemukan.',
             'jatah_cuti.required' => 'Jatah cuti wajib diisi.',
             'jatah_cuti.integer' => 'Jatah cuti tidak valid.',
