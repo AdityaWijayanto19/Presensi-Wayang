@@ -442,7 +442,7 @@
                             </summary>
                             <p class="text-[12.5px] text-[#57534e] leading-relaxed mt-2">
                                 Tidak. Cuti tidak memblokir absen di sistem.
-                                Beda dengan lembur (laporan wajib sebelum pulang) atau izin tertentu.
+                                Beda dengan WFH (laporan wajib sebelum pulang) atau izin tertentu.
                             </p>
                         </details>
                         <details class="group py-2.5">

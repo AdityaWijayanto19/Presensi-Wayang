@@ -136,6 +136,7 @@
                                 ['t' => 'Absen masuk', 'd' => 'Buka mulai pukul 07.00, foto + lokasi dari rumah.'],
                                 ['t' => 'Kerja minimal 7 jam', 'd' => 'Laporan baru boleh dikirim setelah 7 jam sejak absen masuk.'],
                                 ['t' => 'Kirim laporan', 'd' => 'Deskripsi hasil kerja + 2–5 foto. Laporan wajib ada sebelum boleh absen pulang.'],
+                                ['t' => 'Absen Pulang', 'd' => 'Akhiri hari kerja. Jika belum kirim laporan, absen pulang tidak bisa dilakukan.'],
                                 ['t' => 'Disetujui Atasan → HR', 'd' => 'Jika ditolak, perbaiki lalu kirim ulang.'],
                             ];
                         @endphp
@@ -222,7 +223,7 @@
                                 </tr>
                                 <tr>
                                     <td class="text-[12.5px] text-[#57534e] py-2.5 pr-3">Otomatis jadi Unpaid</td>
-                                    <td class="text-[12.5px] font-semibold text-rose-600 py-2.5">Pukul 00.00, jika laporan tidak beres</td>
+                                    <td class="text-[12.5px] font-semibold text-rose-600 py-2.5">Pukul 00.00, jika laporan belum beres ATAU belum absen pulang</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -292,7 +293,7 @@
                         </div>
                         <div class="border border-rose-200 bg-rose-50 rounded-xl p-3">
                             <span class="inline-block text-[10px] font-bold uppercase tracking-wide bg-rose-100 text-rose-700 border border-rose-200 rounded-full px-2 py-0.5">Ditolak</span>
-                            <p class="text-[12px] text-rose-900 mt-1.5 leading-relaxed">Tidak disetujui. Ada alasan penolakan; boleh ajukan ulang untuk tanggal lain.</p>
+                            <p class="text-[12px] text-rose-900 mt-1.5 leading-relaxed">Tidak disetujui. Ada alasan penolakan dan boleh edit lalu submit ulang; boleh ajukan ulang untuk tanggal lain.</p>
                         </div>
                         <div class="border border-stone-200 bg-stone-50 rounded-xl p-3 sm:col-span-2">
                             <span class="inline-block text-[10px] font-bold uppercase tracking-wide bg-stone-100 text-stone-600 border border-stone-200 rounded-full px-2 py-0.5">Unpaid</span>

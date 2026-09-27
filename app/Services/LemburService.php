@@ -73,13 +73,21 @@ class LemburService
             return ['can' => false, 'message' => 'Anda sudah mengajukan lembur hari ini.'];
         }
 
+        $presensiHariIni = Presensi::where('nik', $karyawan->nik)
+            ->where('tgl_presensi', $hariIni)
+            ->first();
+        if ($presensiHariIni && !$presensiHariIni->jam_out) {
+            return ['can' => false, 'message' => 'Silakan absen pulang terlebih dahulu sebelum mengajukan lembur.'];
+        }
+
         $jamSekarang = now('Asia/Jakarta');
         $jam = (int) $jamSekarang->format('H');
         $menit = (int) $jamSekarang->format('i');
         $totalMenit = $jam * 60 + $menit;
 
-        // 00:01 - 16:50 = Day In (lembur hari ini, presensi pulang tidak wajib)
-        // 18:00 - 23:59 = Day In + Next Day (lembur malam)
+        // Syarat di atas: sudah absen pulang hari ini (kecuali tanpa data presensi hari ini)
+        // 00:01 - 16:50 = window pagi
+        // 18:00 - 23:59 = window malam
         // 16:51 - 17:59 = GAP, tidak boleh mengajukan
         // 00:00 = tidak ada lembur (reset harian)
         $dalamWindowPagi = ($totalMenit >= 1 && $totalMenit <= 1010);   // 00:01 - 16:50
@@ -469,29 +477,6 @@ class LemburService
 
         if (!empty($lembur->{$fieldFoto})) {
             return ['success' => false, 'message' => 'Foto ' . $type . ' lembur sudah ada!'];
-        }
-
-        if ($type === 'mulai') {
-            // Cek apakah karyawan sudah presensi pulang hari ini
-            $presensiHariIni = Presensi::where('nik', $nik)
-                ->whereDate('tgl_presensi', $lembur->tgl_lembur)
-                ->whereNotNull('jam_out')
-                ->first();
-
-            // Cek apakah lembur ini untuk jam SEBELUM jam buka presensi (pre-shift lembur)
-            $jamBukaPresensi = '07:00:00';
-            $rencanaMulaiPlan = $lembur->rencana_mulai instanceof \Carbon\Carbon
-                ? $lembur->rencana_mulai->format('H:i:s')
-                : null;
-
-            $isPreShift = $rencanaMulaiPlan && $rencanaMulaiPlan < $jamBukaPresensi;
-
-            // Foto mulai boleh diambil jika:
-            // 1. Sudah ada presensi pulang hari ini, ATAU
-            // 2. Lembur ini untuk jam sebelum jam buka presensi (pre-shift)
-            // if (!$presensiHariIni && !$isPreShift) {
-            //     return ['success' => false, 'message' => 'Silakan presensi pulang terlebih dahulu sebelum mengambil foto mulai lembur.'];
-            // }
         }
 
         if ($type === 'selesai') {

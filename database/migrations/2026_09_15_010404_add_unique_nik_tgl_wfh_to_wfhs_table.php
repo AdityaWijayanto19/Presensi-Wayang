@@ -13,9 +13,15 @@ return new class extends Migration
             $table->dropIndex(['tgl_wfh', 'nik']);
         });
 
-        DB::statement('DELETE w1 FROM wfhs w1
-            INNER JOIN wfhs w2
-            ON w1.nik = w2.nik AND w1.tgl_wfh = w2.tgl_wfh AND w1.id < w2.id');
+        if (DB::getDriverName() === 'sqlite') {
+            // SQLite tidak mendukung sintaks DELETE ... INNER JOIN (multi-table delete).
+            DB::statement('DELETE FROM wfhs
+                WHERE id NOT IN (SELECT MAX(id) FROM wfhs GROUP BY nik, tgl_wfh)');
+        } else {
+            DB::statement('DELETE w1 FROM wfhs w1
+                INNER JOIN wfhs w2
+                ON w1.nik = w2.nik AND w1.tgl_wfh = w2.tgl_wfh AND w1.id < w2.id');
+        }
 
         Schema::table('wfhs', function (Blueprint $table) {
             $table->unique(['nik', 'tgl_wfh']);
