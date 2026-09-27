@@ -416,7 +416,7 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
-        $notifications = $karyawan->notifications()->latest()->take(5)->get();
+        $notifications = $karyawan->notifications()->latest()->take(10)->get();
 
         return view('karyawan.index', compact(
             'presensihariini', 'historibulanini', 'namabulan', 'bulanini', 'tahunini',

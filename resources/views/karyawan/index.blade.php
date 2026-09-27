@@ -1020,7 +1020,7 @@
             }
 
             // === REALTIME POLLING — SETIAP 5 DETIK ===
-            let lastNotifCount = {{ count($notifications ?? []) }};
+            let knownNotifIds = {!! json_encode($notifications->pluck('id')->values()->all()) !!};
             let lastPendingAtasan = {{ $pendingAtasan->count() ?? 0 }};
             let lastPendingLaporan = {{ $pendingLaporanAtasan->count() ?? 0 }};
             let lastPendingAtasanLembur = {{ $pendingAtasanLembur->count() ?? 0 }};
@@ -1068,10 +1068,9 @@
                             }
                         }
 
-                        // 2. Web Push + Sound untuk notifikasi baru
-                        if (data.notifications && data.notifications.length > lastNotifCount) {
-                            const newNotifs = data.notifications.slice(0, data.notifications.length -
-                                lastNotifCount);
+                        // 2. Web Push + Sound untuk notifikasi baru (dedupe by id)
+                        if (data.notifications && data.notifications.length) {
+                            const newNotifs = data.notifications.filter(n => n && n.id && !knownNotifIds.includes(n.id));
                             newNotifs.forEach(n => {
                                 if (n.data && n.data.message) {
                                     if (Notification.permission === 'granted') {
@@ -1083,7 +1082,10 @@
                                     }
                                 }
                             });
-                            lastNotifCount = data.notifications.length;
+                            data.notifications.forEach(n => {
+                                if (n && n.id && !knownNotifIds.includes(n.id)) knownNotifIds.push(n.id);
+                            });
+                            if (knownNotifIds.length > 50) knownNotifIds = knownNotifIds.slice(-50);
                         }
 
                         // 3. Update notif dropdown list
