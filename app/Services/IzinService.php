@@ -543,10 +543,6 @@ class IzinService
             return ['success' => false, 'message' => 'Data tidak ditemukan'];
         }
 
-        if (!in_array($izin->status, [IzinStatus::PendingAdmin, IzinStatus::Rejected])) {
-            return ['success' => false, 'message' => 'Hanya izin berstatus menunggu HR atau ditolak yang bisa diedit'];
-        }
-
         $duplicate = Izin::where('nik', $izin->nik)
             ->where('tgl_izin', $request->tgl_izin)
             ->where('id', '!=', $id)
@@ -581,6 +577,10 @@ class IzinService
                 $updateData['admin_status'] = 'pending';
                 $updateData['atasan_status'] = 'pending';
                 $updateData['rejected_reason'] = null;
+            }
+
+            if ($oldStatus === IzinStatus::Approved->value && $newStatus !== IzinStatus::Approved->value) {
+                $updateData['approved_at'] = null;
             }
         }
 
