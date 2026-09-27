@@ -13,6 +13,9 @@
 @endsection
 
 @section('content')
+    {{-- Offset konten supaya tidak ketutup .appHeader (fixed 56px) + safe-area atas --}}
+    <div class="mt-[70px]"></div>
+
     @php
         $weekdayMap = ['Sunday'=>'Minggu','Monday'=>'Senin','Tuesday'=>'Selasa','Wednesday'=>'Rabu','Thursday'=>'Kamis','Friday'=>'Jumat','Saturday'=>'Sabtu'];
         $statusLabels = [

@@ -29,7 +29,7 @@
     @endphp
 
     {{-- Chip nav (mobile & tablet) --}}
-    <div class="mt-[70px] sticky top-[56px] z-30 bg-[#e9ecef]/95 backdrop-blur border-b border-[#e7e5e4] lg:hidden">
+    <div class="mt-[70px] sticky top-[calc(env(safe-area-inset-top)_+_56px)] z-30 bg-[#e9ecef]/95 backdrop-blur border-b border-[#e7e5e4] lg:hidden">
         <div class="flex gap-2 overflow-x-auto px-3 py-2.5" style="-webkit-overflow-scrolling: touch;">
             @foreach ($sections as $s)
                 <a href="#{{ $s['id'] }}"
@@ -46,7 +46,7 @@
 
             {{-- Sidebar TOC (desktop) --}}
             <aside class="hidden lg:block">
-                <nav class="sticky top-[86px] pt-1 pb-8">
+                <nav class="sticky top-[calc(env(safe-area-inset-top)_+_86px)] pt-1 pb-8">
                     <div class="text-[11px] font-semibold tracking-wide text-[#a8a29e] uppercase mb-2.5">Daftar Isi</div>
                     <ul class="space-y-1">
                         @foreach ($sections as $s)

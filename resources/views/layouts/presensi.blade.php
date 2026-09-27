@@ -80,7 +80,7 @@
         x-show="isOffline || showOnline"
         role="status"
         aria-live="polite"
-        class="fixed top-0 left-0 right-0 z-[1000] px-4 py-2 text-center text-[12px] font-semibold text-white shadow-sm"
+        class="fixed top-[env(safe-area-inset-top)] left-0 right-0 z-[1000] px-4 py-2 text-center text-[12px] font-semibold text-white shadow-sm"
         :class="isOffline ? 'bg-[#7f1d1d]' : 'bg-emerald-700'">
         <span x-show="isOffline">Koneksi terputus. Periksa jaringan Anda.</span>
         <span x-show="!isOffline && showOnline">Terhubung kembali.</span>
@@ -94,7 +94,9 @@
         @yield('header')
 
         {{-- App Content --}}
-        <div id="appCapsule" class="mt-[env(safe-area-inset-top)] pb-[70px] lg:pb-6">
+        {{-- padding-top (bukan margin) supaya offset aman-atas + offset header 56px tidak ikut
+             margin-collapse dengan margin-top halaman anak (yang bikin konten ketutup header di PWA) --}}
+        <div id="appCapsule" class="pt-[env(safe-area-inset-top)] pb-[calc(70px_+_env(safe-area-inset-bottom))] lg:pb-6">
 
             @yield('content')
 

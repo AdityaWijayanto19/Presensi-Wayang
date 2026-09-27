@@ -13,7 +13,7 @@
 @endsection
 
 @section('content')
-    <div class="flex mt-[60px] pb-6">
+    <div class="flex mt-[70px] pb-6">
         <div class="w-full px-3">
 
             @forelse($grouped ?? [] as $group)

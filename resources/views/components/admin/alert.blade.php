@@ -8,7 +8,7 @@
 
 <div x-data="alertToast()" x-init="init({{ json_encode($alerts) }})"
      x-on:add-alert.window="add($event.detail.type, $event.detail.message)"
-     class="fixed top-6 left-1/2 -translate-x-1/2 z-[100] flex flex-col items-center gap-2 w-full max-w-lg px-4 pointer-events-none"
+     class="fixed top-[calc(env(safe-area-inset-top)_+_68px)] left-1/2 -translate-x-1/2 z-[1100] flex flex-col items-center gap-2 w-full max-w-lg px-4 pointer-events-none"
      style="{{ count($alerts) === 0 ? 'display:none;' : '' }}">
 
     <template x-for="alert in alerts" :key="alert.id">
