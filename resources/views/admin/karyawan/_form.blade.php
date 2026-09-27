@@ -38,7 +38,7 @@
 
     {{-- Role Approved --}}
     @php
-        $showRoleApproved = $karyawan && !empty($karyawan->jabatan) && $karyawan->jabatan !== 'Direktur';
+        $showRoleApproved = $karyawan && !empty($karyawan->jabatan);
     @endphp
     <div id="role-approved-wrapper" style="{{ $showRoleApproved ? '' : 'display:none;' }}">
         <x-admin.select name="role_approved" id="role_approved" label="Role Approved" placeholder="Pilih Role Approved">

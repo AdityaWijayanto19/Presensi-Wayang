@@ -427,7 +427,7 @@
                 var roleWrapper = form.querySelector('#role-approved-wrapper');
                 var atasanWrapper = form.querySelector('#atasan-wrapper');
 
-                if (jabatan === 'Direktur' || jabatan === '') {
+                if (jabatan === '') {
                     roleWrapper.style.display = 'none';
                     atasanWrapper.style.display = 'none';
                     formContainer.dispatchEvent(new CustomEvent('set-value', {
