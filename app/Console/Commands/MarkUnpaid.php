@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use App\Enums\WfhStatus;
 use App\Notifications\WfhMarkedUnpaid;
 
@@ -21,39 +22,51 @@ class MarkUnpaid extends Command
         // 2. Status approved, tgl_wfh sudah lewat, SUDAH upload laporan tapi BELUM absen pulang
         // Catatan: approved_at di-update saat admin memulihkan unpaid→approved,
         // sehingga DATE(approved_at) > tgl_wfh menandai waiving manual → dilewati.
-        $wfhBelumLaporan = DB::table('wfhs')
-            ->where('wfhs.status', WfhStatus::Approved->value)
-            ->where('wfhs.tgl_wfh', '<', $hariIni)
-            ->where(function ($q) {
-                $q->whereNull('wfhs.laporan_deskripsi')
-                  ->orWhere('wfhs.laporan_deskripsi', '')
-                  ->orWhere('wfhs.laporan_status', WfhStatus::Rejected->value);
-            })
-            ->where(function ($q) {
-                $q->whereNull('wfhs.approved_at')
-                  ->orWhereRaw('DATE(wfhs.approved_at) <= wfhs.tgl_wfh');
-            })
-            ->select('wfhs.*')
-            ->get();
+        $wfhBelumLaporan = collect();
+        try {
+            $wfhBelumLaporan = DB::table('wfhs')
+                ->where('wfhs.status', WfhStatus::Approved->value)
+                ->where('wfhs.tgl_wfh', '<', $hariIni)
+                ->where(function ($q) {
+                    $q->whereNull('wfhs.laporan_deskripsi')
+                      ->orWhere('wfhs.laporan_deskripsi', '')
+                      ->orWhere('wfhs.laporan_status', WfhStatus::Rejected->value);
+                })
+                ->where(function ($q) {
+                    $q->whereNull('wfhs.approved_at')
+                      ->orWhereRaw('DATE(wfhs.approved_at) <= wfhs.tgl_wfh');
+                })
+                ->select('wfhs.*')
+                ->get();
+        } catch (\Throwable $e) {
+            Log::error('MarkUnpaid: query wfhBelumLaporan gagal: ' . $e->getMessage());
+            $this->error('Query wfhBelumLaporan gagal: ' . $e->getMessage());
+        }
 
-        $wfhBelumPulang = DB::table('wfhs')
-            ->leftJoin('presensis', function ($join) {
-                $join->on('wfhs.nik', '=', 'presensis.nik')
-                     ->on('wfhs.tgl_wfh', '=', 'presensis.tgl_presensi');
-            })
-            ->where('wfhs.status', WfhStatus::Approved->value)
-            ->where('wfhs.tgl_wfh', '<', $hariIni)
-            ->whereNotNull('wfhs.laporan_deskripsi')
-            ->where('wfhs.laporan_deskripsi', '!=', '')
-            ->where('wfhs.laporan_status', '!=', WfhStatus::Rejected->value)
-            ->whereNull('presensis.jam_out')
-            ->where(function ($q) {
-                $q->whereNull('wfhs.approved_at')
-                  ->orWhereRaw('DATE(wfhs.approved_at) <= wfhs.tgl_wfh');
-            })
-            ->select('wfhs.*')
-            ->groupBy('wfhs.id')
-            ->get();
+        $wfhBelumPulang = collect();
+        try {
+            $wfhBelumPulang = DB::table('wfhs')
+                ->leftJoin('presensis', function ($join) {
+                    $join->on('wfhs.nik', '=', 'presensis.nik')
+                         ->on('wfhs.tgl_wfh', '=', 'presensis.tgl_presensi');
+                })
+                ->where('wfhs.status', WfhStatus::Approved->value)
+                ->where('wfhs.tgl_wfh', '<', $hariIni)
+                ->whereNotNull('wfhs.laporan_deskripsi')
+                ->where('wfhs.laporan_deskripsi', '!=', '')
+                ->where('wfhs.laporan_status', '!=', WfhStatus::Rejected->value)
+                ->whereNull('presensis.jam_out')
+                ->where(function ($q) {
+                    $q->whereNull('wfhs.approved_at')
+                      ->orWhereRaw('DATE(wfhs.approved_at) <= wfhs.tgl_wfh');
+                })
+                ->select('wfhs.*')
+                ->distinct()
+                ->get();
+        } catch (\Throwable $e) {
+            Log::error('MarkUnpaid: query wfhBelumPulang gagal: ' . $e->getMessage());
+            $this->error('Query wfhBelumPulang gagal: ' . $e->getMessage());
+        }
 
         $wfhList = $wfhBelumLaporan->concat($wfhBelumPulang)->unique('id');
 
@@ -66,22 +79,27 @@ class MarkUnpaid extends Command
             ->whereIn('id', $wfhList->pluck('id'))
             ->update(['status' => WfhStatus::Unpaid->value]);
 
+        Log::info('MarkUnpaid: ' . $affected . ' WFH ditandai unpaid', ['ids' => $wfhList->pluck('id')->all()]);
         $this->info("Marked {$affected} WFH records as unpaid.");
 
         // Kirim notifikasi + web push ke setiap karyawan
         foreach ($wfhList as $wfh) {
             $reason = $this->determineReason($wfh);
-            $karyawan = \App\Models\Karyawan::where('nik', $wfh->nik)->first();
+            try {
+                $karyawan = \App\Models\Karyawan::where('nik', $wfh->nik)->first();
 
-            if ($karyawan) {
-                $karyawan->notify(new WfhMarkedUnpaid($wfh, $reason));
-                app(\App\Services\Shared\WebPushService::class)->send(
-                    $wfh->nik,
-                    'WFH Unpaid',
-                    'WFH tanggal ' . $wfh->tgl_wfh . ' ditandai sebagai Unpaid karena ' . $reason,
-                    '/wfh',
-                    'wfh-unpaid-' . $wfh->id
-                );
+                if ($karyawan) {
+                    $karyawan->notify(new WfhMarkedUnpaid($wfh, $reason));
+                    app(\App\Services\Shared\WebPushService::class)->send(
+                        $wfh->nik,
+                        'WFH Unpaid',
+                        'WFH tanggal ' . $wfh->tgl_wfh . ' ditandai sebagai Unpaid karena ' . $reason,
+                        '/wfh',
+                        'wfh-unpaid-' . $wfh->id
+                    );
+                }
+            } catch (\Throwable $e) {
+                Log::error('MarkUnpaid: notifikasi gagal untuk WFH id ' . $wfh->id . ': ' . $e->getMessage());
             }
         }
 

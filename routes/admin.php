@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AdminPresensiController;
+use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\KaryawanController;
 use App\Http\Controllers\UnitperusahaanController;
 use App\Http\Controllers\UserController;
@@ -27,6 +28,11 @@ Route::group(['middleware' => 'permission:user-manage,user'], function () {
     Route::post('/users/{id}/resetpassword', [UserController::class, 'resetpassword']);
     Route::post('/users/{id_user}/update', [UserController::class, 'update']);
     Route::post('/users/{id_user}/delete', [UserController::class, 'delete']);
+});
+
+// Log aktivitas administrator (hanya super admin)
+Route::group(['middleware' => 'permission:activity-log-view,user'], function () {
+    Route::get('/panel/activity-log', [ActivityLogController::class, 'index']);
 });
 
 // Unit perusahaan

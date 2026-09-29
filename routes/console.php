@@ -11,3 +11,4 @@ Artisan::command('inspire', function () {
 Schedule::command('wfh:mark-unpaid')->dailyAt('00:00')->withoutOverlapping();
 Schedule::command('wfh:reminder-laporan')->dailyAt('22:00')->withoutOverlapping();
 Schedule::command('lembur:reminder-laporan')->dailyAt('22:00')->withoutOverlapping();
+Schedule::command('activitylog:cleanup')->dailyAt('03:15')->withoutOverlapping();

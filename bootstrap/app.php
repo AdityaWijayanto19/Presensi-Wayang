@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
+            'activitylog' => \App\Http\Middleware\LogAdminActivity::class,
         ]);
 
         $middleware->redirectGuestsTo(function ($request) {

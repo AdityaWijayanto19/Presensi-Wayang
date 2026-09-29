@@ -41,6 +41,7 @@ class RolePermissionSeeder extends Seeder
             'cuti-delete',
             'laporan-view',
             'user-manage',
+            'activity-log-view',
         ];
 
         foreach ($permissions as $permission) {

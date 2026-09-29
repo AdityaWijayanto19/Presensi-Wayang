@@ -15,7 +15,7 @@ Route::middleware(['guest:user'])->group(function () {
 });
 
 // Admin panel
-Route::middleware(['auth:user', 'role:super_admin|admin|owner,user'])->group(function () {
+Route::middleware(['auth:user', 'role:super_admin|admin|owner,user', 'activitylog'])->group(function () {
     require base_path('routes/admin.php');
 });
 

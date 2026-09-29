@@ -173,6 +173,17 @@
         </a>
         @endcan
 
+        {{-- Log Aktivitas --}}
+        @can('activity-log-view')
+        <a class="flex items-center gap-2 px-2.5 py-2 rounded text-xs font-medium transition-colors {{ request()->is('panel/activity-log') ? 'bg-white/10 text-white' : 'text-slate-300 hover:bg-white/5 hover:text-white' }}"
+           href="/panel/activity-log">
+            <span class="flex-shrink-0 w-4 h-4">
+                <i data-lucide="history" style="width:16px;height:16px;"></i>
+            </span>
+            <span>Log Aktivitas</span>
+        </a>
+        @endcan
+
     </nav>
 
 </aside>
