@@ -20,8 +20,6 @@ class MarkUnpaid extends Command
         // Query WFH yang akan jadi unpaid:
         // 1. Status approved, tgl_wfh sudah lewat, BELUM upload laporan ATAU laporan ditolak
         // 2. Status approved, tgl_wfh sudah lewat, SUDAH upload laporan tapi BELUM absen pulang
-        // Catatan: approved_at di-update saat admin memulihkan unpaid→approved,
-        // sehingga DATE(approved_at) > tgl_wfh menandai waiving manual → dilewati.
         $wfhBelumLaporan = collect();
         try {
             $wfhBelumLaporan = DB::table('wfhs')
@@ -31,10 +29,6 @@ class MarkUnpaid extends Command
                     $q->whereNull('wfhs.laporan_deskripsi')
                       ->orWhere('wfhs.laporan_deskripsi', '')
                       ->orWhere('wfhs.laporan_status', WfhStatus::Rejected->value);
-                })
-                ->where(function ($q) {
-                    $q->whereNull('wfhs.approved_at')
-                      ->orWhereRaw('DATE(wfhs.approved_at) <= wfhs.tgl_wfh');
                 })
                 ->select('wfhs.*')
                 ->get();
@@ -56,10 +50,6 @@ class MarkUnpaid extends Command
                 ->where('wfhs.laporan_deskripsi', '!=', '')
                 ->where('wfhs.laporan_status', '!=', WfhStatus::Rejected->value)
                 ->whereNull('presensis.jam_out')
-                ->where(function ($q) {
-                    $q->whereNull('wfhs.approved_at')
-                      ->orWhereRaw('DATE(wfhs.approved_at) <= wfhs.tgl_wfh');
-                })
                 ->select('wfhs.*')
                 ->distinct()
                 ->get();
