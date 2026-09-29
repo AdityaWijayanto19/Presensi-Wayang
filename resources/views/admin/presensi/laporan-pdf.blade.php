@@ -179,9 +179,26 @@
         }
 
         .foto-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
+            font-size: 0;
+            line-height: 0;
+            margin-top: 4px;
+        }
+
+        .foto-item {
+            display: inline-block;
+            width: 132px;
+            text-align: center;
+            vertical-align: top;
+            font-size: 10px;
+            line-height: 1.3;
+            margin-bottom: 8px;
+            page-break-inside: avoid;
+        }
+
+        .foto-cap {
+            font-size: 8px;
+            color: #7a5234;
+            margin-bottom: 2px;
         }
 
         .foto-grid img {
@@ -190,6 +207,7 @@
             width: auto;
             height: auto;
             object-fit: contain;
+            vertical-align: top;
             border: 1px solid #f0ece8;
             border-radius: 4px;
         }
@@ -357,7 +375,9 @@
                     @foreach ($laporan_images as $img)
                         @php $imgPath = storage_path('app/public/' . $img); @endphp
                         @if (file_exists($imgPath))
-                            <img src="{{ $imgPath }}" alt="Foto {{ $loop->iteration }}">
+                            <div class="foto-item">
+                                <img src="{{ $imgPath }}" alt="Foto {{ $loop->iteration }}">
+                            </div>
                         @endif
                     @endforeach
                 </div>

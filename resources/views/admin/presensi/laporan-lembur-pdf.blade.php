@@ -143,10 +143,26 @@
         }
 
         .foto-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
+            font-size: 0;
+            line-height: 0;
             margin-top: 4px;
+        }
+
+        .foto-item {
+            display: inline-block;
+            width: 132px;
+            text-align: center;
+            vertical-align: top;
+            font-size: 10px;
+            line-height: 1.3;
+            margin-bottom: 8px;
+            page-break-inside: avoid;
+        }
+
+        .foto-cap {
+            font-size: 8px;
+            color: #7a5234;
+            margin-bottom: 2px;
         }
 
         .foto-grid img {
@@ -155,6 +171,7 @@
             width: auto;
             height: auto;
             object-fit: contain;
+            vertical-align: top;
             border: 1px solid #f0ece8;
             border-radius: 4px;
         }
@@ -313,8 +330,8 @@
                     @if (!empty($foto_mulai))
                         @php $mulaiPath = storage_path('app/public/uploads/lembur/' . $foto_mulai); @endphp
                         @if (file_exists($mulaiPath))
-                            <div>
-                                <div style="font-size:8px;color:#7a5234;margin-bottom:2px;text-align:center;">Mulai Lembur</div>
+                            <div class="foto-item">
+                                <div class="foto-cap">Mulai Lembur</div>
                                 <img src="{{ $mulaiPath }}" alt="Foto Mulai Lembur">
                             </div>
                         @endif
@@ -322,8 +339,8 @@
                     @if (!empty($foto_selesai))
                         @php $selesaiPath = storage_path('app/public/uploads/lembur/' . $foto_selesai); @endphp
                         @if (file_exists($selesaiPath))
-                            <div>
-                                <div style="font-size:8px;color:#7a5234;margin-bottom:2px;text-align:center;">Selesai Lembur</div>
+                            <div class="foto-item">
+                                <div class="foto-cap">Selesai Lembur</div>
                                 <img src="{{ $selesaiPath }}" alt="Foto Selesai Lembur">
                             </div>
                         @endif
@@ -341,7 +358,9 @@
                     @foreach ($laporan_images as $img)
                         @php $imgPath = storage_path('app/public/' . $img); @endphp
                         @if (file_exists($imgPath))
-                            <img src="{{ $imgPath }}" alt="Foto {{ $loop->iteration }}">
+                            <div class="foto-item">
+                                <img src="{{ $imgPath }}" alt="Foto {{ $loop->iteration }}">
+                            </div>
                         @endif
                     @endforeach
                 </div>
