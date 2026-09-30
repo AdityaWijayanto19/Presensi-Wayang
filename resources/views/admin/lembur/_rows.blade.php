@@ -48,6 +48,31 @@
             'rejected' => 'Ditolak',
             default => $lStatus ? ('Lainnya') : null,
         };
+
+        $atasanData = $d->atasan;
+        $atasanNama = $atasanData?->nama_lengkap ?? '—';
+        $jabatanAtasan = $atasanData?->jabatan instanceof \App\Enums\Jabatan
+            ? $atasanData?->jabatan->value
+            : ($atasanData?->jabatan ?? '—');
+
+        $pdfUrl = !empty($d->pdf_form_path) ? Storage::url($d->pdf_form_path) : '';
+        $laporanUrl = !empty($d->laporan_file) ? Storage::url($d->laporan_file) : '';
+        $fotoMulaiUrl = !empty($d->foto_mulai) ? Storage::url('uploads/lembur/' . $d->foto_mulai) : '';
+        $fotoSelesaiUrl = !empty($d->foto_selesai) ? Storage::url('uploads/lembur/' . $d->foto_selesai) : '';
+
+        $rencanaWaktu = $d->rencana_waktu ?? '—';
+        $fmtDateTime = function ($v) {
+            if (empty($v)) return '—';
+            return $v instanceof \Carbon\Carbon ? $v->format('d M Y H:i') : date('d M Y H:i', strtotime($v));
+        };
+        $waktuMulai = $fmtDateTime($d->waktu_mulai);
+        $waktuSelesai = $fmtDateTime($d->waktu_selesai);
+
+        $gallery = [];
+        foreach ((array) ($d->laporan_images ?? []) as $img) {
+            if (!empty($img)) $gallery[] = ['src' => Storage::url($img), 'label' => 'Foto Hasil Pekerjaan'];
+        }
+        $galleryJson = json_encode($gallery);
     @endphp
     <tr class="hover:bg-slate-50/50 transition-colors">
         <td class="px-2 py-2 text-xs text-slate-500 whitespace-nowrap">{{ ($datalembur->currentPage() - 1) * $datalembur->perPage() + $loop->iteration }}</td>
@@ -87,22 +112,6 @@
         </td>
         <td class="px-2 py-2 text-xs text-slate-700">{{ $d->durasi_formatted ?? '-' }}</td>
         <td class="px-2 py-2 text-xs">
-            @if (!empty($d->pdf_form_path))
-                <a href="{{ Storage::url($d->pdf_form_path) }}" target="_blank"
-                    class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition-colors">
-                    <i data-lucide="file-text" style="width:10px;height:10px;"></i> PDF
-                </a>
-            @else
-                <span class="text-slate-400">—</span>
-            @endif
-        </td>
-        <td class="px-2 py-2 text-xs">
-            @if (!empty($d->laporan_file))
-                <a href="{{ Storage::url($d->laporan_file) }}" target="_blank"
-                    class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-colors">
-                    <i data-lucide="file-check" style="width:10px;height:10px;"></i> PDF
-                </a>
-            @endif
             @if ($lStatus)
                 <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold {{ $lBadgeClass }}">{{ $lLabel }}</span>
                 @if ($lStatus === 'pending_admin')
@@ -123,6 +132,8 @@
                 @if ($lStatus == 'rejected' && !empty($d->laporan_rejected_reason))
                     <div class="text-rose-500 text-[10px] mt-1" title="{{ $d->laporan_rejected_reason }}">{{ Str::limit($d->laporan_rejected_reason, 30) }}</div>
                 @endif
+            @else
+                <span class="text-slate-400">—</span>
             @endif
         </td>
         <td class="px-2 py-2 text-xs whitespace-nowrap">
@@ -143,6 +154,37 @@
                     x-transition:leave-start="opacity-100 scale-100"
                     x-transition:leave-end="opacity-0 scale-95"
                     class="fixed z-[999] w-40 bg-white rounded-lg shadow-lg border border-slate-200 py-1">
+                    <button type="button" class="w-full text-left px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2 detail-lembur-btn"
+                        data-id="{{ $d->id }}"
+                        data-nama="{{ $namaKaryawan }}"
+                        data-nik="{{ $nikKaryawan }}"
+                        data-jabatan="{{ $jabatanKaryawan }}"
+                        data-posisi="{{ $posisiKaryawan }}"
+                        data-unit="{{ $unitKaryawan }}"
+                        data-perusahaan="{{ $perusahaanKaryawan }}"
+                        data-atasan="{{ $atasanNama }}"
+                        data-jabatan-atasan="{{ $jabatanAtasan }}"
+                        data-tgl-lembur="{{ $d->tgl_lembur instanceof \Carbon\Carbon ? $d->tgl_lembur->format('d M Y') : date('d M Y', strtotime($d->tgl_lembur)) }}"
+                        data-rencana-waktu="{{ $rencanaWaktu }}"
+                        data-durasi="{{ $d->durasi_formatted ?? '—' }}"
+                        data-waktu-mulai="{{ $waktuMulai }}"
+                        data-waktu-selesai="{{ $waktuSelesai }}"
+                        data-keterangan="{{ $d->keterangan ?? '' }}"
+                        data-status="{{ $label }}"
+                        data-status-key="{{ $status }}"
+                        data-laporan-status="{{ $lLabel ?? '—' }}"
+                        data-laporan-status-key="{{ $lStatus ?? '' }}"
+                        data-laporan-deskripsi="{{ $d->laporan_deskripsi ?? '' }}"
+                        data-rejected-reason="{{ $d->rejected_reason ?? '' }}"
+                        data-laporan-rejected-reason="{{ $d->laporan_rejected_reason ?? '' }}"
+                        data-pdf-url="{{ $pdfUrl }}"
+                        data-laporan-url="{{ $laporanUrl }}"
+                        data-foto-mulai="{{ $fotoMulaiUrl }}"
+                        data-foto-selesai="{{ $fotoSelesaiUrl }}"
+                        data-gallery="{{ $galleryJson }}"
+                        @click="open = false; window.dispatchEvent(new CustomEvent('open-modal-modal-detaillembur', { detail: { el: $el } }))">
+                        <i data-lucide="eye" style="width:12px;height:12px;"></i> Detail
+                    </button>
                     @can('presensi-edit')
                     <button type="button" class="w-full text-left px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2 edit-lembur"
                         data-id="{{ $d->id }}"
@@ -167,7 +209,7 @@
     </tr>
 @empty
     <tr>
-        <td colspan="11" class="px-2 py-8 text-center text-xs text-slate-400">
+        <td colspan="10" class="px-2 py-8 text-center text-xs text-slate-400">
             <div class="flex flex-col items-center gap-1">
                 <i data-lucide="inbox" style="width:24px;height:24px;" class="text-slate-300"></i>
                 <span>Data lembur tidak ditemukan</span>

@@ -57,8 +57,7 @@
                             <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase">Unit</th>
                             <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase">Status</th>
                             <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase">Durasi</th>
-                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase">Pengajuan PDF</th>
-                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase">Laporan PDF</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase">Laporan</th>
                             <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase w-12">Aksi</th>
                         </tr>
                     </thead>
@@ -108,6 +107,147 @@
             <x-admin.button variant="primary" icon="save" type="submit" block>Simpan Perubahan</x-admin.button>
         </div>
     </form>
+</x-admin.modal>
+
+{{-- Modal Detail Lembur --}}
+<x-admin.modal id="modal-detaillembur" title="Detail Lembur" size="lg">
+    <div id="detailLemburContent" class="space-y-4">
+        <div class="grid grid-cols-2 gap-3">
+            <div>
+                <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Nama Karyawan</div>
+                <div class="text-xs font-medium text-slate-800" id="dtl-nama">—</div>
+            </div>
+            <div>
+                <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">NIK</div>
+                <div class="text-xs font-medium text-slate-800" id="dtl-nik">—</div>
+            </div>
+            <div>
+                <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Jabatan</div>
+                <div class="text-xs font-medium text-slate-800" id="dtl-jabatan">—</div>
+            </div>
+            <div>
+                <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Posisi</div>
+                <div class="text-xs font-medium text-slate-800" id="dtl-posisi">—</div>
+            </div>
+            <div>
+                <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Unit</div>
+                <div class="text-xs font-medium text-slate-800" id="dtl-unit">—</div>
+            </div>
+            <div>
+                <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Perusahaan</div>
+                <div class="text-xs font-medium text-slate-800" id="dtl-perusahaan">—</div>
+            </div>
+            <div>
+                <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Atasan</div>
+                <div class="text-xs font-medium text-slate-800" id="dtl-atasan">—</div>
+            </div>
+            <div>
+                <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Jabatan Atasan</div>
+                <div class="text-xs font-medium text-slate-800" id="dtl-jabatan-atasan">—</div>
+            </div>
+        </div>
+
+        <div class="h-px bg-slate-100"></div>
+
+        <div class="grid grid-cols-2 gap-3">
+            <div>
+                <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Tanggal Lembur</div>
+                <div class="text-xs font-medium text-slate-800" id="dtl-tgl">—</div>
+            </div>
+            <div>
+                <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Rencana Waktu</div>
+                <div class="text-xs font-medium text-slate-800" id="dtl-rencana">—</div>
+            </div>
+            <div>
+                <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Durasi</div>
+                <div class="text-xs font-medium text-slate-800" id="dtl-durasi">—</div>
+            </div>
+            <div>
+                <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Waktu Mulai</div>
+                <div class="text-xs font-medium text-slate-800" id="dtl-mulai">—</div>
+            </div>
+            <div>
+                <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Waktu Selesai</div>
+                <div class="text-xs font-medium text-slate-800" id="dtl-selesai">—</div>
+            </div>
+        </div>
+
+        <div>
+            <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Keterangan</div>
+            <div class="text-xs text-slate-700 bg-slate-50 rounded p-2 whitespace-pre-wrap" id="dtl-keterangan">—</div>
+        </div>
+
+        <div>
+            <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Deskripsi Laporan</div>
+            <div class="text-xs text-slate-700 bg-slate-50 rounded p-2 whitespace-pre-wrap" id="dtl-laporan-deskripsi">—</div>
+        </div>
+
+        <div class="h-px bg-slate-100"></div>
+
+        <div class="grid grid-cols-2 gap-3">
+            <div>
+                <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Status Pengajuan</div>
+                <div id="dtl-status"></div>
+            </div>
+            <div>
+                <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Status Laporan</div>
+                <div id="dtl-laporan-status"></div>
+            </div>
+        </div>
+
+        <div id="dtl-rejected-reason-wrap" class="hidden">
+            <div class="text-[10px] font-semibold text-rose-400 uppercase tracking-wider mb-0.5">Alasan Penolakan</div>
+            <div class="text-xs text-rose-600 bg-rose-50 rounded p-2" id="dtl-rejected-reason"></div>
+        </div>
+
+        <div id="dtl-laporan-rejected-reason-wrap" class="hidden">
+            <div class="text-[10px] font-semibold text-rose-400 uppercase tracking-wider mb-0.5">Alasan Penolakan Laporan</div>
+            <div class="text-xs text-rose-600 bg-rose-50 rounded p-2" id="dtl-laporan-rejected-reason"></div>
+        </div>
+
+        <div class="h-px bg-slate-100"></div>
+
+        <div>
+            <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Dokumen</div>
+            <div class="flex flex-wrap gap-2">
+                <div id="dtl-pdf-wrap" class="hidden">
+                    <a id="dtl-pdf-link" href="#" target="_blank" rel="noopener"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 text-xs font-medium hover:bg-blue-100 transition-colors">
+                        <i data-lucide="file-text" style="width:12px;height:12px;"></i> Form Pengajuan Lembur
+                    </a>
+                </div>
+                <div id="dtl-laporan-file-wrap" class="hidden">
+                    <a id="dtl-laporan-file-link" href="#" target="_blank" rel="noopener"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-medium hover:bg-emerald-100 transition-colors">
+                        <i data-lucide="file-check" style="width:12px;height:12px;"></i> Laporan Lembur
+                    </a>
+                </div>
+                <div id="dtl-no-dokumen" class="text-xs text-slate-400">Tidak ada dokumen</div>
+            </div>
+        </div>
+
+        <div>
+            <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Foto</div>
+            <div class="flex flex-wrap gap-2">
+                <div id="dtl-foto-mulai-wrap" class="hidden">
+                    <div class="text-[10px] text-slate-400 mb-1">Foto Mulai</div>
+                    <a id="dtl-foto-mulai-link" href="#" target="_blank" rel="noopener">
+                        <img id="dtl-foto-mulai" src="" alt="Foto Mulai"
+                            class="w-24 h-24 object-cover rounded-md border border-slate-200" />
+                    </a>
+                </div>
+                <div id="dtl-foto-selesai-wrap" class="hidden">
+                    <div class="text-[10px] text-slate-400 mb-1">Foto Selesai</div>
+                    <a id="dtl-foto-selesai-link" href="#" target="_blank" rel="noopener">
+                        <img id="dtl-foto-selesai" src="" alt="Foto Selesai"
+                            class="w-24 h-24 object-cover rounded-md border border-slate-200" />
+                    </a>
+                </div>
+            </div>
+            <div id="dtl-gallery" class="grid grid-cols-3 sm:grid-cols-4 gap-2 mt-2"></div>
+            <div id="dtl-no-foto" class="text-xs text-slate-400">Tidak ada foto</div>
+        </div>
+    </div>
 </x-admin.modal>
 
 @endsection
@@ -162,6 +302,122 @@
                 }
             });
         } catch (e) { console.warn('Edit handler error:', e); }
+
+        // Detail Lembur Modal
+        try {
+            window.addEventListener('open-modal-modal-detaillembur', function(e) {
+                var btn = e.detail && e.detail.el ? e.detail.el : null;
+                if (!btn) return;
+                var s = function(k) { return btn.dataset[k] || '—'; };
+                var isEmpty = function(v) { return !v || v === '—' || v === ''; };
+
+                document.getElementById('dtl-nama').textContent = s('nama');
+                document.getElementById('dtl-nik').textContent = s('nik');
+                document.getElementById('dtl-jabatan').textContent = s('jabatan');
+                document.getElementById('dtl-posisi').textContent = isEmpty(s('posisi')) ? '—' : s('posisi');
+                document.getElementById('dtl-unit').textContent = s('unit');
+                document.getElementById('dtl-perusahaan').textContent = s('perusahaan');
+                document.getElementById('dtl-atasan').textContent = s('atasan');
+                document.getElementById('dtl-jabatan-atasan').textContent = s('jabatanAtasan');
+                document.getElementById('dtl-tgl').textContent = s('tglLembur');
+                document.getElementById('dtl-rencana').textContent = isEmpty(s('rencanaWaktu')) ? '—' : s('rencanaWaktu');
+                document.getElementById('dtl-durasi').textContent = isEmpty(s('durasi')) ? '—' : s('durasi');
+                document.getElementById('dtl-mulai').textContent = s('waktuMulai');
+                document.getElementById('dtl-selesai').textContent = s('waktuSelesai');
+                document.getElementById('dtl-keterangan').textContent = isEmpty(s('keterangan')) ? '—' : s('keterangan');
+                document.getElementById('dtl-laporan-deskripsi').textContent = isEmpty(s('laporanDeskripsi')) ? '—' : s('laporanDeskripsi');
+
+                var statusKey = s('statusKey');
+                var statusLabel = s('status');
+                var lStatusKey = s('laporanStatusKey');
+                var lStatusLabel = s('laporanStatus');
+                var statusColors = {
+                    'pending_atasan': 'bg-amber-100 text-amber-700 border border-amber-200',
+                    'pending_admin': 'bg-amber-100 text-amber-700 border border-amber-200',
+                    'approved': 'bg-emerald-100 text-emerald-700 border border-emerald-200',
+                    'rejected': 'bg-rose-100 text-rose-700 border border-rose-200',
+                };
+                var badge = function(key, label) {
+                    if (isEmpty(label) || isEmpty(key)) return '<span class="text-xs text-slate-400">—</span>';
+                    return '<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold ' +
+                        (statusColors[key] || 'bg-slate-100 text-slate-600 border border-slate-200') + '">' + label + '</span>';
+                };
+                document.getElementById('dtl-status').innerHTML = badge(statusKey, statusLabel);
+                document.getElementById('dtl-laporan-status').innerHTML = badge(lStatusKey, lStatusLabel);
+
+                var rejWrap = document.getElementById('dtl-rejected-reason-wrap');
+                var rejReason = s('rejectedReason');
+                if (!isEmpty(rejReason) && statusKey === 'rejected') {
+                    document.getElementById('dtl-rejected-reason').textContent = rejReason;
+                    rejWrap.classList.remove('hidden');
+                } else {
+                    rejWrap.classList.add('hidden');
+                }
+
+                var lRejWrap = document.getElementById('dtl-laporan-rejected-reason-wrap');
+                var lRejReason = s('laporanRejectedReason');
+                if (!isEmpty(lRejReason) && lStatusKey === 'rejected') {
+                    document.getElementById('dtl-laporan-rejected-reason').textContent = lRejReason;
+                    lRejWrap.classList.remove('hidden');
+                } else {
+                    lRejWrap.classList.add('hidden');
+                }
+
+                var pdfUrl = s('pdfUrl');
+                var laporanUrl = s('laporanUrl');
+                var pdfWrap = document.getElementById('dtl-pdf-wrap');
+                var laporanWrap = document.getElementById('dtl-laporan-file-wrap');
+                var noDok = document.getElementById('dtl-no-dokumen');
+                if (!isEmpty(pdfUrl)) {
+                    document.getElementById('dtl-pdf-link').href = pdfUrl;
+                    pdfWrap.classList.remove('hidden');
+                } else {
+                    pdfWrap.classList.add('hidden');
+                }
+                if (!isEmpty(laporanUrl)) {
+                    document.getElementById('dtl-laporan-file-link').href = laporanUrl;
+                    laporanWrap.classList.remove('hidden');
+                } else {
+                    laporanWrap.classList.add('hidden');
+                }
+                noDok.classList.toggle('hidden', !isEmpty(pdfUrl) || !isEmpty(laporanUrl));
+
+                var fotoMulai = s('fotoMulai');
+                var fotoSelesai = s('fotoSelesai');
+                var fmWrap = document.getElementById('dtl-foto-mulai-wrap');
+                if (!isEmpty(fotoMulai)) {
+                    document.getElementById('dtl-foto-mulai').src = fotoMulai;
+                    document.getElementById('dtl-foto-mulai-link').href = fotoMulai;
+                    fmWrap.classList.remove('hidden');
+                } else {
+                    fmWrap.classList.add('hidden');
+                }
+                var fsWrap = document.getElementById('dtl-foto-selesai-wrap');
+                if (!isEmpty(fotoSelesai)) {
+                    document.getElementById('dtl-foto-selesai').src = fotoSelesai;
+                    document.getElementById('dtl-foto-selesai-link').href = fotoSelesai;
+                    fsWrap.classList.remove('hidden');
+                } else {
+                    fsWrap.classList.add('hidden');
+                }
+
+                var gallery = [];
+                try { gallery = JSON.parse(btn.dataset.gallery || '[]'); } catch (err) { gallery = []; }
+                if (!Array.isArray(gallery)) gallery = [];
+                var galleryEl = document.getElementById('dtl-gallery');
+                galleryEl.innerHTML = gallery.map(function(item) {
+                    return '<a href="' + item.src + '" target="_blank" rel="noopener" class="block group">' +
+                        '<img src="' + item.src + '" alt="' + item.label + '" loading="lazy" ' +
+                        'class="w-full h-24 object-cover rounded-md border border-slate-200 group-hover:border-blue-300 transition-colors" />' +
+                        '<div class="text-[10px] text-slate-400 mt-0.5 truncate">' + item.label + '</div></a>';
+                }).join('');
+
+                var noFoto = document.getElementById('dtl-no-foto');
+                noFoto.classList.toggle('hidden', gallery.length > 0 || !isEmpty(fotoMulai) || !isEmpty(fotoSelesai));
+
+                if (window.lucide) lucide.createIcons();
+            });
+        } catch (e) { console.warn('Detail handler error:', e); }
 
         // Reject, Reject Laporan, & Delete buttons
         try {
