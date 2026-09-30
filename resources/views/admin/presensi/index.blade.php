@@ -211,7 +211,6 @@
         // ==================================================
         // Edit Presensi Modal + Preview Keterangan
         // ==================================================
-        var editUnit = '';
         var editJamMasuk = '08:00:00';
 
         function toSeconds(jam) {
@@ -223,9 +222,7 @@
             return jam2 * 3600 + menit * 60;
         }
 
-        function hitungTerlambatPreview(unit, jamMasuk, jamAbsen) {
-            if (unit === 'Arthama') return 0;
-
+        function hitungTerlambatPreview(jamMasuk, jamAbsen) {
             var masuk = toSeconds(jamMasuk);
             var absen = toSeconds(jamAbsen);
             if (masuk === null || absen === null) return null;
@@ -241,7 +238,7 @@
             var el = document.getElementById('preview_keterangan');
             if (!el) return;
 
-            var terlambat = hitungTerlambatPreview(editUnit, editJamMasuk,
+            var terlambat = hitungTerlambatPreview(editJamMasuk,
                 document.getElementById('edit_jam_in').value);
 
             if (terlambat === null) {
@@ -267,7 +264,6 @@
                 var jamIn = btn.dataset.jam_in;
                 var jamOut = btn.dataset.jam_out;
 
-                editUnit = btn.dataset.unit || '';
                 editJamMasuk = btn.dataset.jam_masuk || '08:00:00';
 
                 document.getElementById('edit_presensi_id').value = id;

@@ -27,8 +27,6 @@ class PresensiService
 
     private const MINIMAL_JAM_KERJA = 8;
 
-    private const UNIT_TANPA_KETERLAMBATAN = 'Arthama';
-
     private const DEFAULT_JAM_MASUK = '08:00:00';
 
     private const DEFAULT_RADIUS_METER = 100;
@@ -56,7 +54,7 @@ class PresensiService
         }
 
         $jamMasuk = $this->formatJamMasuk($unitKerja->jam_masuk);
-        $terlambat = $this->hitungKeterlambatan($karyawan->unit, $jamMasuk, $jam);
+        $terlambat = $this->hitungKeterlambatan($jamMasuk, $jam);
 
         return DB::transaction(function () use ($nik, $tglPresensi, $jam, $unitKerja, $terlambat, $request) {
             $cek = Presensi::where('tgl_presensi', $tglPresensi)
@@ -158,12 +156,8 @@ class PresensiService
         return null;
     }
 
-    private function hitungKeterlambatan(string $unit, string $jamMasuk, string $jamSekarang): int
+    private function hitungKeterlambatan(string $jamMasuk, string $jamSekarang): int
     {
-        if ($unit === self::UNIT_TANPA_KETERLAMBATAN) {
-            return 0;
-        }
-
         $jamMasukTime = strtotime($jamMasuk);
         $jamAbsen = strtotime($jamSekarang);
 
@@ -191,7 +185,7 @@ class PresensiService
 
     public function hitungTerlambatPresensi(string $unit, string $jamAbsen): int
     {
-        return $this->hitungKeterlambatan($unit, $this->getJamMasukUnit($unit), $jamAbsen);
+        return $this->hitungKeterlambatan($this->getJamMasukUnit($unit), $jamAbsen);
     }
 
     public function deletePresensiAdmin(int $id): array
