@@ -11,61 +11,47 @@
 
 @section('content')
 
-    {{-- Filter Histori --}}
-    <div class="flex mt-[70px]">
-        <div class="w-full px-2">
+    <div class="section">
 
-            <div class="flex flex-wrap -mx-2">
-                <div class="w-full px-2">
-                    <div class="form-group">
-                        <select name="bulan" id="bulan" class="w-full rounded-md border border-slate-300 px-2.5 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
-                            <option value="">Pilih Bulan</option>
-                            @for ($i = 1; $i <= 12; $i++)
-                                <option value="{{ $i }}" {{ date('m') == $i ? 'selected' : '' }}>
-                                    {{ $namabulan[$i] }}
-                                </option>
-                            @endfor
-                        </select>
-                    </div>
-                </div>
+        {{-- Filter Histori --}}
+        <div class="mt-[70px]">
+            <div class="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-2">
+                <select name="bulan" id="bulan"
+                    class="w-full min-w-0 h-10 sm:flex-1 rounded-md border border-slate-300 px-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
+                    <option value="">Pilih Bulan</option>
+                    @for ($i = 1; $i <= 12; $i++)
+                        <option value="{{ $i }}" {{ date('m') == $i ? 'selected' : '' }}>
+                            {{ $namabulan[$i] }}
+                        </option>
+                    @endfor
+                </select>
+
+                <select name="tahun" id="tahun"
+                    class="w-full min-w-0 h-10 sm:w-36 rounded-md border border-slate-300 px-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
+                    <option value="">Pilih Tahun</option>
+                    @php
+                        $tahunmulai = 2025;
+                        $tahunskrg = date('Y');
+                    @endphp
+                    @for ($tahun = $tahunmulai; $tahun <= $tahunskrg; $tahun++)
+                        <option value="{{ $tahun }}" {{ date('Y') == $tahun ? 'selected' : '' }}>
+                            {{ $tahun }}
+                        </option>
+                    @endfor
+                </select>
+
+                <button class="btn btn-primary w-full col-span-2 sm:w-auto sm:shrink-0 whitespace-nowrap" id="getdata">
+                    <i data-lucide="search"></i>
+                    Cari Data Presensi
+                </button>
             </div>
-
-            <div class="flex flex-wrap -mx-2 mt-2">
-                <div class="w-full px-2">
-                    <div class="form-group">
-                        <select name="tahun" id="tahun" class="w-full rounded-md border border-slate-300 px-2.5 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white">
-                            <option value="">Pilih Tahun</option>
-                            @php
-                                $tahunmulai = 2025;
-                                $tahunskrg = date('Y');
-                            @endphp
-                            @for ($tahun = $tahunmulai; $tahun <= $tahunskrg; $tahun++)
-                                <option value="{{ $tahun }}" {{ date('Y') == $tahun ? 'selected' : '' }}>
-                                    {{ $tahun }}
-                                </option>
-                            @endfor
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <div class="flex flex-wrap -mx-2 mt-2">
-                <div class="w-full px-2">
-                    <div class="form-group">
-                        <button class="btn btn-primary w-full" id="getdata">
-                            <i data-lucide="search"></i>
-                            Cari Data Presensi
-                        </button>
-                    </div>
-                </div>
-            </div>
-
         </div>
-    </div>
 
-    {{-- Hasil Histori --}}
-    <div class="flex">
-        <div class="w-full px-2" id="showhistori"></div>
+        {{-- Hasil Histori --}}
+        <div class="mt-4" id="showhistori">
+            @include('karyawan.presensi._rows', ['histori' => $histori])
+        </div>
+
     </div>
 
 @endsection
@@ -91,7 +77,7 @@
             }
         });
 
-        document.getElementById('getdata').addEventListener('click', function () {
+        function loadHistori() {
             var bulan = document.getElementById('bulan').value;
             var tahun = document.getElementById('tahun').value;
 
@@ -107,7 +93,11 @@
             .then(function (respond) {
                 document.getElementById('showhistori').innerHTML = respond;
             });
-        });
+        }
+
+        document.getElementById('getdata').addEventListener('click', loadHistori);
+        document.getElementById('bulan').addEventListener('change', loadHistori);
+        document.getElementById('tahun').addEventListener('change', loadHistori);
 
     });
 

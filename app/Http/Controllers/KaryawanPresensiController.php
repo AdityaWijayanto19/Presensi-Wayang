@@ -47,7 +47,15 @@ class KaryawanPresensiController extends Controller
     public function histori()
     {
         $namabulan = ["", "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-        return view('karyawan.presensi.index', compact('namabulan'));
+        $nik = Auth::guard('karyawan')->user()->nik;
+
+        $histori = Presensi::whereRaw('MONTH(tgl_presensi) = ?', [date('m')])
+            ->whereRaw('YEAR(tgl_presensi) = ?', [date('Y')])
+            ->where('nik', $nik)
+            ->orderBy('tgl_presensi', 'desc')
+            ->get();
+
+        return view('karyawan.presensi.index', compact('namabulan', 'histori'));
     }
 
     public function gethistori(GetHistoriRequest $request)

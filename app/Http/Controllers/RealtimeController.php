@@ -231,7 +231,7 @@ class RealtimeController extends Controller
         $histori = Presensi::where('nik', $nik)
             ->whereMonth('tgl_presensi', $bulanini)
             ->whereYear('tgl_presensi', $tahunini)
-            ->select('tgl_presensi', 'jam_in', 'jam_out', 'foto_in', 'terlambat')
+            ->select('tgl_presensi', 'jam_in', 'jam_out', 'foto_in', 'foto_out', 'terlambat')
             ->orderBy('tgl_presensi', 'desc')
             ->limit(15)
             ->get()
