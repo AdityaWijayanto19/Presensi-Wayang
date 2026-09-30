@@ -3,7 +3,9 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "prepare:mediapipe": "node scripts/prepare-mediapipe.mjs",
+        "postinstall": "node scripts/prepare-mediapipe.mjs"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",
@@ -15,6 +17,7 @@
     },
     "dependencies": {
         "@alpinejs/collapse": "^3.17.3",
+        "@mediapipe/tasks-vision": "^1.0.1",
         "alpinejs": "^3.17.1",
         "flatpickr": "^4.6.13",
         "leaflet": "^1.9.4",

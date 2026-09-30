@@ -1,4 +1,10 @@
 {
+  "node_modules/@mediapipe/tasks-vision/vision_bundle.mjs": {
+    "file": "assets/vision_bundle-BP1Ar9Ko.js",
+    "name": "vision_bundle",
+    "src": "node_modules/@mediapipe/tasks-vision/vision_bundle.mjs",
+    "isDynamicEntry": true
+  },
   "node_modules/leaflet/dist/images/layers-2x.png": {
     "file": "assets/layers-2x-Bpkbi35X.png",
     "src": "node_modules/leaflet/dist/images/layers-2x.png"
@@ -20,15 +26,18 @@
     "src": "node_modules/leaflet/dist/images/marker-shadow.png"
   },
   "resources/css/app.css": {
-    "file": "assets/app-DVqNhOpc.css",
+    "file": "assets/app-BbtY3K_V.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-HA1cm8JE.js",
+    "file": "assets/app-hBhCipN-.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
+    "dynamicImports": [
+      "resources/js/face-quality.js"
+    ],
     "css": [
       "assets/app-9Nnv6g1i.css"
     ],
@@ -38,6 +47,18 @@
       "assets/marker-shadow-f7SaPCxT.png",
       "assets/layers-BWBAp2CZ.png",
       "assets/layers-2x-Bpkbi35X.png"
+    ]
+  },
+  "resources/js/face-quality.js": {
+    "file": "assets/face-quality-CvgFDLz-.js",
+    "name": "face-quality",
+    "src": "resources/js/face-quality.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js"
+    ],
+    "dynamicImports": [
+      "node_modules/@mediapipe/tasks-vision/vision_bundle.mjs"
     ]
   }
 }

@@ -26,6 +26,7 @@ window.Swal = Swal;
 window.flatpickr = flatpickr;
 window.L = L;
 window.lucide = { createIcons: () => createIcons({ icons }) };
+window.initFaceQualityCheck = (options) => import('./face-quality').then((m) => m.initFaceQualityCheck(options));
 
 flatpickr.l10ns.id = Indonesian;
 if (flatpickr.defaults) {

@@ -30,6 +30,8 @@
                             <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Unit</th>
                             <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Perusahaan</th>
                             <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Jam Masuk</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Lokasi</th>
+                            <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Radius</th>
                             <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider" width="120">Actions</th>
                         </tr>
                     </thead>
@@ -41,8 +43,16 @@
                                 <td class="px-2 py-1.5 text-xs">{{ $u->unit }}</td>
                                 <td class="px-2 py-1.5 text-xs">{{ $u->perusahaan }}</td>
                                 <td class="px-2 py-1.5 text-xs">
-                                    {{ $u->jam_masuk ? date('H:i', strtotime($u->jam_masuk)) : '—' }}
+                                    {{ $u->jam_masuk ? date('H:i', strtotime($u->jam_masuk)) : '�?"' }}
                                 </td>
+                                <td class="px-2 py-1.5 text-xs">
+                                    @if ($u->lokasis->isEmpty())
+                                        <span class="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-700">Belum di-set</span>
+                                    @else
+                                        {{ $u->lokasis->count() }} titik
+                                    @endif
+                                </td>
+                                <td class="px-2 py-1.5 text-xs">{{ $u->radius_meter }} m</td>
                                 <td class="px-2 py-1.5 text-xs">
                                     <div class="flex flex-wrap gap-1">
                                         @can('unit-edit')
@@ -87,6 +97,12 @@
         'unit' => $u->unit,
         'perusahaan' => $u->perusahaan,
         'jam_masuk' => $u->jam_masuk,
+        'radius_meter' => $u->radius_meter,
+        'lokasi' => $u->lokasis->map(fn ($l) => [
+            'nama' => $l->nama_lokasi,
+            'lat' => $l->lat,
+            'lng' => $l->lng,
+        ])->values()->all(),
     ])->toJson();
 @endphp
 
@@ -103,11 +119,40 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // =====================================================
+    // Baris Lokasi (multi titik)
+    // =====================================================
+    function tambahBarisLokasi(data) {
+        var tpl = document.getElementById('tpl-lokasi-row');
+        if (!tpl) return;
+
+        var row = tpl.content.firstElementChild.cloneNode(true);
+
+        if (data) {
+            row.querySelector('.lok-nama').value = data.nama || '';
+            row.querySelector('.lok-lat').value = (data.lat === null || data.lat === undefined) ? '' : data.lat;
+            row.querySelector('.lok-lng').value = (data.lng === null || data.lng === undefined) ? '' : data.lng;
+        }
+
+        document.getElementById('lokasi-rows').appendChild(row);
+        reindexLokasi();
+        if (window.lucide) lucide.createIcons();
+    }
+
+    function reindexLokasi() {
+        document.querySelectorAll('#lokasi-rows .lokasi-row').forEach(function (row, i) {
+            row.querySelector('.lok-nama').name = 'lokasis[' + i + '][nama]';
+            row.querySelector('.lok-lat').name = 'lokasis[' + i + '][lat]';
+            row.querySelector('.lok-lng').name = 'lokasis[' + i + '][lng]';
+        });
+    }
+
+    // =====================================================
     // Tambah — clone form kosong
     // =====================================================
     document.getElementById('btnTambahUnitperusahaan').addEventListener('click', function() {
         formContainer.innerHTML = '';
         formContainer.appendChild(formTpl.content.cloneNode(true));
+        reindexLokasi();
         if (window.lucide) lucide.createIcons();
         openModal();
     });
@@ -131,6 +176,7 @@ document.addEventListener('DOMContentLoaded', function() {
         form.querySelector('[name="unit"]').value = d.unit;
         form.querySelector('[name="perusahaan"]').value = d.perusahaan;
         form.querySelector('[name="jam_masuk"]').value = d.jam_masuk || '';
+        form.querySelector('[name="radius_meter"]').value = d.radius_meter || 100;
 
         var btn = form.querySelector('button[type="submit"]');
         btn.innerHTML = '<i data-lucide="save" style="width:16px;height:16px;"></i> Perbarui Data';
@@ -138,9 +184,32 @@ document.addEventListener('DOMContentLoaded', function() {
         formContainer.innerHTML = '';
         formContainer.appendChild(clone);
 
+        (d.lokasi || []).forEach(function (l) {
+            tambahBarisLokasi(l);
+        });
+
         if (window.lucide) lucide.createIcons();
 
         openModal();
+    });
+
+    // =====================================================
+    // Tambah / Hapus baris lokasi (delegation)
+    // =====================================================
+    formContainer.addEventListener('click', function(e) {
+        var tambahBtn = e.target.closest('#btnTambahLokasi');
+        if (tambahBtn) {
+            e.preventDefault();
+            tambahBarisLokasi();
+            return;
+        }
+
+        var hapusBtn = e.target.closest('.hapus-lokasi');
+        if (hapusBtn) {
+            e.preventDefault();
+            hapusBtn.closest('.lokasi-row').remove();
+            reindexLokasi();
+        }
     });
 
     // =====================================================
@@ -178,6 +247,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var unit = form.querySelector('[name="unit"]').value;
         var perusahaan = form.querySelector('[name="perusahaan"]').value;
         var jamMasuk = form.querySelector('[name="jam_masuk"]').value;
+        var radius = form.querySelector('[name="radius_meter"]').value;
 
         if (!unit) {
             e.preventDefault();
@@ -196,6 +266,32 @@ document.addEventListener('DOMContentLoaded', function() {
             Swal.fire({ icon: "warning", title: "Oops...", text: "Jam masuk harus diisi.", backdrop: false });
             form.querySelector('[name="jam_masuk"]').focus();
             return;
+        }
+        if (!radius || isNaN(radius) || Number(radius) < 10 || Number(radius) > 10000) {
+            e.preventDefault();
+            Swal.fire({ icon: "warning", title: "Oops...", text: "Radius presensi harus antara 10 sampai 10000 meter.", backdrop: false });
+            form.querySelector('[name="radius_meter"]').focus();
+            return;
+        }
+
+        var barisLokasi = form.querySelectorAll('#lokasi-rows .lokasi-row');
+        for (var i = 0; i < barisLokasi.length; i++) {
+            var nama = barisLokasi[i].querySelector('.lok-nama').value.trim();
+            var lat = barisLokasi[i].querySelector('.lok-lat').value.trim();
+            var lng = barisLokasi[i].querySelector('.lok-lng').value.trim();
+
+            if (!nama || !lat || !lng || isNaN(lat) || isNaN(lng)
+                || Number(lat) < -90 || Number(lat) > 90
+                || Number(lng) < -180 || Number(lng) > 180) {
+                e.preventDefault();
+                Swal.fire({
+                    icon: "warning",
+                    title: "Oops...",
+                    text: "Lokasi ke-" + (i + 1) + " belum lengkap atau koordinat tidak valid.",
+                    backdrop: false
+                });
+                return;
+            }
         }
     });
 

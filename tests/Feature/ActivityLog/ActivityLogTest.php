@@ -50,6 +50,7 @@ class ActivityLogTest extends TestCase
             'unit' => 'Teknologi',
             'perusahaan' => 'PT Test',
             'jam_masuk' => '08:00:00',
+            'radius_meter' => 100,
         ]);
 
         $response->assertStatus(302);
@@ -112,6 +113,7 @@ class ActivityLogTest extends TestCase
             'unit' => 'Teknologi',
             'perusahaan' => 'PT Test',
             'jam_masuk' => '08:00:00',
+            'radius_meter' => 100,
         ]);
 
         $this->actingAs($this->superAdmin, 'user')

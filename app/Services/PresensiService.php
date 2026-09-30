@@ -8,6 +8,7 @@ use App\Models\Presensi;
 use App\Models\Unitperusahaan;
 use App\Models\Wfh;
 use App\Services\Shared\LocationService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -21,10 +22,18 @@ class PresensiService
     {
         $this->location = $location;
     }
+
     private const JAM_BUKA_PRESENSI = '07:00:00';
+
     private const MINIMAL_JAM_KERJA = 8;
+
     private const UNIT_TANPA_KETERLAMBATAN = 'Arthama';
+
     private const DEFAULT_JAM_MASUK = '08:00:00';
+
+    private const DEFAULT_RADIUS_METER = 100;
+
+    private const PESAN_LOKASI_TIDAK_VALID = 'Lokasi tidak terdeteksi. Aktifkan GPS lalu coba lagi.';
 
     public function processPresensi(Request $request): array
     {
@@ -37,24 +46,29 @@ class PresensiService
         }
 
         $karyawan = Karyawan::where('nik', $nik)->first();
-        if (!$karyawan) {
+        if (! $karyawan) {
             return ['success' => false, 'message' => 'Data karyawan tidak ditemukan.', 'type' => 'in'];
         }
 
         $unitKerja = Unitperusahaan::where('unit', $karyawan->unit)->first();
-        if (!$unitKerja) {
+        if (! $unitKerja) {
             return ['success' => false, 'message' => 'Unit kerja tidak ditemukan.', 'type' => 'in'];
         }
 
         $jamMasuk = $this->formatJamMasuk($unitKerja->jam_masuk);
         $terlambat = $this->hitungKeterlambatan($karyawan->unit, $jamMasuk, $jam);
 
-        return DB::transaction(function () use ($nik, $tglPresensi, $jam, $karyawan, $terlambat, $request) {
+        return DB::transaction(function () use ($nik, $tglPresensi, $jam, $unitKerja, $terlambat, $request) {
             $cek = Presensi::where('tgl_presensi', $tglPresensi)
                 ->where('nik', $nik)
                 ->first();
 
             $status = $cek ? 'out' : 'in';
+
+            $wfhHariIni = Wfh::where('nik', $nik)
+                ->where('tgl_wfh', $tglPresensi)
+                ->where('status', 'approved')
+                ->first();
 
             if ($cek && $cek->jam_out == null) {
                 $jamMasukTime = strtotime($cek->jam_in);
@@ -68,23 +82,24 @@ class PresensiService
                     ->where('status', 'approved')
                     ->exists();
 
-                if (!$izinPulangCepat && $selisihJamKerja < self::MINIMAL_JAM_KERJA) {
+                if (! $izinPulangCepat && $selisihJamKerja < self::MINIMAL_JAM_KERJA) {
                     return ['success' => false, 'message' => 'Belum bisa presensi pulang! Minimal bekerja 8 jam.', 'type' => 'out'];
                 }
             }
 
             if ($cek && $cek->jam_out == null) {
-                $wfhToday = Wfh::where('nik', $nik)
-                    ->where('tgl_wfh', $tglPresensi)
-                    ->where('status', 'approved')
-                    ->first();
-                if ($wfhToday && empty($wfhToday->laporan_deskripsi)) {
+                if ($wfhHariIni && empty($wfhHariIni->laporan_deskripsi)) {
                     return ['success' => false, 'message' => 'Anda harus mengupload laporan WFH terlebih dahulu sebelum presensi pulang.', 'type' => 'out'];
                 }
             }
 
             if ($cek && $cek->jam_out != null) {
                 return ['success' => false, 'message' => 'Anda sudah melakukan presensi pulang!', 'type' => 'done'];
+            }
+
+            $gagal = $this->validasiRadius($request, $unitKerja, $wfhHariIni, $status);
+            if ($gagal !== null) {
+                return $gagal;
             }
 
             $fileName = $this->simpanFoto($nik, $tglPresensi, $status, $request->image);
@@ -95,6 +110,52 @@ class PresensiService
                 return $this->prosesMasuk($nik, $tglPresensi, $jam, $fileName, $request->lokasi, $terlambat);
             }
         });
+    }
+
+    /**
+     * Validasi geofencing presensi kantor.
+     *
+     * Presensi lolos jika GPS berada di dalam radius salah satu titik lokasi
+     * unit kerja (logika OR). Cabang WFH (approved hari ini) bebas lokasi,
+     * dan unit yang belum memiliki titik lokasi dijadikan fail-open.
+     *
+     * @return array{success: bool, message: string, type: string}|null null jika lolos validasi
+     */
+    private function validasiRadius(Request $request, Unitperusahaan $unitKerja, ?Wfh $wfhHariIni, string $status): ?array
+    {
+        $lokasi = trim((string) $request->input('lokasi', ''));
+        if ($lokasi === '') {
+            return ['success' => false, 'message' => self::PESAN_LOKASI_TIDAK_VALID, 'type' => $status];
+        }
+
+        if ($wfhHariIni !== null) {
+            return null;
+        }
+
+        $lokasis = $unitKerja->lokasis;
+        if ($lokasis->isEmpty()) {
+            return null;
+        }
+
+        $jarak = $this->location->jarakTerdekat($lokasis, $lokasi);
+        if ($jarak === null) {
+            return ['success' => false, 'message' => self::PESAN_LOKASI_TIDAK_VALID, 'type' => $status];
+        }
+
+        $radius = (int) ($unitKerja->radius_meter ?? self::DEFAULT_RADIUS_METER);
+        if ($jarak > $radius) {
+            return [
+                'success' => false,
+                'message' => sprintf(
+                    'Anda berada %d m dari lokasi kantor terdekat (radius %d m). Silakan presensi dari area kantor.',
+                    (int) round($jarak),
+                    $radius
+                ),
+                'type' => $status,
+            ];
+        }
+
+        return null;
     }
 
     private function hitungKeterlambatan(string $unit, string $jamMasuk, string $jamSekarang): int
@@ -137,13 +198,13 @@ class PresensiService
     {
         $presensi = Presensi::find($id);
 
-        if (!$presensi) {
+        if (! $presensi) {
             return ['success' => false, 'message' => 'Data presensi tidak ditemukan'];
         }
 
         foreach (['foto_in', 'foto_out'] as $foto) {
-            if (!empty($presensi->{$foto})) {
-                Storage::disk('public')->delete('uploads/absensi/' . $presensi->{$foto});
+            if (! empty($presensi->{$foto})) {
+                Storage::disk('public')->delete('uploads/absensi/'.$presensi->{$foto});
             }
         }
 
@@ -154,7 +215,7 @@ class PresensiService
 
     private function formatJamMasuk($jamMasuk): string
     {
-        if ($jamMasuk instanceof \Carbon\Carbon) {
+        if ($jamMasuk instanceof Carbon) {
             return $jamMasuk->format('H:i:s');
         }
 
@@ -166,7 +227,7 @@ class PresensiService
         $imageService = app(ImageService::class);
         $path = $imageService->processBase64($image, $nik, $status);
 
-        if (!$path) {
+        if (! $path) {
             return '';
         }
 
@@ -185,6 +246,7 @@ class PresensiService
                 'foto_out' => $fileName,
                 'lokasi_out' => $lokasi,
             ]);
+
             return ['success' => true, 'message' => 'Presensi berhasil, selamat istirahat!', 'type' => 'out'];
         }
 
