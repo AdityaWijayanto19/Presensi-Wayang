@@ -1,6 +1,6 @@
 @if ($histori->isEmpty())
     <div class="bg-transparent text-[#fe9500] border border-[#fe9500] text-[13px] rounded-md py-1.5 px-4 mb-2 mt-4 text-center">
-        Tidak ada data untuk periode yang dipilih!
+        Data absensi tidak ditemukan
     </div>
 @else
     <ul class="listview image-listview">

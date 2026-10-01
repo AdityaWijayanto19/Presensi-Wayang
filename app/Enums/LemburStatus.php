@@ -8,6 +8,7 @@ enum LemburStatus: string
     case PendingAdmin = 'pending_admin';
     case Approved = 'approved';
     case Rejected = 'rejected';
+    case Unpaid = 'unpaid';
 
     public function label(): string
     {
@@ -16,6 +17,7 @@ enum LemburStatus: string
             self::PendingAdmin => 'Menunggu Persetujuan HR',
             self::Approved => 'Disetujui',
             self::Rejected => 'Ditolak',
+            self::Unpaid => 'Unpaid',
         };
     }
 
@@ -26,6 +28,7 @@ enum LemburStatus: string
             self::PendingAdmin => 'bg-amber-100 text-amber-700 border-amber-200',
             self::Approved => 'bg-emerald-100 text-emerald-700 border-emerald-200',
             self::Rejected => 'bg-rose-100 text-rose-700 border-rose-200',
+            self::Unpaid => 'bg-gray-100 text-gray-700 border-gray-200',
         };
     }
 }

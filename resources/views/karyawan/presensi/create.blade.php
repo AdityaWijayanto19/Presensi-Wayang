@@ -267,8 +267,8 @@
             if (!el) return;
 
             if (modeWfh) {
-                el.className = BASE_BADGE + ' bg-blue-100 text-blue-700';
-                el.textContent = 'Mode WFH — bebas lokasi';
+                el.className = BASE_BADGE + ' bg-blue-100 text-blue-700 text-center';
+                el.textContent = 'Mode WFH';
                 return;
             }
 

@@ -15,7 +15,7 @@ class StoreLemburRequest extends FormRequest
     {
         return [
             'keterangan' => 'required|string|min:5|max:1000',
-            'tgl_lembur' => 'required|date|after_or_equal:today',
+            'tgl_lembur' => 'required|date|date_format:Y-m-d|after_or_equal:today|before_or_equal:tomorrow',
             'durasi_jam' => 'required|in:1,1.5,2,2.5,3,3.5,4,4.5,5,prorate',
             'jam_mulai' => 'required|date_format:H:i',
         ];
@@ -30,6 +30,7 @@ class StoreLemburRequest extends FormRequest
             'tgl_lembur.required' => 'Tanggal lembur wajib diisi.',
             'tgl_lembur.date' => 'Format tanggal tidak valid.',
             'tgl_lembur.after_or_equal' => 'Tanggal lembur tidak boleh sebelum hari ini.',
+            'tgl_lembur.before_or_equal' => 'Pengajuan lembur hanya bisa untuk hari ini atau besok.',
             'durasi_jam.required' => 'Durasi lembur wajib diisi.',
             'durasi_jam.in' => 'Durasi lembur harus 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, atau Prorate.',
             'jam_mulai.required' => 'Rencana jam mulai lembur wajib diisi.',

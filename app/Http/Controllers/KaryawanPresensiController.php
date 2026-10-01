@@ -217,13 +217,22 @@ class KaryawanPresensiController extends Controller
     public function buatlembur(LemburService $lemburService)
     {
         $karyawan = Auth::guard('karyawan')->user()->load('unitperusahaan');
-        $canSubmit = $lemburService->canSubmit($karyawan);
+        $hariIni = now('Asia/Jakarta')->format('Y-m-d');
+        $besok = now('Asia/Jakarta')->addDay()->format('Y-m-d');
 
-        if (! $canSubmit['can']) {
-            return redirect('/lembur')->with('error', $canSubmit['message']);
+        $canHariIni = $lemburService->canSubmit($karyawan, $hariIni);
+        $canBesok = $lemburService->canSubmit($karyawan, $besok);
+
+        if (! $canHariIni['can'] && ! $canBesok['can']) {
+            $messages = array_unique([
+                $canHariIni['message'] ?? 'Pengajuan lembur tidak tersedia.',
+                $canBesok['message'] ?? 'Pengajuan lembur tidak tersedia.',
+            ]);
+
+            return redirect('/lembur')->with('error', implode(' ', $messages));
         }
 
-        return view('karyawan.lembur.create', compact('karyawan'));
+        return view('karyawan.lembur.create', compact('karyawan', 'canHariIni', 'canBesok'));
     }
 
     public function storelembur(StoreLemburRequest $request, LemburService $lemburService)
@@ -232,7 +241,7 @@ class KaryawanPresensiController extends Controller
         $result = $lemburService->storePengajuan($request, $karyawan);
 
         if ($result['success']) {
-            return redirect('/lembur')->with('success', $result['message']);
+            return redirect('/dashboard')->with('success', $result['message']);
         }
 
         return redirect()->back()->with('error', $result['message'])->withInput();
@@ -280,8 +289,10 @@ class KaryawanPresensiController extends Controller
         $nik = Auth::guard('karyawan')->user()->nik;
         $data = $lemburService->getFotoData($id, $nik);
 
-        if (! $data) {
-            return redirect('/lembur')->with('error', 'Data tidak ditemukan atau lembur belum disetujui.');
+        if (! $data || isset($data->error)) {
+            $msg = $data->error ?? 'Data tidak ditemukan atau lembur belum disetujui.';
+
+            return redirect('/dashboard')->with('error', $msg);
         }
 
         return view('karyawan.lembur.foto', ['data' => $data]);
@@ -323,7 +334,7 @@ class KaryawanPresensiController extends Controller
         $result = $lemburService->storeLaporanLembur($request, $id, $nik);
 
         if ($result['success']) {
-            return redirect('/lembur')->with('success', $result['message']);
+            return redirect('/dashboard')->with('success', $result['message']);
         }
 
         return redirect()->back()->with('error', $result['message'])->withInput();
@@ -377,7 +388,7 @@ class KaryawanPresensiController extends Controller
         $result = $lemburService->storeLaporanLembur($request, $id, $nik, true);
 
         if ($result['success']) {
-            return redirect('/lembur')->with('success', $result['message']);
+            return redirect('/dashboard')->with('success', $result['message']);
         }
 
         return redirect()->back()->with('error', $result['message'])->withInput();

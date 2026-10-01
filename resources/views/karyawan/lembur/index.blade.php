@@ -23,12 +23,16 @@
             'pending_admin' => 'Menunggu Persetujuan HR',
             'approved' => 'Selesai',
             'rejected' => 'Ditolak',
+            'unpaid' => 'Unpaid',
+            'laporan_rejected' => 'Laporan Ditolak',
         ];
         $statusColors = [
             'pending_atasan' => 'bg-amber-100 text-amber-700 border-amber-200',
             'pending_admin' => 'bg-amber-100 text-amber-700 border-amber-200',
             'approved' => 'bg-emerald-100 text-emerald-700 border-emerald-200',
             'rejected' => 'bg-rose-100 text-rose-700 border-rose-200',
+            'unpaid' => 'bg-gray-100 text-gray-700 border-gray-200',
+            'laporan_rejected' => 'bg-rose-100 text-rose-700 border-rose-200',
         ];
     @endphp
 
@@ -53,8 +57,16 @@
                     $weekday = $weekdayMap[date('l', $ts)] ?? date('l', $ts);
                     $displayDate = date('d M Y', $ts);
                     $status = $d->status instanceof \App\Enums\LemburStatus ? $d->status->value : $d->status;
-                    $statusLabel = $statusLabels[$status] ?? $status;
-                    $statusColor = $statusColors[$status] ?? 'bg-gray-100 text-gray-700 border-gray-200';
+                    $laporanStatus = $d->laporan_status instanceof \App\Enums\LemburStatus ? $d->laporan_status->value : $d->laporan_status;
+                    $displayStatus = match (true) {
+                        $status === 'rejected' => 'rejected',
+                        $status === 'unpaid' => 'unpaid',
+                        $laporanStatus === 'rejected' => 'laporan_rejected',
+                        $laporanStatus === 'approved' => 'approved',
+                        default => $status,
+                    };
+                    $statusLabel = $statusLabels[$displayStatus] ?? $displayStatus;
+                    $statusColor = $statusColors[$displayStatus] ?? 'bg-gray-100 text-gray-700 border-gray-200';
                     $durasi = $d->durasi_formatted;
                 @endphp
                 <div class="presensi-card mb-2.5">

@@ -62,15 +62,61 @@ class LemburService
         return $karyawan->atasan_nik;
     }
 
-    public function canSubmit(Karyawan $karyawan): array
+    private static function tglLembur(Lembur $lembur): string
+    {
+        return $lembur->tgl_lembur instanceof \Carbon\Carbon
+            ? $lembur->tgl_lembur->format('Y-m-d')
+            : (string) $lembur->tgl_lembur;
+    }
+
+    private static function isTanggalLemburLewat(Lembur $lembur): bool
+    {
+        return self::tglLembur($lembur) < now('Asia/Jakarta')->format('Y-m-d');
+    }
+
+    private static function isHariHLembur(Lembur $lembur): bool
+    {
+        return self::tglLembur($lembur) === now('Asia/Jakarta')->format('Y-m-d');
+    }
+
+    // Recovery HR: lembur yang di-approve ulang setelah hari-H (approved_at > tgl_lembur)
+    // melewati aturan hard cutoff hari-H (pola sama dengan WFH admin recovery).
+    private static function isRecoveryAdmin(Lembur $lembur): bool
+    {
+        if (empty($lembur->approved_at)) {
+            return false;
+        }
+        $approvedAt = $lembur->approved_at instanceof \Carbon\Carbon
+            ? $lembur->approved_at->format('Y-m-d')
+            : (string) $lembur->approved_at;
+
+        return $approvedAt !== '' && $approvedAt > self::tglLembur($lembur);
+    }
+
+    public function canSubmit(Karyawan $karyawan, ?string $tglLembur = null): array
     {
         $hariIni = now('Asia/Jakarta')->format('Y-m-d');
+        $besok = now('Asia/Jakarta')->addDay()->format('Y-m-d');
+        $tgl = $tglLembur ?? $hariIni;
+
+        // Pengajuan hanya boleh current day (hari ini) atau next day (besok). Backday dilarang.
+        if (!in_array($tgl, [$hariIni, $besok], true)) {
+            return ['can' => false, 'message' => 'Pengajuan lembur hanya bisa untuk hari ini atau besok. Tanggal lampau tidak diperkenankan.'];
+        }
 
         $exists = Lembur::where('nik', $karyawan->nik)
-            ->where('tgl_lembur', $hariIni)
+            ->where('tgl_lembur', $tgl)
             ->exists();
         if ($exists) {
-            return ['can' => false, 'message' => 'Anda sudah mengajukan lembur hari ini.'];
+            return ['can' => false, 'message' => $tgl === $hariIni
+                ? 'Anda sudah mengajukan lembur hari ini.'
+                : 'Anda sudah mengajukan lembur pada tanggal tersebut.'];
+        }
+
+        // Syarat absen pulang + window jam hanya berlaku untuk pengajuan current day.
+        // Pengajuan next day bebas kapan saja (belum ada presensi untuk besok).
+        if ($tgl !== $hariIni) {
+            return ['can' => true];
         }
 
         $presensiHariIni = Presensi::where('nik', $karyawan->nik)
@@ -100,21 +146,19 @@ class LemburService
         return ['can' => true];
     }
 
+    // Riwayat karyawan hanya menampilkan data FINAL:
+    // pengajuan ditolak, unpaid, laporan disetujui, atau laporan ditolak.
+    // Data in-progress (pending pengajuan, approved belum kirim laporan,
+    // laporan menunggu approval atasan/HR) tampil di dashboard "Lembur Saya".
     public function getLemburHistory(string $nik)
     {
         return Lembur::with('atasan')
             ->where('nik', $nik)
             ->where(function ($q) {
-                $q->where(function ($q2) {
-                    $q2->where('status', 'approved')
-                        ->where('laporan_status', 'approved');
-                })->orWhere('status', 'rejected')
-                  ->orWhere('status', 'pending_atasan')
-                  ->orWhere('status', 'pending_admin')
-                  ->orWhere(function ($q3) {
-                      $q3->where('status', 'approved')
-                         ->where('laporan_status', '!=', 'approved');
-                  });
+                $q->where('status', LemburStatus::Rejected->value)
+                  ->orWhere('status', LemburStatus::Unpaid->value)
+                  ->orWhere('laporan_status', LemburStatus::Approved->value)
+                  ->orWhere('laporan_status', LemburStatus::Rejected->value);
             })
             ->orderBy('tgl_lembur', 'desc')
             ->get();
@@ -155,7 +199,9 @@ class LemburService
         $nik = $karyawan->nik;
         $karyawanFresh = Karyawan::with('unitperusahaan')->where('nik', $nik)->first();
 
-        $canSubmit = $this->canSubmit($karyawanFresh);
+        $tglLembur = $request->tgl_lembur ?? now('Asia/Jakarta')->format('Y-m-d');
+
+        $canSubmit = $this->canSubmit($karyawanFresh, $tglLembur);
         if (!$canSubmit['can']) {
             return ['success' => false, 'message' => $canSubmit['message']];
         }
@@ -168,7 +214,6 @@ class LemburService
 
         $initial = self::initialStatus($karyawanFresh);
 
-        $tglLembur = $request->tgl_lembur ?? now('Asia/Jakarta')->format('Y-m-d');
         $isProrate = $request->durasi_jam === 'prorate';
         $durasiJam = $isProrate ? 5.5 : (float) $request->durasi_jam;
         $jamMulai = $request->jam_mulai;
@@ -213,7 +258,7 @@ class LemburService
 
             if ($exists) {
                 DB::rollBack();
-                return ['success' => false, 'message' => 'Anda sudah mengajukan lembur pada hari ini!'];
+                return ['success' => false, 'message' => 'Anda sudah mengajukan lembur pada tanggal tersebut!'];
             }
 
             $lembur = Lembur::create([
@@ -311,6 +356,7 @@ class LemburService
             if (!$lembur) { DB::rollBack(); return ['success' => false, 'message' => 'Data tidak ditemukan']; }
             if ($lembur->atasan_nik !== $karyawan->nik) { DB::rollBack(); return ['success' => false, 'message' => 'Anda bukan atasan untuk pengajuan ini']; }
             if ($lembur->status !== LemburStatus::PendingAtasan) { DB::rollBack(); return ['success' => false, 'message' => 'Status tidak valid']; }
+            if (self::isTanggalLemburLewat($lembur)) { DB::rollBack(); return ['success' => false, 'message' => 'Tanggal lembur sudah lewat. Pengajuan ini hanya bisa ditolak.']; }
 
             $lembur->update([
                 'atasan_status' => 'approved',
@@ -384,6 +430,7 @@ class LemburService
             if (!$lembur) { DB::rollBack(); return ['success' => false, 'message' => 'Data tidak ditemukan']; }
             if ($lembur->status !== LemburStatus::PendingAdmin) { DB::rollBack(); return ['success' => false, 'message' => 'Status tidak valid untuk persetujuan']; }
             if ($lembur->admin_status !== 'pending') { DB::rollBack(); return ['success' => false, 'message' => 'Lembur ini sudah diproses']; }
+            if (self::isTanggalLemburLewat($lembur)) { DB::rollBack(); return ['success' => false, 'message' => 'Tanggal lembur sudah lewat. Pengajuan ini hanya bisa ditolak.']; }
 
             $lembur->update([
                 'admin_status' => 'approved',
@@ -458,6 +505,10 @@ class LemburService
         $karyawan = Karyawan::where('nik', $nik)->first();
         if (!$karyawan) return null;
 
+        if (!self::isHariHLembur($lembur) && !self::isRecoveryAdmin($lembur)) {
+            return (object) ['error' => 'Foto lembur hanya bisa diambil pada tanggal lembur (' . self::tglLembur($lembur) . '). Hari ini: ' . now('Asia/Jakarta')->format('d M Y') . '.'];
+        }
+
         return (object) [
             'lembur' => $lembur,
             'karyawan' => $karyawan,
@@ -470,6 +521,10 @@ class LemburService
     {
         $lembur = Lembur::where('id', $id)->where('nik', $nik)->where('status', LemburStatus::Approved->value)->first();
         if (!$lembur) return ['success' => false, 'message' => 'Akses ditolak'];
+
+        if (!self::isHariHLembur($lembur) && !self::isRecoveryAdmin($lembur)) {
+            return ['success' => false, 'message' => 'Foto lembur hanya bisa diambil pada tanggal lembur (' . self::tglLembur($lembur) . ').'];
+        }
 
         $type = $request->type;
         $fieldFoto = $type === 'mulai' ? 'foto_mulai' : 'foto_selesai';
@@ -525,7 +580,7 @@ class LemburService
     public function getLaporanData(int $id, string $nik, bool $isEdit = false): ?object
     {
         $lembur = Lembur::where('id', $id)->where('nik', $nik)
-            ->where('status', LemburStatus::Approved->value)
+            ->whereIn('status', [LemburStatus::Approved->value, LemburStatus::Unpaid->value])
             ->first();
         if (!$lembur) return null;
 
@@ -536,6 +591,9 @@ class LemburService
         } else {
             if ($lembur->laporan_status !== null) {
                 return (object) ['error' => 'Laporan sudah pernah dikirim. Gunakan Edit Laporan.'];
+            }
+            if (!self::isHariHLembur($lembur) && !self::isRecoveryAdmin($lembur)) {
+                return (object) ['error' => 'Laporan lembur hanya bisa dikirim pada tanggal lembur (' . self::tglLembur($lembur) . '). Hari ini: ' . now('Asia/Jakarta')->format('d M Y') . '.'];
             }
             if (empty($lembur->foto_mulai) || empty($lembur->foto_selesai)) {
                 return (object) ['error' => 'Anda harus mengambil foto mulai dan selesai lembur terlebih dahulu.'];
@@ -557,7 +615,7 @@ class LemburService
     public function storeLaporanLembur(Request $request, int $id, string $nik, bool $isEdit = false): array
     {
         $lembur = Lembur::where('id', $id)->where('nik', $nik)
-            ->where('status', LemburStatus::Approved->value)
+            ->whereIn('status', [LemburStatus::Approved->value, LemburStatus::Unpaid->value])
             ->first();
         if (!$lembur) return ['success' => false, 'message' => 'Akses ditolak'];
 
@@ -567,6 +625,10 @@ class LemburService
 
         if (!$isEdit && $lembur->laporan_status !== null) {
             return ['success' => false, 'message' => 'Laporan sudah pernah dikirim. Gunakan Edit Laporan.'];
+        }
+
+        if (!$isEdit && !self::isHariHLembur($lembur) && !self::isRecoveryAdmin($lembur)) {
+            return ['success' => false, 'message' => 'Laporan lembur hanya bisa dikirim pada tanggal lembur (' . self::tglLembur($lembur) . ').'];
         }
 
         if (!$isEdit && (empty($lembur->foto_mulai) || empty($lembur->foto_selesai))) {

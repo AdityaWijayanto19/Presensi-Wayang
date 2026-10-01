@@ -12,8 +12,9 @@
         $badgeClass = match ($status) {
             'pending_atasan' => 'bg-amber-100 text-amber-700 border border-amber-200',
             'pending_admin' => 'bg-amber-100 text-amber-700 border border-amber-200',
-            'approved' => 'bg-emerald-100 text-emerald-700 border border-emerald-200',
-            'rejected' => 'bg-rose-100 text-rose-700 border border-rose-200',
+            'approved' => 'bg-emerald-100 text-emerald-700 border-emerald-200',
+            'rejected' => 'bg-rose-100 text-rose-700 border-rose-200',
+            'unpaid' => 'bg-gray-100 text-gray-700 border border-gray-200',
             default => 'bg-slate-100 text-slate-600 border border-slate-200',
         };
         $label = match ($status) {
@@ -21,6 +22,7 @@
             'pending_admin' => 'Menunggu Persetujuan HR',
             'approved' => 'Disetujui',
             'rejected' => 'Ditolak',
+            'unpaid' => 'Unpaid',
             default => $status,
         };
         $jabatanBadge = match($jabatanKaryawan) {

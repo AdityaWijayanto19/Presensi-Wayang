@@ -36,6 +36,8 @@
                             </option>
                             <option value="rejected" {{ Request('status') == 'rejected' ? 'selected' : '' }}>Ditolak
                             </option>
+                            <option value="unpaid" {{ Request('status') == 'unpaid' ? 'selected' : '' }}>Unpaid
+                            </option>
                         </x-admin.select>
                     </div>
                     <div class="col-span-12 sm:col-span-5">
@@ -88,6 +90,7 @@
             <option value="pending_admin">Menunggu Persetujuan HR</option>
             <option value="approved">Disetujui</option>
             <option value="rejected">Ditolak</option>
+            <option value="unpaid">Unpaid</option>
         </x-admin.select>
 
         <x-admin.select name="durasi_jam" id="edit_durasi_jam" label="Durasi (Jam) <span class='text-red-500'>*</span>" required>
@@ -336,6 +339,7 @@
                     'pending_admin': 'bg-amber-100 text-amber-700 border border-amber-200',
                     'approved': 'bg-emerald-100 text-emerald-700 border border-emerald-200',
                     'rejected': 'bg-rose-100 text-rose-700 border border-rose-200',
+                    'unpaid': 'bg-gray-100 text-gray-700 border border-gray-200',
                 };
                 var badge = function(key, label) {
                     if (isEmpty(label) || isEmpty(key)) return '<span class="text-xs text-slate-400">—</span>';

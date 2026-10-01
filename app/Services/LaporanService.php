@@ -121,6 +121,7 @@ class LaporanService
 
         $lembur = Lembur::where('nik', $nik)
             ->where('status', 'approved')
+            ->where('laporan_status', 'approved')
             ->whereBetween('tgl_lembur', [$startDate, $endDate])
             ->get()
             ->keyBy(fn ($item) => $item->tgl_lembur->format('Y-m-d'));
@@ -257,6 +258,7 @@ class LaporanService
 
         $lemburs = Lembur::whereIn('nik', $niks)
             ->where('status', 'approved')
+            ->where('laporan_status', 'approved')
             ->whereBetween('tgl_lembur', [$startDate, $endDate])
             ->get()
             ->groupBy('nik');

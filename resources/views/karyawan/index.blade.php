@@ -240,22 +240,25 @@
                                         <div class="text-[11px] text-[#78716c]">
                                             {{ date('d M Y', strtotime($p->tgl_wfh)) }} •
                                             {{ $p->karyawan->unit ?? '-' }}
-                                            ({{ $p->karyawan->unitperusahaan->perusahaan ?? '-' }})</div>
+                                            ({{ $p->karyawan->unitperusahaan->perusahaan ?? '-' }})
+                                        </div>
                                         <div class="text-[11px] text-[#57534e] mt-1">Laporan WFH menunggu persetujuan Anda
                                         </div>
                                         @if (!empty($p->laporan_file))
-                                            <div class="mt-1">
+                                            <div class="flex mt-1.5">
                                                 <a href="{{ Storage::url($p->laporan_file) }}" target="_blank"
-                                                    class="text-[11px] text-sky-700 hover:underline">Form Laporan</a>
+                                                    class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-sky-200 bg-sky-50 text-sky-700 text-[11px] font-semibold leading-tight no-underline cursor-pointer hover:bg-sky-100 active:scale-[0.97] transition"><i
+                                                        data-lucide="external-link" class="w-3 h-3"></i>Lihat Form
+                                                    Laporan</a>
                                             </div>
                                         @elseif(!empty($p->laporan_deskripsi))
-                                            <div class="mt-1">
+                                            <div class="flex mt-1.5">
                                                 <button type="button"
-                                                    class="text-[11px] text-sky-700 hover:underline cursor-pointer js-preview-laporan"
+                                                    class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-sky-200 bg-sky-50 text-sky-700 text-[11px] font-semibold leading-tight no-underline cursor-pointer hover:bg-sky-100 active:scale-[0.97] transition js-preview-laporan"
                                                     data-deskripsi="{{ $p->laporan_deskripsi }}"
                                                     data-tgl="{{ date('d M Y', strtotime($p->tgl_wfh)) }}"
-                                                    data-label="Laporan WFH — {{ $p->karyawan->nama_lengkap ?? '-' }}">Form
-                                                    Laporan</button>
+                                                    data-label="Laporan WFH — {{ $p->karyawan->nama_lengkap ?? '-' }}"><i
+                                                        data-lucide="eye" class="w-3 h-3"></i>Lihat Form Laporan</button>
                                             </div>
                                         @endif
                                     </div>
@@ -313,11 +316,12 @@
                                             data-id="{{ $p->id }}">Tolak</button>
                                     </div>
                                 </div>
-                                <div class="flex">
+                                <div class="flex mt-1.5">
                                     @php $pdfUrl = !empty($p->pdf_form_path) ? Storage::url($p->pdf_form_path) : (!empty($p->file_form) ? "/presensi/showfilewfh/{$p->file_form}" : null); @endphp
                                     @if ($pdfUrl)
                                         <a href="{{ $pdfUrl }}" target="_blank"
-                                            class="text-[11px] text-sky-700 hover:underline">Form Pengajuan</a>
+                                            class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-sky-200 bg-sky-50 text-sky-700 text-[11px] font-semibold leading-tight no-underline cursor-pointer hover:bg-sky-100 active:scale-[0.97] transition"><i
+                                                data-lucide="external-link" class="w-3 h-3"></i>Lihat Form Pengajuan</a>
                                     @endif
                                 </div>
                             </div>
@@ -390,9 +394,10 @@
                                     </div>
                                 </div>
                                 @if (!empty($p->pdf_form_path))
-                                    <div class="flex mt-1">
+                                    <div class="flex mt-1.5">
                                         <a href="{{ Storage::url($p->pdf_form_path) }}" target="_blank"
-                                            class="text-[11px] text-sky-700 hover:underline">Form Pengajuan</a>
+                                            class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-sky-200 bg-sky-50 text-sky-700 text-[11px] font-semibold leading-tight no-underline cursor-pointer hover:bg-sky-100 active:scale-[0.97] transition"><i
+                                                data-lucide="external-link" class="w-3 h-3"></i>Lihat Form Pengajuan</a>
                                     </div>
                                 @endif
                             </div>
@@ -499,19 +504,21 @@
                                         <div class="text-[11px] text-[#57534e] mt-1">Laporan lembur menunggu persetujuan
                                             Anda</div>
                                         @if (!empty($p->laporan_file))
-                                            <div class="mt-1">
+                                            <div class="flex mt-1.5">
                                                 <a href="/presensi/showfilelembur/{{ basename($p->laporan_file) }}"
-                                                    target="_blank" class="text-[11px] text-sky-700 hover:underline">Form
+                                                    target="_blank"
+                                                    class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-sky-200 bg-sky-50 text-sky-700 text-[11px] font-semibold leading-tight no-underline cursor-pointer hover:bg-sky-100 active:scale-[0.97] transition"><i
+                                                        data-lucide="external-link" class="w-3 h-3"></i>Lihat Form
                                                     Laporan</a>
                                             </div>
                                         @elseif(!empty($p->laporan_deskripsi))
-                                            <div class="mt-1">
+                                            <div class="flex mt-1.5">
                                                 <button type="button"
-                                                    class="text-[11px] text-sky-700 hover:underline cursor-pointer js-preview-laporan-lembur"
+                                                    class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-sky-200 bg-sky-50 text-sky-700 text-[11px] font-semibold leading-tight no-underline cursor-pointer hover:bg-sky-100 active:scale-[0.97] transition js-preview-laporan-lembur"
                                                     data-deskripsi="{{ $p->laporan_deskripsi }}"
                                                     data-tgl="{{ date('d M Y', strtotime($p->tgl_lembur)) }}"
-                                                    data-label="Laporan Lembur — {{ $p->karyawan->nama_lengkap ?? '-' }}">Form
-                                                    Laporan</button>
+                                                    data-label="Laporan Lembur — {{ $p->karyawan->nama_lengkap ?? '-' }}"><i
+                                                        data-lucide="eye" class="w-3 h-3"></i>Lihat Form Laporan</button>
                                             </div>
                                         @endif
                                     </div>
@@ -571,10 +578,11 @@
                                     </div>
                                 </div>
                                 @if (!empty($p->pdf_form_path))
-                                    <div class="flex mt-1">
+                                    <div class="flex mt-1.5">
                                         <a href="/presensi/showfilelembur/{{ basename($p->pdf_form_path) }}"
-                                            target="_blank" class="text-[11px] text-sky-700 hover:underline">Form
-                                            Pengajuan</a>
+                                            target="_blank"
+                                            class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-sky-200 bg-sky-50 text-sky-700 text-[11px] font-semibold leading-tight no-underline cursor-pointer hover:bg-sky-100 active:scale-[0.97] transition"><i
+                                                data-lucide="external-link" class="w-3 h-3"></i>Lihat Form Pengajuan</a>
                                     </div>
                                 @endif
                             </div>
@@ -801,7 +809,8 @@
                             @php
                                 $pathIn = Storage::url('uploads/absensi/' . $d->foto_in);
                                 $pathOut = $d->foto_out ? Storage::url('uploads/absensi/' . $d->foto_out) : null;
-                                $statusClass = $d->terlambat > 0 ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700';
+                                $statusClass =
+                                    $d->terlambat > 0 ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700';
                                 $statusLabel = $d->terlambat > 0 ? 'Terlambat ' . $d->terlambat . 'm' : 'Tepat Waktu';
                             @endphp
                             <li>
@@ -819,21 +828,24 @@
                                             @else
                                                 <div
                                                     class="w-[35px] h-[35px] rounded-[10px] bg-gray-100 border-2 border-white shadow-sm flex items-center justify-center">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                                        stroke-linejoin="round" class="w-4 h-4 text-gray-400">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                                        fill="none" stroke="currentColor" stroke-width="2"
+                                                        stroke-linecap="round" stroke-linejoin="round"
+                                                        class="w-4 h-4 text-gray-400">
                                                         <path
                                                             d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
                                                         <circle cx="12" cy="13" r="3" />
                                                     </svg>
                                                 </div>
                                             @endif
-                                            <span class="block text-[8px] text-[#78716c] leading-tight mt-0.5">Pulang</span>
+                                            <span
+                                                class="block text-[8px] text-[#78716c] leading-tight mt-0.5">Pulang</span>
                                         </div>
                                     </div>
                                     <div class="in flex-wrap gap-1">
                                         <div class="w-full flex items-center justify-between gap-2">
-                                            <span class="text-[13px] text-[#141515]">{{ date('d-m-Y', strtotime($d->tgl_presensi)) }}</span>
+                                            <span
+                                                class="text-[13px] text-[#141515]">{{ date('d-m-Y', strtotime($d->tgl_presensi)) }}</span>
                                             <span
                                                 class="inline-flex items-center justify-center rounded-full {{ $statusClass }} text-[10px] sm:text-xs font-semibold px-2 py-0.5">{{ $statusLabel }}</span>
                                         </div>
@@ -884,6 +896,7 @@
     <script>
         var SERVER_TODAY = '{{ now('Asia/Jakarta')->format('Y-m-d') }}';
         var SERVER_TIME = '{{ now('Asia/Jakarta')->format('H:i:s') }}';
+        var countdownInterval;
         document.addEventListener('click', function(e) {
             var btn = e.target.closest('.btn-laporan');
             if (!btn) return;
@@ -1114,7 +1127,8 @@
 
                         // 2. Web Push + Sound untuk notifikasi baru (dedupe by id)
                         if (data.notifications && data.notifications.length) {
-                            const newNotifs = data.notifications.filter(n => n && n.id && !knownNotifIds.includes(n.id));
+                            const newNotifs = data.notifications.filter(n => n && n.id && !knownNotifIds.includes(n
+                                .id));
                             newNotifs.forEach(n => {
                                 if (n.data && n.data.message) {
                                     if (Notification.permission === 'granted') {
@@ -1182,9 +1196,10 @@
                                             esc(p.id) +
                                             '">Setujui</button><button type="button" class="btn btn-sm bg-white border border-rose-200 text-rose-700 rounded-full px-3 py-1 text-[11px] w-full btn-reject-atasan-dynamic" data-id="' +
                                             esc(p.id) + '">Tolak</button></div></div>' + (p.pdf_form_path ?
-                                                '<div class="flex"><button type="button" class="text-[11px] text-sky-700 hover:underline cursor-pointer" onclick="window.open(\'/storage/' +
+                                                '<div class="flex mt-1.5"><a href="/storage/' +
                                                 esc(p.pdf_form_path) +
-                                                '\',\'_blank\')">Form Pengajuan</button></div>' : '') +
+                                                '" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-sky-200 bg-sky-50 text-sky-700 text-[11px] font-semibold leading-tight no-underline cursor-pointer hover:bg-sky-100 active:scale-[0.97] transition"><i data-lucide="external-link" class="w-3 h-3"></i>Lihat Form Pengajuan</a></div>' :
+                                                '') +
                                             '</div></div>';
                                     });
                                     html += '</div>';
@@ -1220,16 +1235,16 @@
                                         if (p.laporan_file) {
                                             var laporanUrl = '/storage/' + p.laporan_file;
                                             previewBtn =
-                                                '<div class="mt-1"><a href="' + esc(laporanUrl) +
-                                                '" target="_blank" class="text-[11px] text-sky-700 hover:underline">Form Laporan</a></div>';
+                                                '<div class="flex mt-1.5"><a href="' + esc(laporanUrl) +
+                                                '" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-sky-200 bg-sky-50 text-sky-700 text-[11px] font-semibold leading-tight no-underline cursor-pointer hover:bg-sky-100 active:scale-[0.97] transition"><i data-lucide="external-link" class="w-3 h-3"></i>Lihat Form Laporan</a></div>';
                                         } else if (p.laporan_deskripsi) {
                                             previewBtn =
-                                                '<div class="mt-1"><button type="button" class="text-[11px] text-sky-700 hover:underline cursor-pointer js-preview-laporan" data-deskripsi="' +
+                                                '<div class="flex mt-1.5"><button type="button" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-sky-200 bg-sky-50 text-sky-700 text-[11px] font-semibold leading-tight no-underline cursor-pointer hover:bg-sky-100 active:scale-[0.97] transition js-preview-laporan" data-deskripsi="' +
                                                 esc(p.laporan_deskripsi || '') +
                                                 '" data-tgl="' + esc((p.tgl_wfh || '').substring(0, 10)) +
                                                 '" data-label="Laporan WFH — ' + esc(k.nama_lengkap ||
                                                     '-') +
-                                                '">Form Laporan</button></div>';
+                                                '"><i data-lucide="eye" class="w-3 h-3"></i>Lihat Form Laporan</button></div>';
                                         }
                                         html +=
                                             '<div class="card mb-2 border-l-4 border-l-violet-400 bg-violet-50/50"><div class="card-body p-3"><div class="flex items-start justify-between gap-3"><div class="flex-1 min-w-0"><div class="text-[13px] font-bold text-[#1c1917]">' +
@@ -1291,9 +1306,9 @@
                                             esc(p.id) +
                                             '">Setujui</button><button type="button" class="btn btn-sm bg-white border border-rose-200 text-rose-700 rounded-full px-3 py-1 text-[11px] w-full btn-reject-atasan-lembur" data-id="' +
                                             esc(p.id) + '">Tolak</button></div></div>' + (p.pdf_form_path ?
-                                                '<div class="flex mt-1"><a href="/presensi/showfilelembur/' +
+                                                '<div class="flex mt-1.5"><a href="/presensi/showfilelembur/' +
                                                 esc(p.pdf_form_path.split('/').pop()) +
-                                                '" target="_blank" class="text-[11px] text-sky-700 hover:underline">Form Pengajuan</a></div>' :
+                                                '" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-sky-200 bg-sky-50 text-sky-700 text-[11px] font-semibold leading-tight no-underline cursor-pointer hover:bg-sky-100 active:scale-[0.97] transition"><i data-lucide="external-link" class="w-3 h-3"></i>Lihat Form Pengajuan</a></div>' :
                                                 '') + '</div></div>';
                                     });
                                     html += '</div>';
@@ -1329,16 +1344,17 @@
                                         var previewBtn = '';
                                         if (p.laporan_file) {
                                             previewBtn =
-                                                '<div class="mt-1"><a href="/presensi/showfilelembur/' +
+                                                '<div class="flex mt-1.5"><a href="/presensi/showfilelembur/' +
                                                 esc(p.laporan_file.split('/').pop()) +
-                                                '" target="_blank" class="text-[11px] text-sky-700 hover:underline">Form Laporan</a></div>';
+                                                '" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-sky-200 bg-sky-50 text-sky-700 text-[11px] font-semibold leading-tight no-underline cursor-pointer hover:bg-sky-100 active:scale-[0.97] transition"><i data-lucide="external-link" class="w-3 h-3"></i>Lihat Form Laporan</a></div>';
                                         } else if (p.laporan_deskripsi) {
                                             previewBtn =
-                                                '<div class="mt-1"><button type="button" class="text-[11px] text-sky-700 hover:underline cursor-pointer js-preview-laporan-lembur" data-deskripsi="' +
+                                                '<div class="flex mt-1.5"><button type="button" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-sky-200 bg-sky-50 text-sky-700 text-[11px] font-semibold leading-tight no-underline cursor-pointer hover:bg-sky-100 active:scale-[0.97] transition js-preview-laporan-lembur" data-deskripsi="' +
                                                 esc(p.laporan_deskripsi || '') + '" data-tgl="' + esc((p
                                                     .tgl_lembur || '').substring(0, 10)) +
                                                 '" data-label="Laporan Lembur — ' + esc(k.nama_lengkap ||
-                                                    '-') + '">Form Laporan</button></div>';
+                                                    '-') +
+                                                '"><i data-lucide="eye" class="w-3 h-3"></i>Lihat Form Laporan</button></div>';
                                         }
                                         html +=
                                             '<div class="card mb-2 border-l-4 border-l-violet-400 bg-violet-50/50"><div class="card-body p-3"><div class="flex items-start justify-between gap-3"><div class="flex-1 min-w-0"><div class="text-[13px] font-bold text-[#1c1917]">' +
@@ -1513,25 +1529,31 @@
                                 var hJson = JSON.stringify(data.histori);
                                 if (window._historiHash !== hJson) {
                                     window._historiHash = hJson;
-                                    var cameraSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-gray-400"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>';
+                                    var cameraSvg =
+                                        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-gray-400"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>';
                                     var hHtml = '';
                                     data.histori.forEach(function(d) {
                                         var tgl = (d.tgl_presensi || '').substring(0, 10);
                                         var tglParts = tgl.split('-');
-                                        var tglFormatted = tglParts[2] + '-' + tglParts[1] + '-' + tglParts[0];
+                                        var tglFormatted = tglParts[2] + '-' + tglParts[1] + '-' + tglParts[
+                                            0];
                                         var terlambat = d.terlambat > 0;
-                                        var statusCls = terlambat ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700';
-                                        var statusTxt = terlambat ? 'Terlambat ' + d.terlambat + 'm' : 'Tepat Waktu';
+                                        var statusCls = terlambat ? 'bg-red-100 text-red-700' :
+                                            'bg-emerald-100 text-emerald-700';
+                                        var statusTxt = terlambat ? 'Terlambat ' + d.terlambat + 'm' :
+                                            'Tepat Waktu';
                                         var fotoInSrc = '/storage/uploads/absensi/' + esc(d.foto_in || '') +
                                             '?v=' + encodeURIComponent(d.foto_in || '');
                                         var fotoOutHtml;
                                         if (d.foto_out) {
                                             var fotoOutSrc = '/storage/uploads/absensi/' + esc(d.foto_out) +
                                                 '?v=' + encodeURIComponent(d.foto_out);
-                                            fotoOutHtml = '<img src="' + fotoOutSrc + '" alt="Foto pulang" ' +
+                                            fotoOutHtml = '<img src="' + fotoOutSrc +
+                                                '" alt="Foto pulang" ' +
                                                 'class="w-[35px] h-[35px] rounded-[10px] object-cover border-2 border-white shadow-sm foto-histori-dashboard">';
                                         } else {
-                                            fotoOutHtml = '<div class="w-[35px] h-[35px] rounded-[10px] bg-gray-100 border-2 border-white shadow-sm flex items-center justify-center">' +
+                                            fotoOutHtml =
+                                                '<div class="w-[35px] h-[35px] rounded-[10px] bg-gray-100 border-2 border-white shadow-sm flex items-center justify-center">' +
                                                 cameraSvg + '</div>';
                                         }
                                         hHtml += '<li><div class="item">' +
@@ -1547,9 +1569,12 @@
                                             '</div>' +
                                             '<div class="in flex-wrap gap-1">' +
                                             '<div class="w-full flex items-center justify-between gap-2">' +
-                                            '<span class="text-[13px] text-[#141515]">' + tglFormatted + '</span>' +
-                                            '<span class="inline-flex items-center justify-center rounded-full ' + statusCls +
-                                            ' text-[10px] sm:text-xs font-semibold px-2 py-0.5">' + statusTxt + '</span>' +
+                                            '<span class="text-[13px] text-[#141515]">' + tglFormatted +
+                                            '</span>' +
+                                            '<span class="inline-flex items-center justify-center rounded-full ' +
+                                            statusCls +
+                                            ' text-[10px] sm:text-xs font-semibold px-2 py-0.5">' +
+                                            statusTxt + '</span>' +
                                             '</div>' +
                                             '<div class="w-full flex flex-wrap gap-1">' +
                                             '<span class="inline-flex items-center justify-center rounded-full bg-[#1c1917] text-white text-[10px] sm:text-xs px-2 py-0.5">Masuk ' +
@@ -1557,7 +1582,8 @@
                                             (d.jam_out ?
                                                 '<span class="inline-flex items-center justify-center rounded-full bg-[#1c1917] text-white text-[10px] sm:text-xs px-2 py-0.5">Pulang ' +
                                                 esc(d.jam_out) + '</span>' :
-                                                '<span class="inline-flex items-center justify-center rounded-full bg-amber-500 text-white text-[10px] sm:text-xs px-2 py-0.5">Belum Presensi Pulang</span>') +
+                                                '<span class="inline-flex items-center justify-center rounded-full bg-amber-500 text-white text-[10px] sm:text-xs px-2 py-0.5">Belum Presensi Pulang</span>'
+                                                ) +
                                             '</div>' +
                                             '</div>' +
                                             '</div></li>';
@@ -1807,7 +1833,7 @@
                                         var keterangan = i.keterangan ?
                                             '<div class="text-[11px] text-[#78716c] mt-0.5 italic">' + esc((
                                                 i.keterangan.length > 50 ? i.keterangan.substring(0,
-                                                50) + '...' : i.keterangan)) + '</div>' : '';
+                                                    50) + '...' : i.keterangan)) + '</div>' : '';
                                         var rejectNote = (i.rejected_reason && i.status === 'rejected') ?
                                             '<div class="text-[11px] text-rose-600 mt-0.5">Alasan tolak: ' +
                                             esc((i.rejected_reason.length > 50 ? i.rejected_reason
@@ -1875,9 +1901,9 @@
                                             esc(p.id) +
                                             '">Setujui</button><button type="button" class="btn btn-sm bg-white border border-rose-200 text-rose-700 rounded-full px-3 py-1 text-[11px] w-full btn-reject-atasan-izin" data-id="' +
                                             esc(p.id) + '">Tolak</button></div></div>' + (p.pdf_form_path ?
-                                                '<div class="flex mt-1"><a href="/storage/' + esc(p
+                                                '<div class="flex mt-1.5"><a href="/storage/' + esc(p
                                                     .pdf_form_path) +
-                                                '" target="_blank" class="text-[11px] text-sky-700 hover:underline">Form Pengajuan</a></div>' :
+                                                '" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-sky-200 bg-sky-50 text-sky-700 text-[11px] font-semibold leading-tight no-underline cursor-pointer hover:bg-sky-100 active:scale-[0.97] transition"><i data-lucide="external-link" class="w-3 h-3"></i>Lihat Form Pengajuan</a></div>' :
                                                 '') + '</div></div>';
                                     });
                                     html += '</div>';

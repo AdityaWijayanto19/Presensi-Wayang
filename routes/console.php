@@ -9,6 +9,7 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('wfh:mark-unpaid')->dailyAt('00:00')->withoutOverlapping();
+Schedule::command('lembur:mark-unpaid')->dailyAt('00:00')->withoutOverlapping();
 Schedule::command('wfh:reminder-laporan')->dailyAt('22:00')->withoutOverlapping();
 Schedule::command('lembur:reminder-laporan')->dailyAt('22:00')->withoutOverlapping();
 Schedule::command('activitylog:cleanup')->dailyAt('03:15')->withoutOverlapping();

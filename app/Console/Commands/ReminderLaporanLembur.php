@@ -14,14 +14,17 @@ class ReminderLaporanLembur extends Command
 
     public function handle()
     {
-        $tujuhHariLalu = now('Asia/Jakarta')->subDays(7)->format('Y-m-d');
+        $hariIni = now('Asia/Jakarta')->format('Y-m-d');
 
+        // Deadline laporan lembur = akhir tgl_lembur (sebelum pukul 00:00),
+        // jadi reminder hanya untuk lembur ber-TANGGAL HARI INI.
         $lemburList = DB::table('lemburs')
             ->where('status', LemburStatus::Approved->value)
-            ->where('tgl_lembur', '>=', $tujuhHariLalu)
+            ->where('tgl_lembur', $hariIni)
             ->where(function ($q) {
                 $q->whereNull('laporan_deskripsi')
-                  ->orWhere('laporan_deskripsi', '');
+                  ->orWhere('laporan_deskripsi', '')
+                  ->orWhere('laporan_status', LemburStatus::Rejected->value);
             })
             ->get();
 
@@ -40,7 +43,7 @@ class ReminderLaporanLembur extends Command
                 app(\App\Services\Shared\WebPushService::class)->send(
                     $lembur->nik,
                     'Reminder Upload Laporan Lembur',
-                    'Lembur tanggal ' . $lembur->tgl_lembur . ' belum upload laporan! Upload sebelum pukul 00:00.',
+                    'Lembur tanggal ' . $lembur->tgl_lembur . ' belum upload laporan! Harap upload sebelum pukul 00:00 agar tidak ditandai sebagai Unpaid.',
                     '/lembur/' . $lembur->id . '/laporan',
                     'reminder-laporan-lembur-' . $lembur->id
                 );

@@ -108,7 +108,7 @@
                     <ol class="space-y-0">
                         @php
                             $alur = [
-                                ['t' => 'Ajukan Lembur', 'd' => 'Pilih durasi, jam mulai, dan keterangan di menu Pengajuan → Lembur.', 'c' => 'bg-violet-50 border-violet-200 text-violet-700'],
+                                ['t' => 'Ajukan Lembur', 'd' => 'Pilih tanggal (Hari ini / Besok), durasi, jam mulai, dan keterangan di menu Pengajuan → Lembur.', 'c' => 'bg-violet-50 border-violet-200 text-violet-700'],
                                 ['t' => 'Menunggu Atasan', 'd' => 'Atasan menyetujui atau menolak (alasan wajib diisi saat menolak).', 'c' => 'bg-amber-50 border-amber-200 text-amber-700'],
                                 ['t' => 'Menunggu HR', 'd' => 'Setelah atasan setujui, HR memeriksa dan memutuskan akhir.', 'c' => 'bg-sky-50 border-sky-200 text-sky-700'],
                                 ['t' => 'Disetujui / Ditolak', 'd' => 'Disetujui → lanjut foto & laporan. Ditolak → boleh ajukan ulang tanggal lain.', 'c' => 'bg-emerald-50 border-emerald-200 text-emerald-700'],
@@ -137,7 +137,7 @@
                             $alur2 = [
                                 ['t' => 'Ambil Foto Mulai', 'd' => 'Saat mulai bekerja lembur (webcam, sekali saja).'],
                                 ['t' => 'Ambil Foto Selesai', 'd' => 'Minimal 60 menit setelah foto mulai. Durasi aktual dihitung otomatis.'],
-                                ['t' => 'Kirim Laporan', 'd' => 'Deskripsi hasil kerja (10–3000 karakter) + 2–5 foto. Wajib untuk menyelesaikan lembur (pengingat otomatis pukul 22.00).'],
+                                ['t' => 'Kirim Laporan', 'd' => 'Deskripsi hasil kerja (10–3000 karakter) + 2–5 foto. Wajib dikirim di hari yang sama dengan tanggal lembur (pengingat otomatis pukul 22.00).'],
                                 ['t' => 'Disetujui Atasan → HR', 'd' => 'Laporan juga disetujui 2 tahap. Jika ditolak, perbaiki lalu Edit Laporan.'],
                             ];
                         @endphp
@@ -160,9 +160,20 @@
                     <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 mt-1 flex gap-2.5">
                         <i data-lucide="log-out" class="text-amber-600 shrink-0 mt-0.5" style="width:16px;height:16px;"></i>
                         <p class="text-[12px] leading-relaxed text-amber-900">
-                            Pengajuan lembur hanya bisa dibuka <b>setelah kamu absen pulang</b> hari ini —
-                            tanda bahwa jam kerja normal sudah selesai. Karyawan yang presensinya tidak
+                            Untuk lembur <b>hari ini</b>, pengajuan hanya bisa dibuka <b>setelah kamu absen pulang</b>
+                            hari ini — tanda bahwa jam kerja normal sudah selesai. Untuk lembur <b>besok</b>,
+                            pengajuan bebas kapan saja tanpa syarat absen pulang. Karyawan yang presensinya tidak
                             lewat sistem ini tetap boleh mengajukan.
+                        </p>
+                    </div>
+
+                    <div class="bg-rose-50 border border-rose-200 rounded-xl p-3 mt-2 flex gap-2.5">
+                        <i data-lucide="circle-alert" class="text-rose-600 shrink-0 mt-0.5" style="width:16px;height:16px;"></i>
+                        <p class="text-[12px] leading-relaxed text-rose-800">
+                            Laporan wajib dikirim <b>di hari yang sama dengan tanggal lembur</b>.
+                            Jika lembur sudah lewat tapi laporan belum dikirim atau masih diperbaiki,
+                            statusnya otomatis berubah menjadi <b>Unpaid</b> (tidak dihitung sebagai lembur)
+                            setiap pukul 00.00.
                         </p>
                     </div>
                 </section>
@@ -175,7 +186,7 @@
                     </h2>
                     <ol class="list-decimal pl-5 space-y-1.5 text-[13px] text-[#57534e] leading-relaxed">
                         <li>Buka menu <b>Pengajuan → Lembur</b>, lalu tombol <b>+</b> (Ajukan).</li>
-                        <li>Tanggal lembur otomatis <b>hari ini</b> (tidak bisa diganti).</li>
+                        <li>Pilih <b>Tanggal Lembur</b>: <b>Hari ini</b> (default) atau <b>Besok</b>. Tanggal lain tidak bisa dipilih.</li>
                         <li>Pilih <b>Durasi</b> (1–5 jam) atau <b>Prorate</b> (durasi aktual).</li>
                         <li>Isi <b>Rencana Jam Mulai</b> — menit hanya <b>:00</b> atau <b>:30</b>.</li>
                         <li>Jam selesai dihitung otomatis (Prorate → "Menyesuaikan").</li>
@@ -186,9 +197,10 @@
                     <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 mt-3 flex gap-2.5">
                         <i data-lucide="alarm-clock" class="text-amber-600 shrink-0 mt-0.5" style="width:16px;height:16px;"></i>
                         <div class="text-[12px] leading-relaxed text-amber-900">
-                            <b>Penting soal waktu:</b> pengajuan lembur hanya bisa dilakukan pada pukul
-                            <b>00.01–16.50</b> atau <b>18.00–23.59</b>. Di antaranya (16.51–17.59) sistem menutup
-                            sementara. Kamu juga harus sudah <b>absen pulang</b> hari ini. Satu hari hanya
+                            <b>Penting soal waktu:</b> untuk tanggal <b>hari ini</b>, pengajuan hanya bisa dilakukan
+                            pada pukul <b>00.01–16.50</b> atau <b>18.00–23.59</b>. Di antaranya (16.51–17.59) sistem
+                            menutup sementara. Kamu juga harus sudah <b>absen pulang</b> hari ini.
+                            Untuk tanggal <b>besok</b>, pengajuan bebas kapan saja. Satu tanggal hanya
                             boleh satu pengajuan lembur.
                         </div>
                     </div>
@@ -211,7 +223,7 @@
                             </thead>
                             <tbody class="divide-y divide-[#f0ece8]">
                                 <tr>
-                                    <td class="text-[12.5px] text-[#57534e] py-2.5 pr-3">Syarat ajukan</td>
+                                    <td class="text-[12.5px] text-[#57534e] py-2.5 pr-3">Syarat ajukan (hari ini)</td>
                                     <td class="text-[12.5px] font-semibold text-[#1c1917] py-2.5">Sudah absen pulang hari ini*</td>
                                 </tr>
                                 <tr>
@@ -228,7 +240,11 @@
                                 </tr>
                                 <tr>
                                     <td class="text-[12.5px] text-[#57534e] py-2.5 pr-3">Tanggal lembur</td>
-                                    <td class="text-[12.5px] font-semibold text-[#1c1917] py-2.5">Hari ini saja</td>
+                                    <td class="text-[12.5px] font-semibold text-[#1c1917] py-2.5">Hari ini (H) atau Besok (H+1)</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-[12.5px] text-[#57534e] py-2.5 pr-3">Ajukan untuk besok</td>
+                                    <td class="text-[12.5px] font-semibold text-[#1c1917] py-2.5">Bebas kapan saja, tanpa syarat absen pulang</td>
                                 </tr>
                                 <tr>
                                     <td class="text-[12.5px] text-[#57534e] py-2.5 pr-3">Satu lembur per tanggal</td>
@@ -255,8 +271,20 @@
                                     <td class="text-[12.5px] font-semibold text-[#1c1917] py-2.5">Tidak memblokir (pengingat 22.00)</td>
                                 </tr>
                                 <tr>
+                                    <td class="text-[12.5px] text-[#57534e] py-2.5 pr-3">Foto & laporan</td>
+                                    <td class="text-[12.5px] font-semibold text-[#1c1917] py-2.5">Wajib di hari yang sama dengan tanggal lembur</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-[12.5px] text-[#57534e] py-2.5 pr-3">Setelah tanggal lembur lewat</td>
+                                    <td class="text-[12.5px] font-semibold text-rose-600 py-2.5">Belum laporan / masih ditolak → Unpaid pukul 00.00</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-[12.5px] text-[#57534e] py-2.5 pr-3">Persetujuan setelah tanggal lewat</td>
+                                    <td class="text-[12.5px] font-semibold text-rose-600 py-2.5">Hanya bisa ditolak, tidak bisa disetujui</td>
+                                </tr>
+                                <tr>
                                     <td class="text-[12.5px] text-[#57534e] py-2.5 pr-3">Reminder laporan</td>
-                                    <td class="text-[12.5px] font-semibold text-[#1c1917] py-2.5">Pukul 22.00 (7 hari terakhir)</td>
+                                    <td class="text-[12.5px] font-semibold text-[#1c1917] py-2.5">Pukul 22.00 (lembur tanggal hari ini)</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -265,7 +293,8 @@
                     <div class="bg-rose-50 border border-rose-200 rounded-xl p-3 mt-3 flex gap-2.5">
                         <i data-lucide="circle-alert" class="text-rose-600 shrink-0 mt-0.5" style="width:16px;height:16px;"></i>
                         <p class="text-[12px] leading-relaxed text-rose-800">
-                            Lembur <b>hanya bisa diajukan untuk hari ini</b>. Lewat window jam (16.51–17.59),
+                            Lembur hanya bisa diajukan untuk <b>hari ini atau besok</b> — tidak bisa untuk tanggal
+                            lampau. Untuk lembur hari ini, lewat window jam (16.51–17.59),
                             coba lagi setelah pukul 18.00.<br>
                             * Kecuali kamu tidak presensi lewat sistem ini (tidak ada data presensi hari ini),
                             pengajuan tetap bisa dibuka sesuai window.
@@ -327,6 +356,7 @@
                     <p class="text-[13px] text-[#57534e] leading-relaxed mb-3">
                         Setelah lembur disetujui, buka kartu lembur → <b>Ambil Foto</b>.
                         Foto diambil dari kamera belakang (bisa diganti depan), rasio 4:5, dan hanya boleh sekali masing-masing.
+                        Foto mulai & selesai <b>wajib diambil pada tanggal yang sama dengan tanggal lembur</b>.
                     </p>
 
                     <div class="space-y-2.5">
@@ -402,7 +432,15 @@
                             <i data-lucide="circle-alert" class="text-rose-600 shrink-0 mt-0.5" style="width:16px;height:16px;"></i>
                             <div class="text-[12.5px] text-rose-800 leading-relaxed">
                                 <b>Laporan wajib dikirim</b> untuk menyelesaikan lembur — tapi tidak lagi
-                                memblokir absen pulang. Keterlambatan dipantau HR (pengingat pukul 22.00).
+                                memblokir absen pulang. Keterlambatan dipantau HR (pengingat pukul 22.00);
+                                lewat tengah malam lembur ditandai <b>Unpaid</b>.
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-2.5 bg-amber-50 border border-amber-200 rounded-xl p-3">
+                            <i data-lucide="calendar-clock" class="text-amber-600 shrink-0 mt-0.5" style="width:16px;height:16px;"></i>
+                            <div class="text-[12.5px] text-amber-900 leading-relaxed">
+                                Laporan hanya bisa dikirim <b>pada tanggal yang sama dengan tanggal lembur</b>.
+                                Lewat tanggalnya, form laporan ditutup.
                             </div>
                         </div>
                     </div>
@@ -430,6 +468,14 @@
                         <div class="border border-rose-200 bg-rose-50 rounded-xl p-3">
                             <span class="inline-block text-[10px] font-bold uppercase tracking-wide bg-rose-100 text-rose-700 border border-rose-200 rounded-full px-2 py-0.5">Ditolak</span>
                             <p class="text-[12px] text-rose-900 mt-1.5 leading-relaxed">Tidak disetujui. Ada alasan penolakan; boleh ajukan ulang untuk tanggal lain.</p>
+                        </div>
+                        <div class="border border-gray-200 bg-gray-50 rounded-xl p-3">
+                            <span class="inline-block text-[10px] font-bold uppercase tracking-wide bg-gray-100 text-gray-700 border border-gray-200 rounded-full px-2 py-0.5">Unpaid</span>
+                            <p class="text-[12px] text-gray-700 mt-1.5 leading-relaxed">
+                                Tanggal lembur sudah lewat tapi laporan belum dikirim atau masih dalam perbaikan
+                                setelah ditolak. Ditandai otomatis pukul 00.00 dan tidak dihitung sebagai lembur.
+                                Hubungi HR untuk pembahasan.
+                            </p>
                         </div>
                         <div class="border border-stone-200 bg-stone-50 rounded-xl p-3 sm:col-span-2">
                             <span class="inline-block text-[10px] font-bold uppercase tracking-wide bg-stone-100 text-stone-600 border border-stone-200 rounded-full px-2 py-0.5">Laporan</span>
@@ -462,10 +508,11 @@
                                 <i data-lucide="circle-check" style="width:14px;height:14px;"></i> Boleh
                             </div>
                             <ul class="space-y-1.5 text-[12.5px] text-emerald-900 leading-relaxed">
-                                <li class="flex gap-1.5"><span>✓</span><span>Sudah absen pulang hari ini, lalu ajukan di window <b>00.01–16.50</b> atau <b>18.00–23.59</b>.</span></li>
+                                <li class="flex gap-1.5"><span>✓</span><span>Ajukan lembur <b>hari ini</b> setelah absen pulang di window <b>00.01–16.50</b> atau <b>18.00–23.59</b>.</span></li>
+                                <li class="flex gap-1.5"><span>✓</span><span>Ajukan lembur <b>besok</b> kapan saja, tanpa syarat absen pulang.</span></li>
                                 <li class="flex gap-1.5"><span>✓</span><span>Pilih Prorate jika durasi lembur tidak pasti.</span></li>
-                                <li class="flex gap-1.5"><span>✓</span><span>Ambil foto mulai setelah lembur disetujui.</span></li>
-                                <li class="flex gap-1.5"><span>✓</span><span>Ambil foto selesai setelah ≥ 60 menit dari foto mulai.</span></li>
+                                <li class="flex gap-1.5"><span>✓</span><span>Ambil foto mulai setelah lembur disetujui (di hari-H).</span></li>
+                                <li class="flex gap-1.5"><span>✓</span><span>Ambil foto selesai setelah ≥ 60 menit dari foto mulai (masih di hari-H).</span></li>
                                 <li class="flex gap-1.5"><span>✓</span><span>Edit & kirim ulang laporan setelah <b>Ditolak</b>.</span></li>
                             </ul>
                         </div>
@@ -475,13 +522,14 @@
                             </div>
                             <ul class="space-y-1.5 text-[12.5px] text-rose-900 leading-relaxed">
                                 <li class="flex gap-1.5"><span>✗</span><span>Dua lembur untuk tanggal yang sama.</span></li>
-                                <li class="flex gap-1.5"><span>✗</span><span>Ajukan di gap 16.51–17.59 atau jam 00.00.</span></li>
+                                <li class="flex gap-1.5"><span>✗</span><span>Ajukan untuk tanggal lampau atau lebih dari besok.</span></li>
+                                <li class="flex gap-1.5"><span>✗</span><span>Ajukan di gap 16.51–17.59 atau jam 00.00 (khusus lembur hari ini).</span></li>
                                 <li class="flex gap-1.5"><span>✗</span><span>Jam mulai selain :00 atau :30.</span></li>
-                                <li class="flex gap-1.5"><span>✗</span><span>Ambil foto mulai/selesai lebih dari sekali.</span></li>
+                                <li class="flex gap-1.5"><span>✗</span><span>Ambil foto mulai/selesai lebih dari sekali atau di luar tanggal lembur.</span></li>
                                 <li class="flex gap-1.5"><span>✗</span><span>Foto selesai sebelum 60 menit dari foto mulai.</span></li>
-                                <li class="flex gap-1.5"><span>✗</span><span>Kirim laporan sebelum foto lengkap, atau kurang dari 2 foto.</span></li>
+                                <li class="flex gap-1.5"><span>✗</span><span>Kirim laporan sebelum foto lengkap, kurang dari 2 foto, atau di luar tanggal lembur.</span></li>
                                 <li class="flex gap-1.5"><span>✗</span><span>Edit laporan yang belum berstatus Ditolak.</span></li>
-                                <li class="flex gap-1.5"><span>✗</span><span>Ajukan lembur sebelum absen pulang (khusus yang presensi lewat sistem).</span></li>
+                                <li class="flex gap-1.5"><span>✗</span><span>Ajukan lembur hari ini sebelum absen pulang (khusus yang presensi lewat sistem).</span></li>
                             </ul>
                         </div>
                     </div>
@@ -500,8 +548,9 @@
                                 <i data-lucide="chevron-down" class="text-[#a8a29e] shrink-0 group-open:rotate-180 transition-transform" style="width:16px;height:16px;"></i>
                             </summary>
                             <p class="text-[12.5px] text-[#57534e] leading-relaxed mt-2">
-                                Pada pukul <b>00.01–16.50</b> atau <b>18.00–23.59</b>, untuk <b>hari yang sama</b>.
-                                Di antaranya (16.51–17.59) sistem menutup pengajuan sementara.
+                                Untuk <b>hari ini</b>: pukul <b>00.01–16.50</b> atau <b>18.00–23.59</b>,
+                                setelah absen pulang (di antaranya 16.51–17.59 sistem menutup sementara).
+                                Untuk <b>besok</b>: kapan saja, tanpa syarat absen pulang.
                             </p>
                         </details>
                         <details class="group py-2.5">
@@ -531,9 +580,10 @@
                                 <i data-lucide="chevron-down" class="text-[#a8a29e] shrink-0 group-open:rotate-180 transition-transform" style="width:16px;height:16px;"></i>
                             </summary>
                             <p class="text-[12.5px] text-[#57534e] leading-relaxed mt-2">
-                                Tiga kemungkinan: (1) kamu <b>belum absen pulang</b> hari ini,
+                                Empat kemungkinan: (1) kamu <b>belum absen pulang</b> hari ini (khusus lembur hari ini),
                                 (2) lewat window jam — coba <b>00.01–16.50</b> atau <b>18.00–23.59</b>
-                                (gap 16.51–17.59 ditutup), atau (3) sudah ada lembur untuk tanggal hari ini.
+                                (gap 16.51–17.59 ditutup), (3) sudah ada lembur untuk tanggal itu, atau
+                                (4) tanggal yang dipilih <b>lewat lampau atau lebih dari besok</b>.
                                 Aturan minimal 8 jam kerja tetap berlaku untuk absen pulang.
                             </p>
                         </details>
@@ -545,6 +595,29 @@
                             <p class="text-[12.5px] text-[#57534e] leading-relaxed mt-2">
                                 Buka menu <b>Lembur</b>, tap <b>Edit Laporan</b>, perbaiki sesuai masukan
                                 atasan/HR, lalu kirim ulang. Perbaikan diperiksa ulang dari awal (atasan → HR).
+                            </p>
+                        </details>
+                        <details class="group py-2.5">
+                            <summary class="text-[13px] font-semibold text-[#1c1917] cursor-pointer list-none flex items-center justify-between gap-3">
+                                Apa arti status Unpaid?
+                                <i data-lucide="chevron-down" class="text-[#a8a29e] shrink-0 group-open:rotate-180 transition-transform" style="width:16px;height:16px;"></i>
+                            </summary>
+                            <p class="text-[12.5px] text-[#57534e] leading-relaxed mt-2">
+                                Lembur yang tanggalnya sudah lewat tapi laporannya belum dikirim atau masih dalam
+                                perbaikan setelah ditolak. Sistem menandainya otomatis setiap pukul 00.00,
+                                dan lembur tersebut <b>tidak dihitung</b>. Perbaiki laporan (jika memungkinkan)
+                                atau hubungi HR untuk pembahasan.
+                            </p>
+                        </details>
+                        <details class="group py-2.5">
+                            <summary class="text-[13px] font-semibold text-[#1c1917] cursor-pointer list-none flex items-center justify-between gap-3">
+                                Kenapa foto atau laporan tidak bisa dibuka?
+                                <i data-lucide="chevron-down" class="text-[#a8a29e] shrink-0 group-open:rotate-180 transition-transform" style="width:16px;height:16px;"></i>
+                            </summary>
+                            <p class="text-[12.5px] text-[#57534e] leading-relaxed mt-2">
+                                Foto mulai/selesai dan pengiriman laporan hanya bisa dilakukan pada
+                                <b>tanggal yang sama dengan tanggal lembur</b>. Lewat tanggalnya, form ditutup
+                                dan lembur berikutnya ditandai Unpaid.
                             </p>
                         </details>
                         <details class="group py-2.5">

@@ -192,7 +192,7 @@ class AdminPresensiController extends Controller
         if ($oldStatus !== $newStatus) {
             if ($newStatus === 'approved') {
                 $updateData['admin_status'] = 'approved';
-                if (empty($lembur->approved_at)) {
+                if (empty($lembur->approved_at) || $oldStatus === 'unpaid') {
                     $updateData['approved_at'] = now('Asia/Jakarta');
                 }
             } elseif ($newStatus === 'rejected') {
@@ -202,6 +202,22 @@ class AdminPresensiController extends Controller
                 $updateData['atasan_status'] = 'pending';
             } elseif ($newStatus === 'pending_admin') {
                 $updateData['admin_status'] = 'pending';
+            } elseif ($newStatus === 'unpaid') {
+                $updateData['admin_status'] = 'approved';
+            }
+
+            // Recovery Unpaid -> Disetujui: reset isi laporan agar karyawan bisa isi ulang
+            // (approved_at di-reset di atas = waiver hard cutoff hari-H, pola sama dengan WFH)
+            if ($oldStatus === 'unpaid' && $newStatus === 'approved') {
+                $updateData['laporan_status'] = null;
+                $updateData['laporan_deskripsi'] = null;
+                $updateData['laporan_file'] = null;
+                $updateData['laporan_approved_at'] = null;
+                $updateData['laporan_images'] = null;
+                $updateData['laporan_atasan_nik'] = null;
+                $updateData['laporan_atasan_status'] = null;
+                $updateData['laporan_admin_status'] = null;
+                $updateData['laporan_rejected_reason'] = null;
             }
         }
 

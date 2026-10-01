@@ -30,7 +30,8 @@
                 {{-- Notification Items --}}
                 <x-admin.card class="divide-y divide-slate-200 overflow-hidden">
                     @foreach($group['items'] as $n)
-                        <div
+                        <a
+                            href="{{ \App\Services\NotificationLinkService::resolve($n) }}"
                             class="p-3.5 hover:bg-[#fdf8f4] transition-colors duration-150 flex items-start justify-between gap-3 {{ is_null($n->read_at) ? 'bg-amber-50/50' : '' }}">
                             <div class="flex-1">
                                 <!-- Pesan Notifikasi -->
@@ -44,11 +45,14 @@
                                 </div>
                             </div>
 
-                            <!-- Indikator Belum Dibaca -->
-                            @if (is_null($n->read_at))
-                                <span class="w-2 h-2 rounded-full bg-amber-500 mt-1 flex-shrink-0"></span>
-                            @endif
-                        </div>
+                            <div class="flex items-center gap-2 mt-0.5 flex-shrink-0">
+                                <!-- Indikator Belum Dibaca -->
+                                @if (is_null($n->read_at))
+                                    <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                                @endif
+                                <i data-lucide="chevron-right" class="text-[#a8a29e]" style="width:14px;height:14px;"></i>
+                            </div>
+                        </a>
                     @endforeach
                 </x-admin.card>
             @empty

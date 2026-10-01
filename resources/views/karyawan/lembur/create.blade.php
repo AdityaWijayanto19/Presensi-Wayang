@@ -48,12 +48,36 @@
             <form method="POST" action="/lembur/store" id="form_lembur" autocomplete="off">
                 @csrf
 
+                @php
+                    $tglHariIni = now('Asia/Jakarta')->format('Y-m-d');
+                    $tglBesok = now('Asia/Jakarta')->addDay()->format('Y-m-d');
+                    $labelHariIni = now('Asia/Jakarta')->format('d M Y');
+                    $labelBesok = now('Asia/Jakarta')->addDay()->format('d M Y');
+                    $bolehHariIni = $canHariIni['can'] ?? false;
+                    $bolehBesok = $canBesok['can'] ?? false;
+                    $defaultTgl = $bolehHariIni ? $tglHariIni : $tglBesok;
+                @endphp
+
                 {{-- Tanggal Lembur --}}
                 <div class="form-group mt-3">
                     <label class="text-sm font-medium text-[#1c1917]">Tanggal Lembur</label>
-                    <input type="text" class="w-full rounded-md border border-slate-300 px-2.5 py-1.5 text-sm bg-gray-100"
-                           value="{{ now('Asia/Jakarta')->format('Y-m-d') }}" readonly name="tgl_lembur">
-                    <small class="text-[#a8a29e] text-[11px]">Lembur hanya bisa diajukan untuk hari ini.</small>
+                    <select name="tgl_lembur" id="tgl_lembur" x-model="tglLembur"
+                            class="w-full rounded-md border border-slate-300 px-2.5 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                            required>
+                        <option value="{{ $tglHariIni }}" {{ $bolehHariIni ? '' : 'disabled' }}>
+                            Hari ini ({{ $labelHariIni }})
+                        </option>
+                        <option value="{{ $tglBesok }}" {{ $bolehBesok ? '' : 'disabled' }}>
+                            Besok ({{ $labelBesok }})
+                        </option>
+                    </select>
+                    <small class="text-[#a8a29e] text-[11px]">Lembur hanya bisa diajukan untuk hari ini atau besok. Tanggal lampau tidak diperkenankan.</small>
+                    @if (!$bolehHariIni && !empty($canHariIni['message']))
+                        <small class="block text-rose-500 text-[11px]">Hari ini: {{ $canHariIni['message'] }}</small>
+                    @endif
+                    @if (!$bolehBesok && !empty($canBesok['message']))
+                        <small class="block text-rose-500 text-[11px]">Besok: {{ $canBesok['message'] }}</small>
+                    @endif
                 </div>
 
                 {{-- Durasi Lembur --}}
@@ -124,6 +148,7 @@
 <script>
     function lemburForm() {
         return {
+            tglLembur: '{{ $defaultTgl }}',
             durasi: '',
             jamMulai: '',
             get isProrate() {
@@ -167,6 +192,14 @@
             var keterangan = document.getElementById('keterangan').value.trim();
             var durasi = document.getElementById('durasi_jam').value;
             var jamMulai = document.getElementById('jam_mulai').value;
+            var tglSelect = document.getElementById('tgl_lembur');
+            var tglLembur = tglSelect ? tglSelect.value : '';
+            var tglLabel = tglSelect && tglSelect.selectedOptions[0] ? tglSelect.selectedOptions[0].textContent.trim() : tglLembur;
+
+            if (!tglLembur) {
+                Swal.fire({ title: 'Error!', icon: 'warning', text: 'Tanggal lembur wajib dipilih!', confirmButtonColor: '#7a5234' });
+                return false;
+            }
 
             if (!durasi) {
                 Swal.fire({ title: 'Error!', icon: 'warning', text: 'Durasi lembur wajib dipilih!', confirmButtonColor: '#7a5234' });
@@ -192,7 +225,7 @@
 
             Swal.fire({
                 title: 'Kirim Pengajuan Lembur?',
-                html: 'Lembur <b>' + durasiText + '</b> pada <b>' + jamMulai + ' - ' + jamSelesai + '</b>',
+                html: 'Lembur <b>' + durasiText + '</b> pada <b>' + tglLabel + '</b> pukul <b>' + jamMulai + ' - ' + jamSelesai + '</b>',
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonColor: '#7a5234',

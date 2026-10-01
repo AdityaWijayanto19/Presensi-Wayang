@@ -14,6 +14,7 @@ class LemburStatusChanged extends Notification
         'pending_admin' => 'Menunggu Persetujuan HR',
         'approved' => 'Disetujui',
         'rejected' => 'Ditolak',
+        'unpaid' => 'Unpaid',
     ];
 
     public function __construct(public $lembur, public $oldStatus, public $newStatus) {}

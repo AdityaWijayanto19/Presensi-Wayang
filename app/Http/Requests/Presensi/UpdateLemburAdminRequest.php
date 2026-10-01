@@ -16,7 +16,7 @@ class UpdateLemburAdminRequest extends FormRequest
         return [
             'tgl_lembur' => 'required|date',
             'keterangan' => 'nullable|string|max:1000',
-            'status' => 'required|string|in:pending_atasan,pending_admin,approved,rejected',
+            'status' => 'required|string|in:pending_atasan,pending_admin,approved,rejected,unpaid',
             'durasi_jam' => 'required|numeric|min:0.5|max:10',
         ];
     }
