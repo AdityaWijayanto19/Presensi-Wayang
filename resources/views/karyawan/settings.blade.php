@@ -13,13 +13,15 @@
             $perms = [
                 'location' => ['icon' => 'map-pin', 'title' => 'Izinkan Lokasi', 'desc' => 'Untuk presensi otomatis dan pelacakan lokasi WFH'],
                 'camera' => ['icon' => 'camera', 'title' => 'Izinkan Kamera', 'desc' => 'Untuk foto selfie saat presensi masuk/pulang'],
-                'notifications' => ['icon' => 'bell', 'title' => 'Izinkan Notifikasi', 'desc' => 'Untuk notifikasi WFH, pengingat, dan persetujuan'],
+                'notifications' => ['icon' => 'bell', 'title' => 'Izinkan Notifikasi', 'desc' => 'Pengingat WFH, izin, dan lembur — tetap masuk walau aplikasi ditutup'],
             ];
         @endphp
 
         @foreach ($perms as $key => $perm)
+            @php $isNotifications = $key === 'notifications'; @endphp
             <x-admin.card class="mb-3">
-                <div class="card-body p-4 flex items-center justify-between">
+                <div class="card-body p-4 flex items-center justify-between"
+                    @if($isNotifications) x-data="pushSettings({{ $permissions[$key] ? 'true' : 'false' }})" x-init="init()" @endif>
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center text-amber-700">
                             <i data-lucide="{{ $perm['icon'] }}" class="text-xl"></i>
@@ -27,14 +29,29 @@
                         <div>
                             <div class="text-[14px] font-bold text-[#1c1917]">{{ $perm['title'] }}</div>
                             <div class="text-[11px] text-[#78716c]">{{ $perm['desc'] }}</div>
-                            <div id="status-{{ $key }}" class="text-[10px] mt-0.5 {{ $permissions[$key] ? 'text-emerald-600' : 'text-rose-600' }}">
-                                {{ $permissions[$key] ? 'Aktif' : 'Nonaktif' }}
-                            </div>
+                            @if($isNotifications)
+                                {{-- Satu sumber kebenaran: gabungan status browser dan preferensi aplikasi. --}}
+                                <div class="text-[10px] mt-0.5" :class="statusClass" x-text="statusText"></div>
+                                <div x-show="needsInstall" x-cloak class="mt-1">
+                                    <a href="/install" class="text-[10px] font-semibold text-amber-700 underline underline-offset-2">Lihat cara pasang ke Layar Utama</a>
+                                </div>
+                                <div x-show="needsRetry" x-cloak class="mt-1">
+                                    <button type="button" @click="retrySync()" :disabled="busy"
+                                        x-text="busy ? 'Menyinkronkan…' : 'Coba sinkronkan lagi'"
+                                        class="text-[10px] font-semibold text-amber-700 underline underline-offset-2 border-0 bg-transparent p-0 cursor-pointer disabled:opacity-60"></button>
+                                </div>
+                            @else
+                                <div id="status-{{ $key }}" class="text-[10px] mt-0.5 {{ $permissions[$key] ? 'text-emerald-600' : 'text-rose-600' }}">
+                                    {{ $permissions[$key] ? 'Aktif' : 'Nonaktif' }}
+                                </div>
+                            @endif
                         </div>
                     </div>
-                    <label class="relative inline-flex items-center cursor-pointer">
+                    <label class="relative inline-flex items-center cursor-pointer"
+                        @if($isNotifications) :class="{ 'opacity-50': toggleDisabled, 'pointer-events-none': toggleDisabled }" @endif>
                         <input type="checkbox" class="sr-only peer toggle-permission"
                             data-permission="{{ $key }}"
+                            @if($isNotifications) :disabled="toggleDisabled" @endif
                             {{ $permissions[$key] ? 'checked' : '' }}>
                         <div class="w-11 h-6 bg-stone-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
                     </label>
@@ -114,13 +131,18 @@
                         .then(r => r.json())
                         .then(data => {
                             var statusEl = document.getElementById('status-' + permission);
-                            if (data.is_enabled) {
-                                statusEl.textContent = 'Aktif';
-                                statusEl.className = 'text-[10px] mt-0.5 text-emerald-600';
-                            } else {
-                                statusEl.textContent = 'Nonaktif';
-                                statusEl.className = 'text-[10px] mt-0.5 text-rose-600';
+                            if (statusEl) {
+                                statusEl.textContent = data.is_enabled ? 'Aktif' : 'Nonaktif';
+                                statusEl.className = 'text-[10px] mt-0.5 ' +
+                                    (data.is_enabled ? 'text-emerald-600' : 'text-rose-600');
                             }
+
+                            // Kartu notifikasi dikendalikan Alpine (pushSettings) — beri tahu
+                            // lewat event, jangan menulis DOM secara langsung.
+                            document.dispatchEvent(new CustomEvent('wag-permission-toggled', {
+                                detail: { permission: permission, is_enabled: data.is_enabled }
+                            }));
+
                             Swal.fire({
                                 title: 'Berhasil!',
                                 text: 'Izin ' + label + ' berhasil ' + (data.is_enabled ? 'diaktifkan' : 'dinonaktifkan'),

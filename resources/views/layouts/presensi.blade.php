@@ -62,42 +62,113 @@
         }
     </script>
 
-    {{-- Banner ajakan mengaktifkan notifikasi, tampil di seluruh halaman karyawan.
+    {{-- Status notifikasi: kartu di Settings dan badge di bottom-nav.
          Izin browser TIDAK pernah diminta dari sini: hanya lewat tombol (gestur user). --}}
     <script>
-        function pushBanner() {
-            var CONTENT = {
-                install: {
-                    title: 'Tambahkan ke Layar Utama',
-                    desc: 'Di iPhone, notifikasi hanya bisa aktif setelah aplikasi dipasang ke Layar Utama.',
-                    action: 'Lihat Cara'
-                },
-                enable: {
-                    title: 'Aktifkan Notifikasi',
-                    desc: 'Terima pengingat WFH, izin, dan lembur walau aplikasi sedang ditutup.',
-                    action: 'Aktifkan'
-                },
-                sync: {
-                    title: 'Sinkronkan Notifikasi',
-                    desc: 'Langganan notifikasi belum tercatat di server.',
-                    action: 'Sinkronkan'
-                },
-                blocked: {
-                    title: 'Notifikasi Diblokir',
-                    desc: 'Izin ditolak oleh browser. Aktifkan kembali lewat pengaturan situs ini.',
-                    action: null
-                }
-            };
-
+        // Kartu "Izinkan Notifikasi" di halaman Settings.
+        // prefEnabled diberikan dari server (blade), sisanya dibaca dari WAGPush.
+        function pushSettings(prefEnabled) {
             return {
-                visible: false,
-                mode: 'hidden',
-                title: '',
-                desc: '',
-                action: null,
+                inited: false,
+                ready: false,
+                prefEnabled: prefEnabled === true,
+                supported: true,
+                isIOS: false,
+                standalone: false,
+                permission: 'default',
+                hasSub: false,
                 busy: false,
 
                 init() {
+                    if (this.inited) return;
+                    this.inited = true;
+
+                    if (!window.WAGPush) {
+                        this.ready = true;
+                        this.supported = false;
+                        return;
+                    }
+
+                    window.WAGPush.onChange((state) => this.apply(state));
+                    this.apply(window.WAGPush.getState());
+
+                    document.addEventListener('wag-permission-toggled', (event) => {
+                        if (event.detail && event.detail.permission === 'notifications') {
+                            this.prefEnabled = event.detail.is_enabled;
+                        }
+                    });
+                },
+
+                apply(state) {
+                    if (!state) return;
+
+                    this.ready = state.ready;
+                    this.supported = state.supported;
+                    this.isIOS = state.isIOS;
+                    this.standalone = state.standalone;
+                    this.permission = state.permission;
+                    this.hasSub = state.hasSub;
+                },
+
+                get statusText() {
+                    if (!this.ready) return 'Memeriksa…';
+                    if (!this.supported) return 'Tidak didukung browser ini';
+                    if (this.isIOS && !this.standalone) return 'Buka dari Layar Utama';
+                    if (!this.prefEnabled) return 'Nonaktif di aplikasi';
+                    if (this.permission === 'denied') return 'Diblokir oleh browser';
+                    if (this.permission === 'granted' && !this.hasSub) return 'Belum tersinkron di perangkat ini';
+                    if (this.permission === 'default') return 'Belum aktif';
+                    return 'Aktif di perangkat ini';
+                },
+
+                get statusClass() {
+                    if (!this.ready || !this.supported) return 'text-[#a8a29e]';
+                    if (this.isIOS && !this.standalone) return 'text-amber-600';
+                    if (!this.prefEnabled) return 'text-rose-600';
+                    if (this.permission === 'denied') return 'text-rose-600';
+                    if (this.permission === 'granted' && !this.hasSub) return 'text-amber-600';
+                    if (this.permission === 'default') return 'text-[#a8a29e]';
+                    return 'text-emerald-600';
+                },
+
+                get toggleDisabled() {
+                    return this.ready && !this.supported;
+                },
+
+                get needsInstall() {
+                    return this.ready && this.isIOS && !this.standalone;
+                },
+
+                get needsRetry() {
+                    return this.ready && this.supported && !this.isIOS
+                        && this.permission === 'granted' && !this.hasSub;
+                },
+
+                async retrySync() {
+                    if (this.busy) return;
+                    this.busy = true;
+
+                    try {
+                        await window.WAGPush.syncExisting();
+                        this.apply(window.WAGPush.getState());
+                    } finally {
+                        this.busy = false;
+                    }
+                }
+            };
+        }
+
+        // Titik kecil di bottom-nav. Sengaja TIDAK muncul saat permission 'denied'
+        // agar tidak menagih keputusan yang sudah dibuat user.
+        function pushBadge() {
+            return {
+                inited: false,
+                show: false,
+
+                init() {
+                    if (this.inited) return;
+                    this.inited = true;
+
                     if (!window.WAGPush) return;
 
                     window.WAGPush.onChange((state) => this.apply(state));
@@ -108,101 +179,21 @@
                             this.apply(window.WAGPush.getState());
                         }
                     });
-
-                    if (window.lucide) window.lucide.createIcons();
                 },
 
                 apply(state) {
-                    if (!state) return this.hide();
-
-                    // iOS tanpa konteks Layar Utama: WebKit tidak mengekspos Notification
-                    // dan PushManager sama sekali, jadi tombol izin tidak akan berfungsi.
-                    if (state.isIOS && !state.standalone) return this.setMode('install');
-                    if (!state.supported) return this.hide();
-                    if (state.permission === 'granted' && state.hasSub) return this.hide();
-                    if (state.permission === 'granted') return this.setMode('sync');
-                    if (state.permission === 'denied') return this.setMode('blocked');
-
-                    return this.setMode('enable');
-                },
-
-                setMode(mode) {
-                    var content = CONTENT[mode];
-
-                    this.mode = mode;
-                    this.title = content.title;
-                    this.desc = content.desc;
-                    this.action = content.action;
-                    this.visible = !this.dismissedFor(mode);
-                },
-
-                hide() {
-                    this.visible = false;
-                },
-
-                dismissedFor(mode) {
-                    try {
-                        return window.localStorage.getItem('wag_push_banner_' + mode) === '1';
-                    } catch (error) {
-                        return false;
-                    }
-                },
-
-                dismiss() {
-                    try {
-                        window.localStorage.setItem('wag_push_banner_' + this.mode, '1');
-                    } catch (error) {
-                        // Penyimpanan tidak tersedia (private mode) — cukup tutup untuk sesi ini.
-                    }
-                    this.visible = false;
-                },
-
-                runPrimary() {
-                    if (this.mode === 'install') {
-                        window.location.href = '/install';
+                    if (!state) {
+                        this.show = false;
                         return;
                     }
-                    if (this.mode === 'sync') return this.syncNow();
-                    if (this.mode === 'enable') return this.enablePush();
-                },
 
-                // HARUS dipanggil langsung dari klik tombol ini.
-                // WebKit/iOS menuntut requestPermission() berada di dalam gestur user.
-                async enablePush() {
-                    if (this.busy) return;
-                    this.busy = true;
-
-                    try {
-                        var result = await window.WAGPush.enable();
-                        this.apply(window.WAGPush.getState());
-
-                        if (result.ok) {
-                            this.toast('success', 'Notifikasi berhasil diaktifkan');
-                        } else if (result.reason === 'denied') {
-                            this.toast('error', 'Izin notifikasi ditolak oleh browser');
-                        }
-                    } finally {
-                        this.busy = false;
+                    if (!state.supported) {
+                        this.show = state.isIOS && !state.standalone;
+                        return;
                     }
-                },
 
-                async syncNow() {
-                    if (this.busy) return;
-                    this.busy = true;
-
-                    try {
-                        await window.WAGPush.syncExisting();
-                        this.apply(window.WAGPush.getState());
-                        this.toast('success', 'Langganan notifikasi tersinkron');
-                    } finally {
-                        this.busy = false;
-                    }
-                },
-
-                toast(type, message) {
-                    if (typeof window.showToast === 'function') {
-                        window.showToast(type, message);
-                    }
+                    this.show = state.permission === 'default'
+                        || (state.permission === 'granted' && !state.hasSub);
                 }
             };
         }
@@ -212,7 +203,8 @@
     <script src="{{ asset('js/push-util.js') }}"></script>
 
     {{-- Web Push client. Satu-satunya sumber logika subscription di sisi klien.
-         Dideklarasikan di <head> agar sudah tersedia saat Alpine menginisialisasi komponen banner. --}}
+         Dideklarasikan di <head> agar sudah tersedia saat Alpine menginisialisasi
+         pushSettings() dan pushBadge(). --}}
     <script>
         window.WAGPush = (function () {
             'use strict';
@@ -227,7 +219,11 @@
                 permission: 'default',
                 hasSub: false,
                 standalone: false,
-                isIOS: false
+                isIOS: false,
+                // false sampai sinkronisasi pertama selesai. Konsumen (kartu Settings,
+                // badge bottom-nav) tidak boleh membaca status sebelum ini true,
+                // karena hasSub masih false dan akan menampilkan status yang menyesatkan.
+                ready: false
             };
 
             function refresh() {
@@ -380,11 +376,15 @@
                 refresh();
 
                 if (!state.supported) {
+                    state.ready = true;
                     notify();
                     return;
                 }
 
-                syncExisting();
+                syncExisting().then(function () {
+                    state.ready = true;
+                    notify();
+                });
 
                 var syncing = false;
                 document.addEventListener('visibilitychange', function () {
@@ -432,40 +432,6 @@
         :class="isOffline ? 'bg-[#7f1d1d]' : 'bg-emerald-700'">
         <span x-show="isOffline">Koneksi terputus. Periksa jaringan Anda.</span>
         <span x-show="!isOffline && showOnline">Terhubung kembali.</span>
-    </div>
-
-    {{-- Banner Aktifkan Notifikasi --}}
-    <div x-data="pushBanner()" x-init="init()" x-cloak
-        x-show="visible"
-        role="status"
-        aria-live="polite"
-        class="fixed left-0 right-0 z-[999] px-3 bottom-[calc(70px_+_env(safe-area-inset-bottom))] lg:bottom-6 lg:px-6">
-        <div class="mx-auto max-w-lg rounded-2xl bg-white border border-[#f0ece8] p-3.5 shadow-[0_8px_28px_rgba(28,25,23,0.16)]"
-            style="animation: modalIn 0.2s ease;">
-            <div class="flex items-start gap-3">
-                <div class="w-9 h-9 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center text-amber-700 shrink-0">
-                    <i data-lucide="bell" style="width:18px;height:18px;"></i>
-                </div>
-                <div class="min-w-0 flex-1">
-                    <div class="text-[13px] font-bold text-[#1c1917] leading-tight" x-text="title"></div>
-                    <div class="text-[11px] text-[#78716c] mt-1" x-text="desc"></div>
-                </div>
-                <button type="button" @click="dismiss()" aria-label="Tutup"
-                    class="w-7 h-7 rounded-full inline-flex items-center justify-center bg-[#f5f5f4] border border-[#e7e5e4] text-[#57534e] cursor-pointer shrink-0">
-                    <i data-lucide="x" style="width:14px;height:14px;"></i>
-                </button>
-            </div>
-            <div class="flex gap-2 mt-3">
-                <button type="button" x-show="action" x-text="busy ? 'Memproses…' : action"
-                    @click="runPrimary()" :disabled="busy"
-                    class="flex-1 rounded-full px-4 py-2 text-[12px] font-bold bg-coklat text-white border-0 cursor-pointer disabled:opacity-60">
-                </button>
-                <button type="button" @click="dismiss()"
-                    class="rounded-full px-4 py-2 text-[12px] font-semibold bg-white border border-[#e7e5e4] text-[#44403c] cursor-pointer">
-                    Nanti
-                </button>
-            </div>
-        </div>
     </div>
 
     {{-- Sidebar Desktop (lg+) --}}

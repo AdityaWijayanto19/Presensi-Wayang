@@ -72,7 +72,10 @@
         </div>
     </a>
 
-    <a href="/settings" class="item {{ request()->is('settings') ? 'active disabled' : '' }}">
+    <a href="/settings" class="item relative {{ request()->is('settings') ? 'active disabled' : '' }}">
+        {{-- Penanda bahwa izin notifikasi belum aktif / sinkronisasi bermasalah. --}}
+        <span x-data="pushBadge()" x-init="init()" x-cloak x-show="show"
+            class="absolute top-1 right-3 w-2.5 h-2.5 rounded-full bg-rose-500"></span>
         <div class="col">
             {{-- Cog 6-tooth --}}
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"

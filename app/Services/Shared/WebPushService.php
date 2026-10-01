@@ -3,6 +3,7 @@
 namespace App\Services\Shared;
 
 use App\Models\PushSubscription;
+use App\Models\UserPermission;
 use Illuminate\Support\Facades\Log;
 use Minishlink\WebPush\ContentEncoding;
 use Minishlink\WebPush\MessageSentReport;
@@ -20,6 +21,12 @@ class WebPushService
     public function send(string $nik, string $title, string $body, ?string $url = null, ?string $tag = null): void
     {
         if (! config('webpush.enabled')) {
+            return;
+        }
+
+        if (! $this->isEnabledFor($nik)) {
+            Log::info('webpush.skipped', ['nik' => $nik, 'reason' => 'permission_disabled']);
+
             return;
         }
 
@@ -43,6 +50,25 @@ class WebPushService
                 'reason' => 'client_error',
                 'error' => $e->getMessage(),
             ]);
+        }
+    }
+
+    /**
+     * Preferensi "Izinkan Notifikasi" di Settings adalah saklar tunggal pengiriman.
+     * Default true ketika belum ada baris preferensi untuk NIK tersebut.
+     */
+    private function isEnabledFor(string $nik): bool
+    {
+        try {
+            return (bool) UserPermission::getPermissions('karyawan', $nik)['notifications'];
+        } catch (\Throwable $e) {
+            Log::warning('webpush.failed', [
+                'nik' => $nik,
+                'reason' => 'preference_lookup_error',
+                'error' => $e->getMessage(),
+            ]);
+
+            return true;
         }
     }
 
