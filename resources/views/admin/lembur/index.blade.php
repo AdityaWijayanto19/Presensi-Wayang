@@ -5,6 +5,33 @@
 @section('page_title', 'Data Lembur Karyawan')
 
 <x-admin.page-body>
+
+    {{-- Cetak Laporan Lembur (Periode Cut-off) --}}
+    <x-admin.card class="mb-3">
+        <div class="p-3" x-data="{ open: true }">
+            <button type="button" @click="open = !open"
+                class="w-full flex items-center gap-2 text-left">
+                <span class="flex-shrink-0 w-4 h-4 text-blue-600">
+                    <i data-lucide="file-text" style="width:16px;height:16px;"></i>
+                </span>
+                <span class="flex-1 text-sm font-semibold text-slate-700">
+                    Cetak Laporan Lembur (Periode Cut-off)
+                </span>
+                <span class="text-xs text-slate-400 hidden sm:inline">
+                    Gabungan laporan lembur per karyawan, periode 21 - 20
+                </span>
+                <svg class="w-4 h-4 text-slate-400 transition-transform duration-200"
+                    :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </button>
+
+            <div x-show="open" x-collapse x-cloak class="mt-3 border-t border-slate-100 pt-3">
+                @include('admin.lembur.cetak-laporan-lembur')
+            </div>
+        </div>
+    </x-admin.card>
+
     <x-admin.card>
         <div class="p-3">
 

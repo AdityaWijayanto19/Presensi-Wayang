@@ -15,6 +15,7 @@ use App\Services\CutiService;
 use App\Services\PresensiService;
 use App\Services\MonitoringService;
 use App\Services\LaporanService;
+use App\Services\LaporanLemburService;
 use App\Http\Requests\RejectRequest;
 use App\Http\Requests\Presensi\UpdatePresensiAdminRequest;
 use App\Http\Requests\Presensi\UpdateIzinAdminRequest;
@@ -70,6 +71,16 @@ class AdminPresensiController extends Controller
     public function previewLaporan(Request $request)
     {
         return LaporanService::previewLaporan($request);
+    }
+
+    public function previewLaporanLembur(Request $request, LaporanLemburService $laporanLemburService)
+    {
+        return $laporanLemburService->previewLaporan($request);
+    }
+
+    public function cetakLaporanLembur(Request $request, LaporanLemburService $laporanLemburService)
+    {
+        return $laporanLemburService->cetakLaporan($request);
     }
 
     // ==================== DATA IZIN ====================

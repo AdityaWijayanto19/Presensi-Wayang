@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Redirect;
 
 class LaporanService
 {
-    private const NAMA_BULAN = [
+    public const NAMA_BULAN = [
         "", "Januari", "Februari", "Maret", "April", "Mei", "Juni",
         "Juli", "Agustus", "September", "Oktober", "November", "Desember",
     ];
@@ -25,7 +25,7 @@ class LaporanService
         1 => "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu",
     ];
 
-    private static function getCutoffDates(int $bulan, int $tahun): array
+    public static function getCutoffDates(int $bulan, int $tahun): array
     {
         $startDate = Carbon::create($tahun, $bulan, 21)->subMonth()->startOfDay();
         $endDate = Carbon::create($tahun, $bulan, 20)->endOfDay();

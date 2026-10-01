@@ -612,6 +612,50 @@ class LemburService
         ];
     }
 
+    /**
+     * Data standar untuk blade laporan lembur (admin.presensi.laporan-lembur-pdf).
+     * Dipakai oleh storeLaporanLembur & cetak laporan gabungan agar hasilnya identik.
+     */
+    public static function buildLaporanPdfData(Lembur $lembur): array
+    {
+        $karyawan = $lembur->karyawan ?? Karyawan::where('nik', $lembur->nik)->first();
+        if (!$karyawan) {
+            return [];
+        }
+
+        $atasanNik = $lembur->laporan_atasan_nik;
+        $atasan = $atasanNik ? Karyawan::where('nik', $atasanNik)->first() : null;
+
+        $jabatan = $karyawan->jabatan instanceof Jabatan ? $karyawan->jabatan->value : $karyawan->jabatan;
+        $perusahaan = Unitperusahaan::where('unit', $karyawan->unit)->value('perusahaan') ?? '-';
+
+        return [
+            'headerSuratPath' => 'assets/img/header-surat.png',
+            'nik' => $lembur->nik,
+            'nama_lengkap' => $karyawan->nama_lengkap,
+            'jabatan' => $jabatan,
+            'posisi' => $karyawan->posisi ?? '-',
+            'perusahaan' => $perusahaan,
+            'tgl_lembur' => $lembur->tgl_lembur,
+            'keterangan' => $lembur->keterangan ?? '-',
+            'jam_mulai' => $lembur->waktu_mulai instanceof \Carbon\Carbon
+                ? $lembur->waktu_mulai->format('H:i')
+                : '-',
+            'jam_selesai' => $lembur->waktu_selesai instanceof \Carbon\Carbon
+                ? $lembur->waktu_selesai->format('H:i')
+                : '-',
+            'durasi' => $lembur->durasi_formatted ?? '-',
+            'deskripsi_pekerjaan' => $lembur->laporan_deskripsi ?? '-',
+            'laporan_images' => $lembur->laporan_images ?? [],
+            'foto_mulai' => $lembur->foto_mulai,
+            'foto_selesai' => $lembur->foto_selesai,
+            'nama_atasan' => $atasan?->nama_lengkap ?? '-',
+            'jabatan_atasan' => $atasan?->jabatan instanceof Jabatan
+                ? $atasan->jabatan->value
+                : ($atasan?->jabatan ?? '-'),
+        ];
+    }
+
     public function storeLaporanLembur(Request $request, int $id, string $nik, bool $isEdit = false): array
     {
         $lembur = Lembur::where('id', $id)->where('nik', $nik)
@@ -644,19 +688,6 @@ class LemburService
             $laporanAtasanNik = null;
         }
 
-        $atasan = $laporanAtasanNik ? Karyawan::where('nik', $laporanAtasanNik)->first() : null;
-
-        $jabatan = $karyawan->jabatan instanceof Jabatan ? $karyawan->jabatan->value : $karyawan->jabatan;
-        $perusahaan = Unitperusahaan::where('unit', $karyawan->unit)->value('perusahaan') ?? '-';
-
-        $jamMulai = $lembur->waktu_mulai instanceof \Carbon\Carbon
-            ? $lembur->waktu_mulai->format('H:i')
-            : '-';
-        $jamSelesai = $lembur->waktu_selesai instanceof \Carbon\Carbon
-            ? $lembur->waktu_selesai->format('H:i')
-            : '-';
-        $durasiFormatted = $lembur->durasi_formatted ?? '-';
-
         DB::beginTransaction();
         try {
             $imagePaths = [];
@@ -685,25 +716,7 @@ class LemburService
                 'laporan_rejected_reason' => null,
             ]);
 
-            $pdfData = [
-                'headerSuratPath' => 'assets/img/header-surat.png',
-                'nik' => $nik,
-                'nama_lengkap' => $karyawan->nama_lengkap,
-                'jabatan' => $jabatan,
-                'posisi' => $karyawan->posisi ?? '-',
-                'perusahaan' => $perusahaan,
-                'tgl_lembur' => $lembur->tgl_lembur,
-                'keterangan' => $lembur->keterangan ?? '-',
-                'jam_mulai' => $jamMulai,
-                'jam_selesai' => $jamSelesai,
-                'durasi' => $durasiFormatted,
-                'deskripsi_pekerjaan' => $request->deskripsi_pekerjaan,
-                'laporan_images' => $imagePaths,
-                'foto_mulai' => $lembur->foto_mulai,
-                'foto_selesai' => $lembur->foto_selesai,
-                'nama_atasan' => $atasan?->nama_lengkap ?? '-',
-                'jabatan_atasan' => $atasan?->jabatan instanceof Jabatan ? $atasan->jabatan->value : ($atasan?->jabatan ?? '-'),
-            ];
+            $pdfData = self::buildLaporanPdfData($lembur);
 
             $stempelPath = $this->pdf->getStempelPath();
 

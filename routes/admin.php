@@ -68,7 +68,7 @@ Route::post('/tampilkanpetapulang', [AdminPresensiController::class, 'tampilkanp
 
 // Laporan
 Route::get('/panel/laporan', [AdminPresensiController::class, 'laporan'])->middleware('permission:laporan-view,user');
-Route::post('/getkaryawanbyunit', [AdminPresensiController::class, 'getkaryawanbyunit'])->middleware('permission:laporan-view,user');
+Route::post('/getkaryawanbyunit', [AdminPresensiController::class, 'getkaryawanbyunit'])->middleware('permission:laporan-view|lembur-view,user');
 Route::post('/presensi/cetaklaporan', [AdminPresensiController::class, 'cetaklaporan'])->middleware('permission:laporan-view,user');
 Route::post('/presensi/previewlaporan', [AdminPresensiController::class, 'previewLaporan'])->middleware('permission:laporan-view,user');
 
@@ -84,6 +84,8 @@ Route::group(['middleware' => 'permission:izin-approve,user'], function () {
 
 // Data lembur
 Route::get('/panel/lembur', [AdminPresensiController::class, 'datalembur'])->middleware('permission:lembur-view,user');
+Route::post('/presensi/lembur/previewlaporan', [AdminPresensiController::class, 'previewLaporanLembur'])->middleware('permission:lembur-view,user');
+Route::post('/presensi/lembur/cetaklaporan', [AdminPresensiController::class, 'cetakLaporanLembur'])->middleware('permission:lembur-view,user');
 Route::group(['middleware' => 'permission:lembur-delete,user'], function () {
     Route::post('/presensi/datalembur/{id}/delete', [AdminPresensiController::class, 'deletelemburadmin']);
 });
