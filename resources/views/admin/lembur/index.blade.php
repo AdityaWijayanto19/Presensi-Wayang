@@ -8,7 +8,7 @@
 
     {{-- Cetak Laporan Lembur (Periode Cut-off) --}}
     <x-admin.card class="mb-3">
-        <div class="p-3" x-data="{ open: true }">
+        <div class="p-3" x-data="{ open: false }">
             <button type="button" @click="open = !open"
                 class="w-full flex items-center gap-2 text-left">
                 <span class="flex-shrink-0 w-4 h-4 text-blue-600">
