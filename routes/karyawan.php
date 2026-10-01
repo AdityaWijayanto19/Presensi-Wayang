@@ -93,6 +93,7 @@ Route::post('/notifications/read-all', [NotificationController::class, 'readAll'
 Route::post('/notifications/create', [NotificationController::class, 'store']);
 
 // Push subscription
+Route::get('/api/push/bootstrap', [PushController::class, 'bootstrap']);
 Route::post('/api/push/subscribe', [PushController::class, 'subscribe']);
 Route::post('/api/push/unsubscribe', [PushController::class, 'unsubscribe']);
 

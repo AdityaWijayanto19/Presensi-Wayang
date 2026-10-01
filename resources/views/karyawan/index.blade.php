@@ -1017,19 +1017,6 @@
                 notifAudio = new Audio();
             } catch (e) {}
 
-            // Request notification permission (cek preference dulu)
-            if ('Notification' in window && Notification.permission === 'default') {
-                fetch('/api/user/permissions', {
-                        credentials: 'same-origin'
-                    })
-                    .then(r => r.json())
-                    .then(perms => {
-                        if (perms.notifications) {
-                            setTimeout(() => Notification.requestPermission(), 2000);
-                        }
-                    }).catch(() => {});
-            }
-
             // === NOTIFICATION DROPDOWN ===
             const btn = document.getElementById('btnNotif');
             const dropdown = document.getElementById('notifDropdown');
@@ -1125,21 +1112,10 @@
                             }
                         }
 
-                        // 2. Web Push + Sound untuk notifikasi baru (dedupe by id)
+                        // 2. Catat notifikasi baru (dedupe by id). Tampilan notifikasi
+                        // OS diserahkan sepenuhnya ke Service Worker melalui Web Push,
+                        // sehingga tetap berjalan walau tab/situs sudah di background.
                         if (data.notifications && data.notifications.length) {
-                            const newNotifs = data.notifications.filter(n => n && n.id && !knownNotifIds.includes(n
-                                .id));
-                            newNotifs.forEach(n => {
-                                if (n.data && n.data.message) {
-                                    if (Notification.permission === 'granted') {
-                                        new Notification('Presensi Digital', {
-                                            body: n.data.message,
-                                            icon: '/assets/img/login/logo_aplikasi.png',
-                                            tag: 'presensi-' + n.id
-                                        });
-                                    }
-                                }
-                            });
                             data.notifications.forEach(n => {
                                 if (n && n.id && !knownNotifIds.includes(n.id)) knownNotifIds.push(n.id);
                             });
@@ -1206,14 +1182,6 @@
                                     updateSection(section, html, 'pendingAtasan');
                                 }
                             }
-                            if (count > lastPendingAtasan && count > 0) {
-                                if (Notification.permission === 'granted') {
-                                    new Notification('Persetujuan WFH', {
-                                        body: 'Ada ' + count + ' WFH menunggu persetujuan Anda',
-                                        icon: '/assets/img/login/logo_aplikasi.png'
-                                    });
-                                }
-                            }
                             lastPendingAtasan = count;
                         }
 
@@ -1267,14 +1235,6 @@
                                     updateSection(section, html, 'pendingLaporan');
                                 }
                             }
-                            if (count > lastPendingLaporan && count > 0) {
-                                if (Notification.permission === 'granted') {
-                                    new Notification('Persetujuan Laporan WFH', {
-                                        body: 'Ada ' + count + ' laporan WFH menunggu persetujuan Anda',
-                                        icon: '/assets/img/login/logo_aplikasi.png'
-                                    });
-                                }
-                            }
                             lastPendingLaporan = count;
                         }
 
@@ -1313,15 +1273,6 @@
                                     });
                                     html += '</div>';
                                     updateSection(section, html, 'pendingAtasanLembur');
-                                }
-                            }
-                            if (count > lastPendingAtasanLembur && count > 0) {
-                                if (Notification.permission === 'granted') {
-                                    new Notification('Persetujuan Lembur', {
-                                        body: 'Ada ' + count +
-                                            ' pengajuan lembur menunggu persetujuan Anda',
-                                        icon: '/assets/img/login/logo_aplikasi.png'
-                                    });
                                 }
                             }
                             lastPendingAtasanLembur = count;
@@ -1373,14 +1324,6 @@
                                     });
                                     html += '</div>';
                                     updateSection(section, html, 'pendingLaporanLembur');
-                                }
-                            }
-                            if (count > lastPendingLaporanLembur && count > 0) {
-                                if (Notification.permission === 'granted') {
-                                    new Notification('Persetujuan Laporan Lembur', {
-                                        body: 'Ada ' + count + ' laporan lembur menunggu persetujuan Anda',
-                                        icon: '/assets/img/login/logo_aplikasi.png'
-                                    });
                                 }
                             }
                             lastPendingLaporanLembur = count;
@@ -1908,14 +1851,6 @@
                                     });
                                     html += '</div>';
                                     updateSection(section, html, 'pendingAtasanIzin');
-                                }
-                            }
-                            if (count > lastPendingAtasanIzin && count > 0) {
-                                if (Notification.permission === 'granted') {
-                                    new Notification('Persetujuan Izin', {
-                                        body: 'Ada ' + count + ' pengajuan izin menunggu persetujuan Anda',
-                                        icon: '/assets/img/login/logo_aplikasi.png'
-                                    });
                                 }
                             }
                             lastPendingAtasanIzin = count;
@@ -2665,12 +2600,6 @@
                                                 ' sudah disetujui. Jangan lupa absen 10 menit sebelum jam masuk ({{ $jamMasuk }})!',
                                             confirmButtonColor: '#7a5234'
                                         });
-                                        if (Notification.permission === 'granted') {
-                                            new Notification('Pengingat Absen WFH', {
-                                                body: 'Jangan lupa absen 10 menit sebelum {{ $jamMasuk }}',
-                                                icon: '/assets/img/login/logo_aplikasi.png'
-                                            });
-                                        }
                                         fetch('/notifications/create', {
                                             method: 'POST',
                                             headers: {

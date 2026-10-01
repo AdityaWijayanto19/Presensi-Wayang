@@ -62,6 +62,354 @@
         }
     </script>
 
+    {{-- Banner ajakan mengaktifkan notifikasi, tampil di seluruh halaman karyawan.
+         Izin browser TIDAK pernah diminta dari sini: hanya lewat tombol (gestur user). --}}
+    <script>
+        function pushBanner() {
+            var CONTENT = {
+                install: {
+                    title: 'Tambahkan ke Layar Utama',
+                    desc: 'Di iPhone, notifikasi hanya bisa aktif setelah aplikasi dipasang ke Layar Utama.',
+                    action: 'Lihat Cara'
+                },
+                enable: {
+                    title: 'Aktifkan Notifikasi',
+                    desc: 'Terima pengingat WFH, izin, dan lembur walau aplikasi sedang ditutup.',
+                    action: 'Aktifkan'
+                },
+                sync: {
+                    title: 'Sinkronkan Notifikasi',
+                    desc: 'Langganan notifikasi belum tercatat di server.',
+                    action: 'Sinkronkan'
+                },
+                blocked: {
+                    title: 'Notifikasi Diblokir',
+                    desc: 'Izin ditolak oleh browser. Aktifkan kembali lewat pengaturan situs ini.',
+                    action: null
+                }
+            };
+
+            return {
+                visible: false,
+                mode: 'hidden',
+                title: '',
+                desc: '',
+                action: null,
+                busy: false,
+
+                init() {
+                    if (!window.WAGPush) return;
+
+                    window.WAGPush.onChange((state) => this.apply(state));
+                    this.apply(window.WAGPush.getState());
+
+                    document.addEventListener('visibilitychange', () => {
+                        if (document.visibilityState === 'visible' && window.WAGPush) {
+                            this.apply(window.WAGPush.getState());
+                        }
+                    });
+
+                    if (window.lucide) window.lucide.createIcons();
+                },
+
+                apply(state) {
+                    if (!state) return this.hide();
+
+                    // iOS tanpa konteks Layar Utama: WebKit tidak mengekspos Notification
+                    // dan PushManager sama sekali, jadi tombol izin tidak akan berfungsi.
+                    if (state.isIOS && !state.standalone) return this.setMode('install');
+                    if (!state.supported) return this.hide();
+                    if (state.permission === 'granted' && state.hasSub) return this.hide();
+                    if (state.permission === 'granted') return this.setMode('sync');
+                    if (state.permission === 'denied') return this.setMode('blocked');
+
+                    return this.setMode('enable');
+                },
+
+                setMode(mode) {
+                    var content = CONTENT[mode];
+
+                    this.mode = mode;
+                    this.title = content.title;
+                    this.desc = content.desc;
+                    this.action = content.action;
+                    this.visible = !this.dismissedFor(mode);
+                },
+
+                hide() {
+                    this.visible = false;
+                },
+
+                dismissedFor(mode) {
+                    try {
+                        return window.localStorage.getItem('wag_push_banner_' + mode) === '1';
+                    } catch (error) {
+                        return false;
+                    }
+                },
+
+                dismiss() {
+                    try {
+                        window.localStorage.setItem('wag_push_banner_' + this.mode, '1');
+                    } catch (error) {
+                        // Penyimpanan tidak tersedia (private mode) — cukup tutup untuk sesi ini.
+                    }
+                    this.visible = false;
+                },
+
+                runPrimary() {
+                    if (this.mode === 'install') {
+                        window.location.href = '/install';
+                        return;
+                    }
+                    if (this.mode === 'sync') return this.syncNow();
+                    if (this.mode === 'enable') return this.enablePush();
+                },
+
+                // HARUS dipanggil langsung dari klik tombol ini.
+                // WebKit/iOS menuntut requestPermission() berada di dalam gestur user.
+                async enablePush() {
+                    if (this.busy) return;
+                    this.busy = true;
+
+                    try {
+                        var result = await window.WAGPush.enable();
+                        this.apply(window.WAGPush.getState());
+
+                        if (result.ok) {
+                            this.toast('success', 'Notifikasi berhasil diaktifkan');
+                        } else if (result.reason === 'denied') {
+                            this.toast('error', 'Izin notifikasi ditolak oleh browser');
+                        }
+                    } finally {
+                        this.busy = false;
+                    }
+                },
+
+                async syncNow() {
+                    if (this.busy) return;
+                    this.busy = true;
+
+                    try {
+                        await window.WAGPush.syncExisting();
+                        this.apply(window.WAGPush.getState());
+                        this.toast('success', 'Langganan notifikasi tersinkron');
+                    } finally {
+                        this.busy = false;
+                    }
+                },
+
+                toast(type, message) {
+                    if (typeof window.showToast === 'function') {
+                        window.showToast(type, message);
+                    }
+                }
+            };
+        }
+    </script>
+
+    {{-- Util Web Push dipakai bersama oleh halaman dan Service Worker. --}}
+    <script src="{{ asset('js/push-util.js') }}"></script>
+
+    {{-- Web Push client. Satu-satunya sumber logika subscription di sisi klien.
+         Dideklarasikan di <head> agar sudah tersedia saat Alpine menginisialisasi komponen banner. --}}
+    <script>
+        window.WAGPush = (function () {
+            'use strict';
+
+            var SUBSCRIBE_URL = '/api/push/subscribe';
+            var VAPID_PUBLIC_KEY = @json(config('webpush.vapid.public_key'));
+            var CSRF_TOKEN = '{{ csrf_token() }}';
+
+            var listeners = [];
+            var state = {
+                supported: false,
+                permission: 'default',
+                hasSub: false,
+                standalone: false,
+                isIOS: false
+            };
+
+            function refresh() {
+                state.supported = 'serviceWorker' in navigator
+                    && 'PushManager' in window
+                    && 'Notification' in window;
+                state.permission = state.supported ? Notification.permission : 'unsupported';
+                state.standalone = window.navigator.standalone === true
+                    || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+                state.isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+                return state;
+            }
+
+            function notify() {
+                refresh();
+                listeners.forEach(function (listener) {
+                    try {
+                        listener(state);
+                    } catch (error) {
+                        // Listener pihak ketiga tidak boleh menggagalkan sinkronisasi.
+                    }
+                });
+            }
+
+            function postSubscription(subscription) {
+                var sub = subscription.toJSON();
+                return fetch(SUBSCRIBE_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': CSRF_TOKEN,
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        endpoint: sub.endpoint,
+                        public_key: sub.keys.p256dh,
+                        auth_token: sub.keys.auth
+                    })
+                }).then(function (response) {
+                    if (!response.ok) {
+                        throw new Error('subscribe_failed_' + response.status);
+                    }
+                    state.hasSub = true;
+                    notify();
+                });
+            }
+
+            function subscribeNew(registration) {
+                if (!window.WAGPushUtil) {
+                    return Promise.reject(new Error('push_util_unavailable'));
+                }
+
+                return registration.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: window.WAGPushUtil.urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+                });
+            }
+
+            function ensureRegistration() {
+                return navigator.serviceWorker.getRegistration().then(function (registration) {
+                    return registration || navigator.serviceWorker.register('/sw.js');
+                });
+            }
+
+            // Self-heal utama: pastikan subscription yang sudah ada di browser selalu
+            // tercatat di database. Menutup kasus baris terhapus saat logout di perangkat
+            // lain, dan kasus endpoint yang berganti di tengah jalan.
+            function syncExisting() {
+                if (!refresh().supported) {
+                    return Promise.resolve(false);
+                }
+
+                return ensureRegistration()
+                    .then(function () {
+                        return navigator.serviceWorker.ready;
+                    })
+                    .then(function (registration) {
+                        return registration.pushManager.getSubscription().then(function (subscription) {
+                            if (subscription) {
+                                return postSubscription(subscription).then(function () {
+                                    return true;
+                                });
+                            }
+
+                            // Izin sudah granted tetapi subscription hilang: buat ulang
+                            // tanpa memunculkan prompt apa pun.
+                            if (Notification.permission === 'granted') {
+                                return subscribeNew(registration)
+                                    .then(postSubscription)
+                                    .then(function () {
+                                        return true;
+                                    });
+                            }
+
+                            // permission 'default' / 'denied': requestPermission() TIDAK dipanggil
+                            // dari sini. Hak izin hanya diminta lewat gestur user (lihat enable()).
+                            state.hasSub = false;
+                            notify();
+                            return false;
+                        });
+                    })
+                    .catch(function (error) {
+                        console.log('Push subscription sync failed', error);
+                        return false;
+                    });
+            }
+
+            // WAJIB dipanggil sinkron dari dalam click handler.
+            // WebKit/iOS menuntut Notification.requestPermission() berada di dalam
+            // transient activation, sehingga tidak boleh ada await sebelumnya.
+            function enable() {
+                if (!refresh().supported) {
+                    return Promise.resolve({ ok: false, reason: 'unsupported' });
+                }
+
+                var permissionPromise = Notification.requestPermission();
+
+                return permissionPromise.then(function (permission) {
+                    state.permission = permission;
+                    notify();
+
+                    if (permission !== 'granted') {
+                        return {
+                            ok: false,
+                            reason: permission === 'denied' ? 'denied' : 'dismissed'
+                        };
+                    }
+
+                    return ensureRegistration()
+                        .then(function () {
+                            return navigator.serviceWorker.ready;
+                        })
+                        .then(function (registration) {
+                            return registration.pushManager.getSubscription().then(function (subscription) {
+                                return subscription || subscribeNew(registration);
+                            }).then(postSubscription);
+                        })
+                        .then(function () {
+                            return { ok: true };
+                        })
+                        .catch(function (error) {
+                            console.log('Push subscription failed', error);
+                            return { ok: false, reason: 'error' };
+                        });
+                });
+            }
+
+            function init() {
+                refresh();
+
+                if (!state.supported) {
+                    notify();
+                    return;
+                }
+
+                syncExisting();
+
+                var syncing = false;
+                document.addEventListener('visibilitychange', function () {
+                    if (document.visibilityState !== 'visible' || syncing) return;
+                    syncing = true;
+                    syncExisting().then(function () {
+                        syncing = false;
+                    });
+                });
+            }
+
+            return {
+                init: init,
+                syncExisting: syncExisting,
+                enable: enable,
+                getState: function () {
+                    return refresh();
+                },
+                onChange: function (listener) {
+                    listeners.push(listener);
+                }
+            };
+        })();
+    </script>
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
 
@@ -84,6 +432,40 @@
         :class="isOffline ? 'bg-[#7f1d1d]' : 'bg-emerald-700'">
         <span x-show="isOffline">Koneksi terputus. Periksa jaringan Anda.</span>
         <span x-show="!isOffline && showOnline">Terhubung kembali.</span>
+    </div>
+
+    {{-- Banner Aktifkan Notifikasi --}}
+    <div x-data="pushBanner()" x-init="init()" x-cloak
+        x-show="visible"
+        role="status"
+        aria-live="polite"
+        class="fixed left-0 right-0 z-[999] px-3 bottom-[calc(70px_+_env(safe-area-inset-bottom))] lg:bottom-6 lg:px-6">
+        <div class="mx-auto max-w-lg rounded-2xl bg-white border border-[#f0ece8] p-3.5 shadow-[0_8px_28px_rgba(28,25,23,0.16)]"
+            style="animation: modalIn 0.2s ease;">
+            <div class="flex items-start gap-3">
+                <div class="w-9 h-9 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center text-amber-700 shrink-0">
+                    <i data-lucide="bell" style="width:18px;height:18px;"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <div class="text-[13px] font-bold text-[#1c1917] leading-tight" x-text="title"></div>
+                    <div class="text-[11px] text-[#78716c] mt-1" x-text="desc"></div>
+                </div>
+                <button type="button" @click="dismiss()" aria-label="Tutup"
+                    class="w-7 h-7 rounded-full inline-flex items-center justify-center bg-[#f5f5f4] border border-[#e7e5e4] text-[#57534e] cursor-pointer shrink-0">
+                    <i data-lucide="x" style="width:14px;height:14px;"></i>
+                </button>
+            </div>
+            <div class="flex gap-2 mt-3">
+                <button type="button" x-show="action" x-text="busy ? 'Memproses…' : action"
+                    @click="runPrimary()" :disabled="busy"
+                    class="flex-1 rounded-full px-4 py-2 text-[12px] font-bold bg-coklat text-white border-0 cursor-pointer disabled:opacity-60">
+                </button>
+                <button type="button" @click="dismiss()"
+                    class="rounded-full px-4 py-2 text-[12px] font-semibold bg-white border border-[#e7e5e4] text-[#44403c] cursor-pointer">
+                    Nanti
+                </button>
+            </div>
+        </div>
     </div>
 
     {{-- Sidebar Desktop (lg+) --}}
@@ -345,67 +727,11 @@
         })();
     </script>
 
-    {{-- Service Worker & Push Subscription --}}
+    {{-- Inisialisasi Web Push. Logika lengkapnya ada di window.WAGPush (bagian <head>).
+         Pendaftaran service worker dan sinkronisasi subscription dilakukan di sini;
+         requestPermission() tidak pernah dipanggil otomatis, hanya lewat gestur user. --}}
     <script>
-        if ('serviceWorker' in navigator && 'PushManager' in window) {
-            window.addEventListener('load', function() {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(function(registration) {
-                        console.log('Service Worker Registered');
-                        return registration.pushManager.getSubscription();
-                    })
-                    .then(function(subscription) {
-                        if (!subscription) {
-                            return Notification.requestPermission().then(function(permission) {
-                                if (permission === 'granted') {
-                                    return registerPush();
-                                }
-                            });
-                        }
-                    })
-                    .catch(function(error) {
-                        console.log('Service Worker Failed', error);
-                    });
-            });
-        }
-
-        function urlBase64ToUint8Array(base64String) {
-            const padding = '='.repeat((4 - base64String.length % 4) % 4);
-            const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
-            const rawData = window.atob(base64);
-            const outputArray = new Uint8Array(rawData.length);
-            for (let i = 0; i < rawData.length; ++i) {
-                outputArray[i] = rawData.charCodeAt(i);
-            }
-            return outputArray;
-        }
-
-        async function registerPush() {
-            try {
-                const registration = await navigator.serviceWorker.ready;
-                const subscription = await registration.pushManager.subscribe({
-                    userVisibleOnly: true,
-                    applicationServerKey: urlBase64ToUint8Array('{{ config('webpush.vapid.public_key') }}')
-                });
-                const sub = subscription.toJSON();
-                await fetch('/api/push/subscribe', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        endpoint: sub.endpoint,
-                        public_key: sub.keys.p256dh,
-                        auth_token: sub.keys.auth
-                    })
-                });
-                console.log('Push subscription saved');
-            } catch (error) {
-                console.log('Push subscription failed', error);
-            }
-        }
+        window.WAGPush && window.WAGPush.init();
     </script>
 
     {{-- PWA Standalone Detection --}}

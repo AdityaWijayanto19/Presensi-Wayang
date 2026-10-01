@@ -241,7 +241,17 @@ class AdminPresensiController extends Controller
         if ($oldStatus !== $newStatus) {
             $karyawan = \App\Models\Karyawan::where('nik', $lembur->nik)->first();
             if ($karyawan) {
-                $karyawan->notify(new \App\Notifications\LemburStatusChanged($lembur, $oldStatus, $newStatus));
+                $statusNotification = new \App\Notifications\LemburStatusChanged($lembur, $oldStatus, $newStatus);
+                $karyawan->notify($statusNotification);
+
+                // Web Push memakai kalimat yang sama dengan notifikasi database.
+                app(\App\Services\Shared\WebPushService::class)->send(
+                    $lembur->nik,
+                    'Status Lembur',
+                    (string) ($statusNotification->toDatabase($karyawan)['message'] ?? ''),
+                    '/lembur',
+                    'lembur-status-' . $lembur->id
+                );
             }
 
             cache()->forget('pending_lembur_count');
@@ -440,7 +450,17 @@ class AdminPresensiController extends Controller
         if ($oldStatus !== $newStatus) {
             $karyawan = \App\Models\Karyawan::where('nik', $wfh->nik)->first();
             if ($karyawan) {
-                $karyawan->notify(new \App\Notifications\WfhStatusChanged($wfh, $oldStatus, $newStatus));
+                $statusNotification = new \App\Notifications\WfhStatusChanged($wfh, $oldStatus, $newStatus);
+                $karyawan->notify($statusNotification);
+
+                // Web Push memakai kalimat yang sama dengan notifikasi database.
+                app(\App\Services\Shared\WebPushService::class)->send(
+                    $wfh->nik,
+                    'Status WFH',
+                    (string) ($statusNotification->toDatabase($karyawan)['message'] ?? ''),
+                    '/wfh',
+                    'wfh-status-' . $wfh->id
+                );
             }
             cache()->forget('pending_wfh_count');
             cache()->forget('pending_wfh_admin_count');

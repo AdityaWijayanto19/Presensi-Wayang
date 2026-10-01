@@ -94,6 +94,14 @@
                     cancelButtonText: 'Batal'
                 }).then((result) => {
                     if (result.isConfirmed) {
+                        // Izin browser WAJIB diminta tepat di dalam gestur klik konfirmasi
+                        // ini, sebelum await apa pun. WebKit/iOS menolak
+                        // Notification.requestPermission() yang dipanggil setelah await fetch.
+                        var pushEnable = null;
+                        if (permission === 'notifications' && isChecked && window.WAGPush) {
+                            pushEnable = window.WAGPush.enable();
+                        }
+
                         fetch('/api/user/permissions/toggle', {
                             method: 'POST',
                             headers: {
@@ -109,9 +117,6 @@
                             if (data.is_enabled) {
                                 statusEl.textContent = 'Aktif';
                                 statusEl.className = 'text-[10px] mt-0.5 text-emerald-600';
-                                if (permission === 'notifications' && 'Notification' in window && Notification.permission === 'default') {
-                                    Notification.requestPermission();
-                                }
                             } else {
                                 statusEl.textContent = 'Nonaktif';
                                 statusEl.className = 'text-[10px] mt-0.5 text-rose-600';
@@ -128,6 +133,21 @@
                             toggleEl.checked = !toggleEl.checked;
                             Swal.fire('Gagal', 'Terjadi kesalahan. Coba lagi.', 'error');
                         });
+
+                        if (pushEnable) {
+                            pushEnable.then(function (pushResult) {
+                                if (typeof window.showToast !== 'function') return;
+                                if (!pushResult || pushResult.ok) return;
+
+                                if (pushResult.reason === 'denied') {
+                                    window.showToast('error', 'Izin notifikasi ditolak oleh browser');
+                                } else if (pushResult.reason === 'unsupported') {
+                                    window.showToast('error', 'Browser ini belum mendukung notifikasi');
+                                } else if (pushResult.reason === 'error') {
+                                    window.showToast('error', 'Langganan notifikasi gagal dibuat');
+                                }
+                            });
+                        }
                     } else {
                         this.checked = !this.checked;
                     }
