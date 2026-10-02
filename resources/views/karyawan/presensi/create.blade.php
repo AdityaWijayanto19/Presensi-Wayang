@@ -210,9 +210,15 @@
         var JENDELA_BASI = 5000;      // fix dianggap basi setelah 5 detik
         var BATAS_AKURASI_BURUK = 15; // di atas ini status radius disembunyikan
 
+        // Gate anti fake-GPS — wajib sinkron dengan PresensiService
+        var BATAS_AKURASI_PRESENSI = 50;      // meter
+        var MIN_FIX_PRESENSI = 3;             // jumlah fix
+        var MIN_DURASI_PRESENSI_MS = 5000;    // durasi pantau minimum
+
         var fixBuffer = [];
         var posisiHalus = null;
         var akurasiEfektif = null;
+        var fixPertamaTs = null;
         var watchId = null;
         var watchAktif = false;
         var percobaanUlang = 0;
@@ -358,6 +364,7 @@
             };
 
             akurasiEfektif = sigmaMin;
+            if (fixPertamaTs === null) fixPertamaTs = sekarang;
             percobaanUlang = 0;
             lokasi.value = posisiHalus.lat + ',' + posisiHalus.lng;
 
@@ -601,6 +608,35 @@
                     });
                     return false;
                 }
+
+                var durasiPantau = (fixPertamaTs !== null) ? (Date.now() - fixPertamaTs) : 0;
+
+                if (akurasiEfektif == null || akurasiEfektif > BATAS_AKURASI_PRESENSI) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Sinyal GPS Belum Akurat',
+                        text: (akurasiEfektif != null ? 'Akurasi saat ini ±' + Math.round(akurasiEfektif) + ' m (maksimal '
+                            + BATAS_AKURASI_PRESENSI + ' m). ' : 'Data GPS belum lengkap. ')
+                            + 'Pindah ke area terbuka lalu coba lagi.',
+                        confirmButtonText: 'Mengerti',
+                        confirmButtonColor: '#9c6b43'
+                    });
+                    return false;
+                }
+
+                if (fixBuffer.length < MIN_FIX_PRESENSI || durasiPantau < MIN_DURASI_PRESENSI_MS) {
+                    var sisaDetik = Math.ceil((MIN_DURASI_PRESENSI_MS - durasiPantau) / 1000);
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Lokasi Belum Stabil',
+                        text: sisaDetik > 0
+                            ? 'Tunggu ±' + sisaDetik + ' detik lagi sampai posisi GPS terkunci.'
+                            : 'Tunggu beberapa detik sampai posisi GPS terkunci.',
+                        confirmButtonText: 'Mengerti',
+                        confirmButtonColor: '#9c6b43'
+                    });
+                    return false;
+                }
             }
 
             Webcam.snap(function (uri) {
@@ -615,7 +651,10 @@
                     body: new URLSearchParams({
                         _token: "{{ csrf_token() }}",
                         image: image,
-                        lokasi: lokasi
+                        lokasi: lokasi,
+                        akurasi: (akurasiEfektif != null ? akurasiEfektif : ''),
+                        fix: fixBuffer.length,
+                        durasi_ms: (fixPertamaTs !== null ? (Date.now() - fixPertamaTs) : 0)
                     }),
                     cache: 'no-store'
                 })

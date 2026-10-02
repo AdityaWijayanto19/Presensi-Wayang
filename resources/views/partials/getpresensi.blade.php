@@ -55,6 +55,27 @@
 
             <td class="px-2 py-1.5 text-xs" style="min-width: 100px;">
                 <div class="flex flex-col gap-1">
+                    @if ($p->dicurigaiManipulasi())
+                        <span class="inline-flex items-center justify-center rounded-full bg-red-100 text-red-700 text-[10px] px-2 py-0.5 font-medium"
+                            title="Indikasi manipulasi lokasi: {{ implode(', ', $p->flags()) }}">
+                            Anomali: {{ collect($p->flags())->map(fn ($f) => \App\Models\Presensi::FLAG_LABELS[$f] ?? $f)->implode(', ') }}
+                        </span>
+                    @endif
+
+                    @if ($p->lokasi_in_jarak !== null || $p->lokasi_out_jarak !== null)
+                        <span class="inline-flex items-center justify-center rounded-full bg-slate-100 text-slate-600 text-[10px] px-2 py-0.5 font-medium">
+                            @if ($p->lokasi_in_jarak !== null)
+                                Masuk {{ $p->lokasi_in_jarak }} m
+                            @endif
+                            @if ($p->lokasi_in_jarak !== null && $p->lokasi_out_jarak !== null)
+                                &middot;
+                            @endif
+                            @if ($p->lokasi_out_jarak !== null)
+                                Pulang {{ $p->lokasi_out_jarak }} m
+                            @endif
+                        </span>
+                    @endif
+
                     <button type="button"
                         class="inline-flex items-center justify-center rounded bg-blue-600 px-2 py-0.5 text-[10px] font-medium text-white hover:bg-blue-700 transition-colors tampilkanpetamasuk"
                         data-id="{{ $p->id }}">
@@ -101,7 +122,7 @@
 @else
 
     <tr>
-        <td colspan="9"
+        <td colspan="10"
             class="px-2 py-6 text-center text-xs text-slate-500">
             Data presensi tidak ditemukan
         </td>

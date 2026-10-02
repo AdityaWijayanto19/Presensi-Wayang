@@ -2,9 +2,10 @@
 
 namespace App\Services;
 
-use App\Models\Presensi;
 use App\Models\Karyawan;
+use App\Models\Presensi;
 use App\Models\Unitperusahaan;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class MonitoringService
@@ -17,17 +18,17 @@ class MonitoringService
     public static function getPresensi(Request $request)
     {
         $query = Presensi::with([
-                'karyawan.unitperusahaan',
-            ])
+            'karyawan.unitperusahaan',
+        ])
             ->where('tgl_presensi', $request->tanggal);
 
-        if (!empty($request->nama_karyawan)) {
+        if (! empty($request->nama_karyawan)) {
             $query->whereHas('karyawan', function ($q) use ($request) {
-                $q->where('nama_lengkap', 'like', '%' . $request->nama_karyawan . '%');
+                $q->where('nama_lengkap', 'like', '%'.$request->nama_karyawan.'%');
             });
         }
 
-        if (!empty($request->unit)) {
+        if (! empty($request->unit)) {
             $query->whereHas('karyawan', function ($q) use ($request) {
                 $q->where('unit', $request->unit);
             });
@@ -37,6 +38,11 @@ class MonitoringService
             $query->where('terlambat', 0);
         } elseif ($request->filter_ketepatan === '1') {
             $query->where('terlambat', '>', 0);
+        }
+
+        if ($request->filter_anomali === '1') {
+            $query->whereNotNull('flag_manipulasi')
+                ->where('flag_manipulasi', '!=', '');
         }
 
         return $query->get();
@@ -51,7 +57,7 @@ class MonitoringService
     {
         return Unitperusahaan::pluck('jam_masuk', 'unit')
             ->map(function ($jamMasuk) {
-                return $jamMasuk instanceof \Carbon\Carbon
+                return $jamMasuk instanceof Carbon
                     ? $jamMasuk->format('H:i:s')
                     : (string) $jamMasuk;
             })

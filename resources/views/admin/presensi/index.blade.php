@@ -17,7 +17,7 @@
                 autocomplete="off" value="{{ date('Y-m-d') }}" icon="calendar" />
 
             <div class="grid grid-cols-12 gap-2">
-                <div class="col-span-12 md:col-span-4">
+                <div class="col-span-12 md:col-span-3">
                     <x-admin.input name="nama_karyawan" id="nama_karyawan" placeholder="Cari Nama Karyawan"
                         autocomplete="off" />
                 </div>
@@ -29,11 +29,17 @@
                         @endforeach
                     </x-admin.select>
                 </div>
-                <div class="col-span-12 md:col-span-3">
+                <div class="col-span-12 md:col-span-2">
                     <x-admin.select name="filter_ketepatan" id="filter_ketepatan" placeholder="Semua Ketepatan">
                         <option value="-1">Semua Ketepatan</option>
                         <option value="0">Tepat Waktu</option>
                         <option value="1">Terlambat</option>
+                    </x-admin.select>
+                </div>
+                <div class="col-span-12 md:col-span-2">
+                    <x-admin.select name="filter_anomali" id="filter_anomali" placeholder="Semua Lokasi">
+                        <option value="-1">Semua Lokasi</option>
+                        <option value="1">Anomali Saja</option>
                     </x-admin.select>
                 </div>
                 <div class="col-span-12 md:col-span-2">
@@ -153,6 +159,7 @@
             var nama_karyawan = document.getElementById('nama_karyawan').value;
             var unit = document.getElementById('unit').value;
             var filterKetepatan = document.getElementById('filter_ketepatan').value;
+            var filterAnomali = document.getElementById('filter_anomali').value;
 
             fetch('/getpresensi', {
                     method: 'POST',
@@ -164,7 +171,8 @@
                         tanggal: tanggal,
                         nama_karyawan: nama_karyawan,
                         unit: unit,
-                        filter_ketepatan: filterKetepatan
+                        filter_ketepatan: filterKetepatan,
+                        filter_anomali: filterAnomali
                     })
                 })
                 .then(function(r) {

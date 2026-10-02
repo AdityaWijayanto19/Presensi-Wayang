@@ -183,6 +183,195 @@ class GeofenceTest extends TestCase
     }
 
     // ======================================================================
+    // Bukti GPS (anti fake-GPS)
+    // ======================================================================
+
+    public function test_masuk_tanpa_bukti_gps_ditolak(): void
+    {
+        $this->titikLokasi('Kantor Pusat', -6.2000, 106.8000);
+        $this->setTime('08:00:00');
+
+        $result = $this->prosesPresensi('-6.2001,106.8000', [
+            'akurasi' => null,
+            'fix' => null,
+            'durasi_ms' => null,
+        ]);
+
+        $this->assertFalse($result['success']);
+        $this->assertStringContainsString('Data GPS tidak lengkap', $result['message']);
+        $this->assertFalse($this->adaPresensi());
+    }
+
+    public function test_masuk_akurasi_buruk_ditolak(): void
+    {
+        $this->titikLokasi('Kantor Pusat', -6.2000, 106.8000);
+        $this->setTime('08:00:00');
+
+        $result = $this->prosesPresensi('-6.2001,106.8000', ['akurasi' => 80]);
+
+        $this->assertFalse($result['success']);
+        $this->assertStringContainsString('GPS belum akurat', $result['message']);
+        $this->assertFalse($this->adaPresensi());
+    }
+
+    public function test_masuk_pantauan_pendek_ditolak(): void
+    {
+        $this->titikLokasi('Kantor Pusat', -6.2000, 106.8000);
+        $this->setTime('08:00:00');
+
+        $result = $this->prosesPresensi('-6.2001,106.8000', [
+            'fix' => 1,
+            'durasi_ms' => 1000,
+        ]);
+
+        $this->assertFalse($result['success']);
+        $this->assertStringContainsString('belum stabil', $result['message']);
+        $this->assertFalse($this->adaPresensi());
+    }
+
+    public function test_bukti_gps_disimpan(): void
+    {
+        $this->titikLokasi('Kantor Pusat', -6.2000, 106.8000);
+        $this->setTime('08:00:00');
+        $this->mockFoto();
+
+        $result = $this->prosesPresensi('-6.2001,106.8000');
+
+        $this->assertTrue($result['success'], json_encode($result));
+
+        $row = DB::table('presensis')
+            ->where('nik', $this->karyawan->nik)
+            ->first();
+        $this->assertNotNull($row);
+        $this->assertEqualsWithDelta(11.12, (float) $row->lokasi_in_jarak, 1.0);
+        $this->assertEqualsWithDelta(10.0, (float) $row->lokasi_in_akurasi, 0.01);
+        $this->assertSame(5, (int) $row->gps_fix_in);
+        $this->assertSame(10000, (int) $row->gps_durasi_in_ms);
+        $this->assertNotEmpty($row->ip_in);
+        $this->assertNull($row->flag_manipulasi);
+    }
+
+    // ======================================================================
+    // Fail-open tanpa bukti GPS (WFH & unit tanpa titik)
+    // ======================================================================
+
+    public function test_masuk_wfh_tanpa_bukti_gps_berhasil(): void
+    {
+        $this->titikLokasi('Kantor Pusat', -6.2000, 106.8000);
+        $this->wfhApprovedHariIni();
+        $this->setTime('08:00:00');
+        $this->mockFoto();
+
+        $result = $this->prosesPresensi('-6.9999,107.9999', [
+            'akurasi' => null,
+            'fix' => null,
+            'durasi_ms' => null,
+        ]);
+
+        $this->assertTrue($result['success'], json_encode($result));
+        $this->assertTrue($this->adaPresensi());
+    }
+
+    public function test_unit_tanpa_titik_tanpa_bukti_gps_tetap_berhasil(): void
+    {
+        $this->setTime('08:00:00');
+        $this->mockFoto();
+
+        $result = $this->prosesPresensi('-6.9999,107.9999', [
+            'akurasi' => null,
+            'fix' => null,
+            'durasi_ms' => null,
+        ]);
+
+        $this->assertTrue($result['success'], json_encode($result));
+        $this->assertTrue($this->adaPresensi());
+    }
+
+    // ======================================================================
+    // Deteksi anomali
+    // ======================================================================
+
+    public function test_flag_koordinat_identik_dipakai_karyawan_lain(): void
+    {
+        $this->titikLokasi('Kantor Pusat', -6.2000, 106.8000);
+        $this->setTime('08:00:00');
+        $this->mockFoto();
+
+        Karyawan::create([
+            'nik' => 'GEO002',
+            'nama_lengkap' => 'Karyawan Lain',
+            'jabatan' => 'Staff',
+            'posisi' => 'Staff',
+            'role_approved' => 'Staff',
+            'atasan_nik' => null,
+            'unit' => 'Teknologi',
+            'unit_id' => $this->unit->id,
+            'no_hp' => '081234000002',
+            'password' => bcrypt('password'),
+        ]);
+
+        DB::table('presensis')->insert([
+            'nik' => 'GEO002',
+            'tgl_presensi' => self::HARI_INI,
+            'jam_in' => '07:30:00',
+            'jam_out' => null,
+            'foto_in' => 'lain.webp',
+            'foto_out' => null,
+            'lokasi_in' => '-6.2001,106.8000',
+            'lokasi_out' => null,
+            'terlambat' => 0,
+            'created_at' => now('Asia/Jakarta'),
+            'updated_at' => now('Asia/Jakarta'),
+        ]);
+
+        $result = $this->prosesPresensi('-6.2001,106.8000');
+
+        $this->assertTrue($result['success'], json_encode($result));
+
+        $row = DB::table('presensis')
+            ->where('nik', $this->karyawan->nik)
+            ->first();
+        $this->assertStringContainsString(Presensi::FLAG_KOORDINAT_IDENTIK, (string) $row->flag_manipulasi);
+    }
+
+    public function test_tanpa_flag_koordinat_identik_jika_record_sendiri(): void
+    {
+        $this->titikLokasi('Kantor Pusat', -6.2000, 106.8000);
+        $this->presensiHariIni();
+        $this->setTime('17:30:00');
+        $this->mockFoto();
+
+        // Koordinat pulang sama persis dengan koordinat milik sendiri — bukan anomali.
+        $result = $this->prosesPresensi('-6.2001,106.8000');
+
+        $this->assertTrue($result['success'], json_encode($result));
+
+        $row = DB::table('presensis')
+            ->where('nik', $this->karyawan->nik)
+            ->first();
+        $this->assertNull($row->flag_manipulasi);
+    }
+
+    public function test_flag_teleport_masuk_ke_pulang(): void
+    {
+        $this->titikLokasi('Kantor A', -6.2000, 106.8000);
+        $this->titikLokasi('Kantor B', -6.2000, 140.0000);
+        $this->presensiHariIni();
+        $this->setTime('16:05:00');
+        $this->mockFoto();
+
+        // Jarak ~3660 km dalam 8 jam (dual kantor lintas pulau) → kecepatan > 200 km/jam.
+        $result = $this->prosesPresensi('-6.2001,140.0000');
+
+        $this->assertTrue($result['success'], json_encode($result));
+
+        $row = DB::table('presensis')
+            ->where('nik', $this->karyawan->nik)
+            ->first();
+        $this->assertStringContainsString(Presensi::FLAG_TELEPORT, (string) $row->flag_manipulasi);
+    }
+
+    // ======================================================================
     // Lokasi tidak valid
     // ======================================================================
 
@@ -269,14 +458,20 @@ class GeofenceTest extends TestCase
         });
     }
 
-    private function prosesPresensi(string $lokasi): array
+    /**
+     * @param  array<string, mixed>  $bukti  Override bukti GPS (null untuk menghapus field)
+     */
+    private function prosesPresensi(string $lokasi, array $bukti = []): array
     {
         $this->actingAs($this->karyawan, 'karyawan');
 
-        $request = new Request([
+        $request = Request::create('/presensi/store', 'POST', array_merge([
             'image' => 'data:image/png;base64,AAAA',
             'lokasi' => $lokasi,
-        ]);
+            'akurasi' => 10,
+            'fix' => 5,
+            'durasi_ms' => 10000,
+        ], $bukti));
 
         return app(PresensiService::class)->processPresensi($request);
     }

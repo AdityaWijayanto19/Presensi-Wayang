@@ -37,6 +37,22 @@ class LocationService
     }
 
     /**
+     * Jarak (meter) antara dua string koordinat "lat,lng".
+     * Mengembalikan null jika salah satu tidak valid.
+     */
+    public function jarakAntarLokasi(string $lokasiA, string $lokasiB): ?float
+    {
+        $a = self::parseKoordinat($lokasiA);
+        $b = self::parseKoordinat($lokasiB);
+
+        if ($a === null || $b === null) {
+            return null;
+        }
+
+        return self::jarakMeter($a[0], $a[1], $b[0], $b[1]);
+    }
+
+    /**
      * Parse string koordinat "lat,lng" menjadi [lat, lng], atau null jika tidak valid.
      *
      * @return array{0: float, 1: float}|null
