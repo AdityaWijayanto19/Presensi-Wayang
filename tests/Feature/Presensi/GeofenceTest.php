@@ -229,6 +229,38 @@ class GeofenceTest extends TestCase
         $this->assertFalse($this->adaPresensi());
     }
 
+    public function test_masuk_fix_satu_ditolak_meski_durasi_penuh(): void
+    {
+        $this->titikLokasi('Kantor Pusat', -6.2000, 106.8000);
+        $this->setTime('08:00:00');
+
+        // Durasi lewat tapi fix cuma 1 — HP diam sering cuma menghasilkan 1 fix
+        // per event; tetap harus minimal 2 fix kumulatif.
+        $result = $this->prosesPresensi('-6.2001,106.8000', [
+            'fix' => 1,
+            'durasi_ms' => 10000,
+        ]);
+
+        $this->assertFalse($result['success']);
+        $this->assertStringContainsString('belum stabil', $result['message']);
+    }
+
+    public function test_masuk_dengan_fix_minimal_dan_durasi_minimal_berhasil(): void
+    {
+        $this->titikLokasi('Kantor Pusat', -6.2000, 106.8000);
+        $this->setTime('08:00:00');
+        $this->mockFoto();
+
+        // Tepat di ambang: 2 fix kumulatif + durasi 5 detik.
+        $result = $this->prosesPresensi('-6.2001,106.8000', [
+            'fix' => 2,
+            'durasi_ms' => 5000,
+        ]);
+
+        $this->assertTrue($result['success'], json_encode($result));
+        $this->assertTrue($this->adaPresensi());
+    }
+
     public function test_bukti_gps_disimpan(): void
     {
         $this->titikLokasi('Kantor Pusat', -6.2000, 106.8000);

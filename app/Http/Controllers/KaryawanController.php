@@ -104,6 +104,14 @@ class KaryawanController extends Controller
             $atasanNik = null;
         }
 
+        if (!empty($roleApproved) && $roleApproved !== 'Direktur'
+            && empty($atasanNik) && !empty($karyawan->atasan_nik)) {
+            return Redirect::back()->with(
+                'error',
+                'Atasan tidak boleh dikosongkan untuk Role Approved ' . $roleApproved . '. Silakan pilih atasan terlebih dahulu.'
+            );
+        }
+
         $fotoLama = $request->foto_lama;
         $foto = $fotoLama;
 
@@ -154,7 +162,8 @@ class KaryawanController extends Controller
         }
 
         $atasanMap = [
-            'Staff' => 'Manager',
+            'Staff' => 'SPV',
+            'SPV' => 'Manager',
             'Manager' => 'GM',
             'GM' => 'Direktur',
             'Direktur' => null,

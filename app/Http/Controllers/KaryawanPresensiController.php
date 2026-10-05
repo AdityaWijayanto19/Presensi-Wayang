@@ -66,7 +66,13 @@ class KaryawanPresensiController extends Controller
     {
         $result = $presensiService->processPresensi($request);
 
-        echo $result['success'] ? "success|{$result['message']}|{$result['type']}" : "error|{$result['message']}|{$result['type']}";
+        $payload = $result['success']
+            ? "success|{$result['message']}|{$result['type']}"
+            : "error|{$result['message']}|{$result['type']}";
+
+        // text/plain eksplisit supaya client bisa membedakan balasan protokol
+        // dari halaman error HTTP (yang berupa text/html).
+        return response($payload, 200, ['Content-Type' => 'text/plain; charset=UTF-8']);
     }
 
     public function histori()

@@ -212,10 +212,11 @@
 
         // Gate anti fake-GPS — wajib sinkron dengan PresensiService
         var BATAS_AKURASI_PRESENSI = 50;      // meter
-        var MIN_FIX_PRESENSI = 3;             // jumlah fix
+        var MIN_FIX_PRESENSI = 2;             // fix kumulatif (bukan buffer — lihat totalFix)
         var MIN_DURASI_PRESENSI_MS = 5000;    // durasi pantau minimum
 
         var fixBuffer = [];
+        var totalFix = 0;          // jumlah fix diterima selama sesi — tidak pernah di-reset
         var posisiHalus = null;
         var akurasiEfektif = null;
         var fixPertamaTs = null;
@@ -334,13 +335,18 @@
                 }
             }
 
-            // 2. Masukkan fix ke buffer, buang yang lewat window 10 detik
+            // 2. Hitung kumulatif — HP diam di tempat membuat watchPosition jarang
+            //    fire, sehingga fixBuffer (window 10 dtk) bisa selalu berisi 1 fix.
+            //    totalFix tidak pernah di-reset agar gate tidak macet selamanya.
+            totalFix++;
+
+            // 3. Masukkan fix ke buffer, buang yang lewat window 10 detik
             fixBuffer.push({ lat: lat, lng: lng, sigma: sigma, ts: sekarang });
             fixBuffer = fixBuffer.filter(function (f) {
                 return sekarang - f.ts <= JENDELA_FIX;
             });
 
-            // 3. Inverse-variance weighted average: pos = Σ(pᵢ/σᵢ²) / Σ(1/σᵢ²)
+            // 4. Inverse-variance weighted average: pos = Σ(pᵢ/σᵢ²) / Σ(1/σᵢ²)
             var totalBobot = 0, latTotal = 0, lngTotal = 0, sigmaMin = null;
 
             fixBuffer.forEach(function (f) {
@@ -624,14 +630,14 @@
                     return false;
                 }
 
-                if (fixBuffer.length < MIN_FIX_PRESENSI || durasiPantau < MIN_DURASI_PRESENSI_MS) {
+                if (totalFix < MIN_FIX_PRESENSI || durasiPantau < MIN_DURASI_PRESENSI_MS) {
                     var sisaDetik = Math.ceil((MIN_DURASI_PRESENSI_MS - durasiPantau) / 1000);
                     Swal.fire({
                         icon: 'warning',
                         title: 'Lokasi Belum Stabil',
                         text: sisaDetik > 0
                             ? 'Tunggu ±' + sisaDetik + ' detik lagi sampai posisi GPS terkunci.'
-                            : 'Tunggu beberapa detik sampai posisi GPS terkunci.',
+                            : 'Menunggu sinyal GPS terkunci — tunggu beberapa detik lalu coba lagi.',
                         confirmButtonText: 'Mengerti',
                         confirmButtonColor: '#9c6b43'
                     });
@@ -653,13 +659,68 @@
                         image: image,
                         lokasi: lokasi,
                         akurasi: (akurasiEfektif != null ? akurasiEfektif : ''),
-                        fix: fixBuffer.length,
+                        fix: totalFix,
                         durasi_ms: (fixPertamaTs !== null ? (Date.now() - fixPertamaTs) : 0)
                     }),
                     cache: 'no-store'
                 })
-                .then(function (response) { return response.text(); })
-                .then(function (respond) {
+                .then(function (response) {
+                    return response.text().then(function (body) {
+                        return { response: response, body: body };
+                    });
+                })
+                .then(function (hasil) {
+                    var response = hasil.response;
+                    var respond = hasil.body;
+
+                    // Server tidak membalas protokol "success|pesan|type":
+                    // kemungkinan session expired (redirect) atau halaman error HTTP.
+                    if (response.redirected) {
+                        Swal.fire({
+                            title: 'Sesi Berakhir',
+                            text: 'Silakan login ulang untuk melanjutkan presensi.',
+                            icon: 'warning',
+                            confirmButtonText: 'Login Ulang',
+                            confirmButtonColor: '#9c6b43'
+                        }).then(function () {
+                            location.href = response.url || '/login';
+                        });
+                        return;
+                    }
+
+                    if (!response.ok) {
+                        var pesanHttp;
+                        if (response.status === 419) {
+                            pesanHttp = 'Sesi Anda telah berakhir. Muat ulang halaman lalu coba lagi.';
+                        } else if (response.status === 401 || response.status === 403) {
+                            pesanHttp = 'Akses ditolak. Silakan login ulang.';
+                        } else if (response.status >= 500) {
+                            pesanHttp = 'Terjadi kesalahan di server (HTTP ' + response.status + '). Coba lagi beberapa saat.';
+                        } else {
+                            pesanHttp = 'Gagal mengirim presensi (HTTP ' + response.status + '). Coba lagi.';
+                        }
+
+                        Swal.fire({
+                            title: 'Presensi Gagal',
+                            text: pesanHttp,
+                            icon: 'error',
+                            confirmButtonText: 'Ok',
+                            confirmButtonColor: '#9c6b43'
+                        });
+                        return;
+                    }
+
+                    if (!/^(success|error)\|/.test(respond)) {
+                        Swal.fire({
+                            title: 'Respons Tidak Dikenali',
+                            text: 'Muat ulang halaman lalu coba lagi.',
+                            icon: 'error',
+                            confirmButtonText: 'Ok',
+                            confirmButtonColor: '#9c6b43'
+                        });
+                        return;
+                    }
+
                     var status = respond.split("|");
 
                     if (status[0] == "success") {
@@ -693,6 +754,15 @@
                             confirmButtonColor: '#9c6b43'
                         });
                     }
+                })
+                .catch(function () {
+                    Swal.fire({
+                        title: 'Gagal Terhubung',
+                        text: 'Tidak bisa menghubungi server. Periksa koneksi lalu coba lagi.',
+                        icon: 'error',
+                        confirmButtonText: 'Ok',
+                        confirmButtonColor: '#9c6b43'
+                    });
                 });
             });
         });

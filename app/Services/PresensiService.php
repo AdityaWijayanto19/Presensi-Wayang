@@ -39,8 +39,11 @@ class PresensiService
     /** Minimal durasi pantauan watchPosition (ms) sebelum presensi diizinkan. */
     private const MIN_DURASI_PANTAU_MS = 5000;
 
-    /** Minimal jumlah fix GPS yang harus diterima sebelum presensi diizinkan. */
-    private const MIN_JUMLAH_FIX = 3;
+    /**
+     * Minimal jumlah fix GPS kumulatif yang harus diterima sebelum presensi diizinkan.
+     * Fix awal getCurrentPosition + watchPosition sudah memenuhi ini walau HP diam.
+     */
+    private const MIN_JUMLAH_FIX = 2;
 
     /** Jendela pencarian koordinat identik (hari). */
     private const JENDELA_DUPLOKASI_HARI = 30;

@@ -22,7 +22,7 @@ class Karyawan extends Authenticatable
         'nama_lengkap',
         'jabatan',      // hierarchy level (Intern/Staff/SPV/Manager/GM/Direktur)
         'posisi',       // job title (Web Developer, Staff Accounting, etc)
-        'role_approved', // Role Approved dropdown (Staff/Manager/GM/Direktur)
+        'role_approved', // Role Approved dropdown (Staff/SPV/Manager/GM/Direktur)
         'atasan_nik',
         'unit',
         'unit_id',

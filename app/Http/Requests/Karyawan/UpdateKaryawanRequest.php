@@ -18,7 +18,7 @@ class UpdateKaryawanRequest extends FormRequest
             'password' => 'nullable|min:5',
             'jabatan' => 'required|in:Intern,Staff,SPV,Manager,GM,Direktur',
             'posisi' => 'required',
-            'role_approved' => 'nullable|in:Staff,Manager,GM,Direktur',
+            'role_approved' => 'nullable|in:Staff,SPV,Manager,GM,Direktur',
             'atasan_nik' => 'nullable|exists:karyawans,nik',
             'jatah_cuti' => 'required|integer|min:0|max:12',
         ];

@@ -28,6 +28,9 @@ Route::get('/guideline/wfh', [\App\Http\Controllers\GuidelineController::class, 
 Route::get('/guideline/izin', [\App\Http\Controllers\GuidelineController::class, 'izin']);
 Route::get('/guideline/lembur', [\App\Http\Controllers\GuidelineController::class, 'lembur']);
 Route::get('/guideline/cuti', [\App\Http\Controllers\GuidelineController::class, 'cuti']);
+
+// Tentang Aplikasi
+Route::get('/tentang', fn () => view('karyawan.tentang.index'));
 Route::get('/api/user/permissions', [UserPermissionController::class, 'getPermissions']);
 Route::post('/api/user/permissions/toggle', [UserPermissionController::class, 'togglePermission']);
 

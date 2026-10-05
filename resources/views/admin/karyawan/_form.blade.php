@@ -43,6 +43,8 @@
     <div id="role-approved-wrapper" style="{{ $showRoleApproved ? '' : 'display:none;' }}">
         <x-admin.select name="role_approved" id="role_approved" label="Role Approved" placeholder="Pilih Role Approved">
             <option value="Staff" {{ ($karyawan?->role_approved ?? '') == 'Staff' ? 'selected' : '' }}>Staff</option>
+            <option value="SPV" {{ ($karyawan?->role_approved ?? '') == 'SPV' ? 'selected' : '' }}>SPV
+                (Supervisor)</option>
             <option value="Manager" {{ ($karyawan?->role_approved ?? '') == 'Manager' ? 'selected' : '' }}>Manager
             </option>
             <option value="GM" {{ ($karyawan?->role_approved ?? '') == 'GM' ? 'selected' : '' }}>GM (General
@@ -50,7 +52,7 @@
             <option value="Direktur" {{ ($karyawan?->role_approved ?? '') == 'Direktur' ? 'selected' : '' }}>Direktur
             </option>
         </x-admin.select>
-        <small class="text-slate-500">Role yang berwenang menyetujui WFH/Lembur karyawan ini.</small>
+        <small class="text-slate-500">Level role karyawan; atasan diambil satu tingkat di atas (Staff → SPV → Manager → GM → Direktur).</small>
     </div>
 
     {{-- Atasan --}}
@@ -58,7 +60,7 @@
         $showAtasan = $karyawan && !empty($karyawan->role_approved) && $karyawan->role_approved !== 'Direktur';
         $atasanList = collect();
         if ($showAtasan) {
-            $atasanMap = ['Staff' => 'Manager', 'Manager' => 'GM', 'GM' => 'Direktur', 'Direktur' => null];
+            $atasanMap = ['Staff' => 'SPV', 'SPV' => 'Manager', 'Manager' => 'GM', 'GM' => 'Direktur', 'Direktur' => null];
             $targetPosisi = $atasanMap[$karyawan->role_approved] ?? null;
             if ($targetPosisi) {
                 $atasanList = DB::table('karyawans')

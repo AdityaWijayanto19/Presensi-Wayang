@@ -220,6 +220,7 @@
                 'jabatan' => $k->jabatan,
                 'role_approved' => $k->role_approved,
                 'atasan_nik' => $k->atasan_nik,
+                'atasan_nama' => $k->atasan?->nama_lengkap,
                 'unit' => $k->unit,
                 'no_hp' => $k->no_hp,
                 'jatah_cuti' => $k->jatah_cuti,
@@ -354,7 +355,6 @@
                         if (k.role_approved) {
                             dispatchSetValue('role_approved', k.role_approved);
                             setTimeout(function() {
-                                dispatchChangeEvent('role_approved');
                                 fetchAtasanForEdit(k.role_approved, k
                                     .atasan_nik, k.nik);
                             }, 30);
@@ -372,6 +372,9 @@
         // =====================================================
         function fetchAtasanForEdit(roleApproved, targetAtasanNik, excludeNik) {
             if (!roleApproved || roleApproved === 'Direktur') return;
+            var owner = karyawanData.find(function(item) {
+                return item.nik === excludeNik;
+            });
             fetch('/karyawan/get-atasan?role_approved=' + encodeURIComponent(roleApproved) +
                 '&exclude_nik=' + encodeURIComponent(excludeNik), {
                     credentials: 'same-origin'
@@ -379,7 +382,8 @@
                 return r.json();
             }).then(function(res) {
                 var atasanMap = {
-                    "Staff": "Manager",
+                    "Staff": "SPV",
+                    "SPV": "Manager",
                     "Manager": "GM",
                     "GM": "Direktur",
                     "Direktur": ""
@@ -396,10 +400,18 @@
                             .posisi + ')'
                     });
                 });
+                if (targetAtasanNik && owner && owner.atasan_nama &&
+                    !options.some(function(o) { return String(o.value) === String(targetAtasanNik); })) {
+                    options.push({
+                        value: targetAtasanNik,
+                        label: owner.atasan_nama + ' (atasan saat ini)'
+                    });
+                }
                 formContainer.dispatchEvent(new CustomEvent('options-updated', {
                     detail: {
                         name: 'atasan_nik',
-                        options: options
+                        options: options,
+                        keepValue: true
                     },
                     bubbles: true
                 }));
@@ -524,7 +536,8 @@
                     return r.json();
                 }).then(function(res) {
                     var atasanMap = {
-                        "Staff": "Manager",
+                        "Staff": "SPV",
+                        "SPV": "Manager",
                         "Manager": "GM",
                         "GM": "Direktur",
                         "Direktur": ""

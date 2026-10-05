@@ -176,6 +176,7 @@
             letter-spacing: 0.5px;
             color: #7a5234;
             margin-bottom: 16px;
+            page-break-after: avoid;
         }
 
         .foto-grid {
@@ -186,12 +187,13 @@
 
         .foto-item {
             display: inline-block;
-            width: 132px;
+            width: 320px;
             text-align: center;
             vertical-align: top;
             font-size: 10px;
             line-height: 1.3;
-            margin-bottom: 8px;
+            margin-right: 16px;
+            margin-bottom: 12px;
             page-break-inside: avoid;
         }
 
@@ -202,8 +204,8 @@
         }
 
         .foto-grid img {
-            max-width: 120px;
-            max-height: 120px;
+            max-width: 310px;
+            max-height: 250px;
             width: auto;
             height: auto;
             object-fit: contain;

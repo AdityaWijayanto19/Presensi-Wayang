@@ -18,7 +18,7 @@ class StoreKaryawanRequest extends FormRequest
             'nama_lengkap' => 'required',
             'jabatan' => 'required|in:Intern,Staff,SPV,Manager,GM,Direktur',
             'posisi' => 'required',
-            'role_approved' => 'nullable|in:Staff,Manager,GM,Direktur',
+            'role_approved' => 'nullable|in:Staff,SPV,Manager,GM,Direktur',
             'atasan_nik' => 'nullable|exists:karyawans,nik',
             'unit' => 'required|exists:unitperusahaans,unit',
             'no_hp' => 'required',

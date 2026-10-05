@@ -66,9 +66,10 @@
         );
     },
 
-    setOptions(newOpts) {
+    setOptions(newOpts, opts) {
         this.options = newOpts;
-        if (this.value && !newOpts.some(o => String(o.value) === String(this.value))) {
+        var keepValue = opts && opts.keepValue;
+        if (!keepValue && this.value && !newOpts.some(o => String(o.value) === String(this.value))) {
             this.value = '';
         }
     },
@@ -118,7 +119,7 @@
 }" @click.outside="open = false" @keydown.escape.window="open = false"
     @options-updated.window="
         if ($event.detail && $event.detail.name === '{{ $name }}') {
-            setOptions($event.detail.options);
+            setOptions($event.detail.options, { keepValue: !!$event.detail.keepValue });
         }
     "
     @set-value.window="
