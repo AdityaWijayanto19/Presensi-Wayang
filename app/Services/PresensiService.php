@@ -363,13 +363,7 @@ class PresensiService
             return 0;
         }
 
-        $selisihMenit = (int) floor(($jamAbsen - $jamMasukTime) / 60);
-
-        if ($selisihMenit <= 60) {
-            return $selisihMenit;
-        }
-
-        return (int) ceil($selisihMenit / 60) * 60;
+        return max(0, (int) floor(($jamAbsen - $jamMasukTime) / 60));
     }
 
     public function getJamMasukUnit(string $unit): string

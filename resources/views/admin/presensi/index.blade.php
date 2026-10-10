@@ -236,10 +236,7 @@
             if (masuk === null || absen === null) return null;
             if (absen <= masuk) return 0;
 
-            var selisihMenit = Math.floor((absen - masuk) / 60);
-            if (selisihMenit <= 60) return selisihMenit;
-
-            return Math.ceil(selisihMenit / 60) * 60;
+            return Math.max(0, Math.floor((absen - masuk) / 60));
         }
 
         function renderPreviewKeterangan() {

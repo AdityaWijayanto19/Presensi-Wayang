@@ -44,13 +44,22 @@ class HitungTerlambatTest extends TestCase
         $this->assertSame(0, $service->hitungTerlambatPresensi('Arthama', '10:04:59'));
     }
 
-    public function test_keterlambatan_lebih_dari_sejam_dibulatkan_ke_kelipatan_jam(): void
+    public function test_keterlambatan_lebih_dari_sejam_memakai_menit_exact(): void
     {
         $this->unit('Wayang', '08:00:00');
 
         $terlambat = app(PresensiService::class)->hitungTerlambatPresensi('Wayang', '09:05:00');
 
-        $this->assertSame(120, $terlambat);
+        $this->assertSame(65, $terlambat);
+    }
+
+    public function test_keterlambatan_enam_satu_menit_bukan_enam_puluh(): void
+    {
+        $this->unit('Wayang', '08:05:00');
+
+        $terlambat = app(PresensiService::class)->hitungTerlambatPresensi('Wayang', '09:06:00');
+
+        $this->assertSame(61, $terlambat);
     }
 
     public function test_unit_tanpa_data_jam_masuk_memakai_default_0800(): void
