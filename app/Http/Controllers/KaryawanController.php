@@ -11,6 +11,7 @@ use App\Models\Wfh;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
 use App\Services\LemburService;
@@ -25,10 +26,15 @@ class KaryawanController extends Controller
     public function index(Request $request)
     {
         $query = Karyawan::with(['unitperusahaan', 'atasan'])
-            ->orderBy('nama_lengkap');
+            ->orderByRaw('CAST(nik AS UNSIGNED) ASC')
+            ->orderBy('nik', 'asc');
 
         if (!empty($request->nama_karyawan)) {
-            $query->where('nama_lengkap', 'like', '%' . $request->nama_karyawan . '%');
+            $cari = $request->nama_karyawan;
+            $query->where(function ($qq) use ($cari) {
+                $qq->where('nama_lengkap', 'like', '%' . $cari . '%')
+                    ->orWhere('nik', 'like', '%' . $cari . '%');
+            });
         }
 
         if (!empty($request->unit)) {
@@ -100,7 +106,7 @@ class KaryawanController extends Controller
         if ($roleApproved === 'Direktur') {
             $atasanNik = null;
         }
-        if ($atasanNik === $nik) {
+        if ($atasanNik === $request->nik) {
             $atasanNik = null;
         }
 
@@ -115,40 +121,65 @@ class KaryawanController extends Controller
         $fotoLama = $request->foto_lama;
         $foto = $fotoLama;
 
-        if ($request->hasFile('foto')) {
-            $imageService = app(ImageService::class);
+        DB::beginTransaction();
 
-            if ($fotoLama) {
-                $imageService->deleteFile('uploads/karyawan/' . $fotoLama);
+        try {
+            if ($request->hasFile('foto')) {
+                $imageService = app(ImageService::class);
+
+                if ($fotoLama) {
+                    $imageService->deleteFile('uploads/karyawan/' . $fotoLama);
+                }
+
+                $fotoPath = $imageService->processUpload($request->file('foto'), 'karyawan', $request->nik);
+                if ($fotoPath) {
+                    $foto = basename($fotoPath);
+                } else {
+                    $foto = $request->nik . '.' . $request->file('foto')->getClientOriginalExtension();
+                    $request->file('foto')->move(public_path('storage/uploads/karyawan'), $foto);
+                }
             }
 
-            $fotoPath = $imageService->processUpload($request->file('foto'), 'karyawan', $nik);
-            if ($fotoPath) {
-                $foto = basename($fotoPath);
-            } else {
-                $foto = $nik . '.' . $request->file('foto')->getClientOriginalExtension();
-                $request->file('foto')->move(public_path('storage/uploads/karyawan'), $foto);
+            $updateData = [
+                'nik' => $request->nik,
+                'nama_lengkap' => $request->nama_lengkap,
+                'unit' => $request->unit,
+                'unit_id' => Unitperusahaan::where('unit', $request->unit)->value('id'),
+                'jabatan' => $request->jabatan,
+                'posisi' => $request->posisi,
+                'role_approved' => $roleApproved,
+                'atasan_nik' => $atasanNik,
+                'no_hp' => $request->no_hp,
+                'foto' => $foto,
+                'jatah_cuti' => (int) $request->jatah_cuti,
+            ];
+
+            if (!empty($request->password)) {
+                $updateData['password'] = Hash::make($request->password);
             }
+
+            $karyawan->update($updateData);
+
+            if ($request->nik !== $nik) {
+                // Kolom referensi tanpa foreign key — pindahkan manual ke NIK baru.
+                DB::table('izins')->where('atasan_nik', $nik)
+                    ->update(['atasan_nik' => $request->nik]);
+                DB::table('lemburs')->where('atasan_nik', $nik)
+                    ->update(['atasan_nik' => $request->nik]);
+                DB::table('lemburs')->where('laporan_atasan_nik', $nik)
+                    ->update(['laporan_atasan_nik' => $request->nik]);
+                DB::table('notifications')
+                    ->where('notifiable_type', Karyawan::class)
+                    ->where('notifiable_id', $nik)
+                    ->update(['notifiable_id' => $request->nik]);
+            }
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Update karyawan FAILED', ['nik' => $nik, 'error' => $e->getMessage()]);
+            return Redirect::back()->with('error', 'Data karyawan gagal diperbarui!');
         }
-
-        $updateData = [
-            'nama_lengkap' => $request->nama_lengkap,
-            'unit' => $request->unit,
-            'unit_id' => Unitperusahaan::where('unit', $request->unit)->value('id'),
-            'jabatan' => $request->jabatan,
-            'posisi' => $request->posisi,
-            'role_approved' => $roleApproved,
-            'atasan_nik' => $atasanNik,
-            'no_hp' => $request->no_hp,
-            'foto' => $foto,
-            'jatah_cuti' => (int) $request->jatah_cuti,
-        ];
-
-        if (!empty($request->password)) {
-            $updateData['password'] = Hash::make($request->password);
-        }
-
-        $karyawan->update($updateData);
 
         return Redirect::to('/panel/karyawan?page=' . $request->page)
             ->with('success', 'Data karyawan berhasil diperbarui!');

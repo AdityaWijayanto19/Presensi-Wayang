@@ -11,8 +11,6 @@
 
     {{-- NIK --}}
     <x-admin.input name="nik" id="nik" value="{{ $karyawan?->nik }}" placeholder="NIK" autocomplete="off"
-        :readonly="(bool) $karyawan"
-        @class(['bg-slate-50' => $karyawan])
         icon="file-text" />
 
     {{-- Nama Lengkap --}}

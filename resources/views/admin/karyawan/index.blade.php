@@ -26,7 +26,7 @@
             <form action="/panel/karyawan" method="GET">
                 <div class="grid grid-cols-12 gap-2 mb-2">
                     <div class="col-span-12 md:col-span-4">
-                        <x-admin.input name="nama_karyawan" id="nama_karyawan" placeholder="Cari Karyawan"
+                        <x-admin.input name="nama_karyawan" id="nama_karyawan" placeholder="Cari Nama atau NIK"
                             value="{{ Request('nama_karyawan') }}" autocomplete="off" />
                     </div>
                     <div class="col-span-12 md:col-span-2">
@@ -292,8 +292,6 @@
             form.action = '/karyawan/' + k.nik + '/update';
             var nikInput = form.querySelector('[name="nik"]');
             nikInput.value = k.nik;
-            nikInput.readOnly = true;
-            nikInput.classList.add('bg-slate-50');
             form.querySelector('[name="nama_lengkap"]').value = k.nama_lengkap;
             form.querySelector('[name="posisi"]').value = k.posisi;
             form.querySelector('[name="jabatan"]').value = k.jabatan || '';

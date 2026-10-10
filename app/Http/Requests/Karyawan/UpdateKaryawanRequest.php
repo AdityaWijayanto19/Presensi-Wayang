@@ -14,6 +14,7 @@ class UpdateKaryawanRequest extends FormRequest
     public function rules(): array
     {
         $rules = [
+            'nik' => 'required|string|max:16|unique:karyawans,nik,' . $this->route('nik') . ',nik',
             'foto' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'password' => 'nullable|min:5',
             'jabatan' => 'required|in:Intern,Staff,SPV,Manager,GM,Direktur',
@@ -37,6 +38,9 @@ class UpdateKaryawanRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'nik.required' => 'NIK wajib diisi.',
+            'nik.max' => 'NIK maksimal 16 karakter.',
+            'nik.unique' => 'NIK sudah terdaftar.',
             'foto.image' => 'File harus berupa gambar.',
             'foto.mimes' => 'Format gambar harus JPG, JPEG, PNG, atau WEBP.',
             'foto.max' => 'Ukuran gambar maksimal 2MB.',

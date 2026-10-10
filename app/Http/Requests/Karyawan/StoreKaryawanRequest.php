@@ -14,7 +14,7 @@ class StoreKaryawanRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nik' => 'required|unique:karyawans,nik',
+            'nik' => 'required|string|max:16|unique:karyawans,nik',
             'nama_lengkap' => 'required',
             'jabatan' => 'required|in:Intern,Staff,SPV,Manager,GM,Direktur',
             'posisi' => 'required',
@@ -32,6 +32,7 @@ class StoreKaryawanRequest extends FormRequest
     {
         return [
             'nik.required' => 'NIK wajib diisi.',
+            'nik.max' => 'NIK maksimal 16 karakter.',
             'nik.unique' => 'NIK sudah terdaftar.',
             'nama_lengkap.required' => 'Nama lengkap wajib diisi.',
             'jabatan.required' => 'Jabatan wajib dipilih.',
