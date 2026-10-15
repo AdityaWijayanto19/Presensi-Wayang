@@ -27,6 +27,9 @@ class PresensiService
 
     private const MINIMAL_JAM_KERJA = 8;
 
+    /** Minimal jam kerja saat karyawan punya izin setengah hari yang disetujui. */
+    private const MINIMAL_JAM_KERJA_SETENGAH_HARI = 4;
+
     private const DEFAULT_JAM_MASUK = '08:00:00';
 
     private const DEFAULT_RADIUS_METER = 100;
@@ -71,10 +74,10 @@ class PresensiService
             return ['success' => false, 'message' => 'Unit kerja tidak ditemukan.', 'type' => 'in'];
         }
 
-        $jamMasuk = $this->formatJamMasuk($unitKerja->jam_masuk);
-        $terlambat = $this->hitungKeterlambatan($jamMasuk, $jam);
+        $setengahHari = $this->adaIzinSetengahHari($nik, $tglPresensi);
+        $terlambat = $this->hitungTerlambatPresensi($unitKerja->unit, $jam, $nik, $tglPresensi);
 
-        return DB::transaction(function () use ($nik, $tglPresensi, $jam, $unitKerja, $terlambat, $request) {
+        return DB::transaction(function () use ($nik, $tglPresensi, $jam, $unitKerja, $terlambat, $request, $setengahHari) {
             $cek = Presensi::where('tgl_presensi', $tglPresensi)
                 ->where('nik', $nik)
                 ->first();
@@ -98,8 +101,17 @@ class PresensiService
                     ->where('status', 'approved')
                     ->exists();
 
-                if (! $izinPulangCepat && $selisihJamKerja < self::MINIMAL_JAM_KERJA) {
-                    return ['success' => false, 'message' => 'Belum bisa presensi pulang! Minimal bekerja 8 jam.', 'type' => 'out'];
+                // Izin setengah hari menurunkan minimal jam kerja dari 8 jam menjadi 4 jam.
+                $minimalJam = $setengahHari
+                    ? self::MINIMAL_JAM_KERJA_SETENGAH_HARI
+                    : self::MINIMAL_JAM_KERJA;
+
+                if (! $izinPulangCepat && $selisihJamKerja < $minimalJam) {
+                    return [
+                        'success' => false,
+                        'message' => $this->pesanBelumBolehPulang($cek->jam_in, $selisihJamKerja, $setengahHari),
+                        'type' => 'out',
+                    ];
                 }
             }
 
@@ -375,9 +387,140 @@ class PresensiService
             : $this->formatJamMasuk($jamMasuk);
     }
 
-    public function hitungTerlambatPresensi(string $unit, string $jamAbsen): int
+    /**
+     * Cek apakah karyawan punya izin setengah hari berstatus approved pada tanggal tertentu.
+     *
+     * Izin ini meniadakan keterlambatan hari itu dan menurunkan minimal jam kerja
+     * sebelum boleh absen pulang dari 8 jam menjadi 4 jam.
+     */
+    public function adaIzinSetengahHari(string $nik, string $tgl): bool
     {
-        return $this->hitungKeterlambatan($this->getJamMasukUnit($unit), $jamAbsen);
+        return Izin::where('nik', $nik)
+            ->where('tgl_izin', $tgl)
+            ->where('jenis_izin', 'setengah_hari')
+            ->where('status', 'approved')
+            ->exists();
+    }
+
+    public function hitungTerlambatPresensi(string $unit, string $jamAbsen, ?string $nik = null, ?string $tgl = null): int
+    {
+        $baseline = $this->getJamMasukUnit($unit);
+
+        if ($nik !== null && $tgl !== null) {
+            // Izin setengah hari yang disetujui meniadakan keterlambatan pada hari itu.
+            if ($this->adaIzinSetengahHari($nik, $tgl)) {
+                return 0;
+            }
+
+            // Izin terlambat yang disetujui memindahkan baseline keterlambatan dari
+            // jam masuk unit ke jam_datang yang disepakati: presensi sebelum atau
+            // tepat jam_datang dianggap tepat waktu.
+            //
+            // Baseline diambil yang paling akhir antara jam_datang dan jam_masuk
+            // unit, agar izin terlambat hanya dapat merileksasi (geser ke belakang)
+            // keterlambatan — tidak pernah mengetatkan untuk unit yang jam masuknya
+            // lebih siang daripada jam_datang yang diajukan.
+            $izinTerlambat = $this->izinTerlambatApproved($nik, $tgl);
+            if ($izinTerlambat !== null) {
+                $jamDatang = $this->formatJamDatang($izinTerlambat->jam_datang);
+                $baseline = $this->baselinePalingAkhir($jamDatang, $baseline);
+            }
+        }
+
+        return $this->hitungKeterlambatan($baseline, $jamAbsen);
+    }
+
+    /**
+     * Pilih jam yang paling akhir (terbesar) sebagai baseline keterlambatan.
+     */
+    private function baselinePalingAkhir(string $kiri, string $kanan): string
+    {
+        return strtotime($kiri) >= strtotime($kanan) ? $kiri : $kanan;
+    }
+
+    /**
+     * Cek apakah karyawan punya izin terlambat berstatus approved pada tanggal tertentu.
+     *
+     * Baseline keterlambatan hari itu menjadi jam_datang yang diajukan, bukan
+     * jam masuk unit kerja.
+     */
+    public function izinTerlambatApproved(string $nik, string $tgl): ?Izin
+    {
+        return Izin::where('nik', $nik)
+            ->where('tgl_izin', $tgl)
+            ->where('jenis_izin', 'terlambat')
+            ->where('status', 'approved')
+            ->whereNotNull('jam_datang')
+            ->first();
+    }
+
+    /**
+     * Hitung ulang kolom terlambat untuk satu presensi (nik + tanggal).
+     *
+     * Dipanggil setelah persetujuan/pembatalan izin terlambat agar baris
+     * presensi yang sudah tercatat tidak menyimpang dari izin terkini.
+     */
+    public function recalcTerlambatUntuk(string $nik, string $tgl): void
+    {
+        $presensi = Presensi::where('nik', $nik)
+            ->where('tgl_presensi', $tgl)
+            ->first();
+
+        if ($presensi === null || empty($presensi->jam_in)) {
+            return;
+        }
+
+        $unit = $presensi->karyawan->unit ?? '';
+        if ($unit === '') {
+            return;
+        }
+
+        $terlambat = $this->hitungTerlambatPresensi($unit, $presensi->jam_in, $nik, $tgl);
+
+        if ($terlambat !== (int) $presensi->terlambat) {
+            Presensi::whereKey($presensi->id)->update(['terlambat' => $terlambat]);
+        }
+    }
+
+    /**
+     * Normalisasi jam_datang (H:i) menjadi H:i:s agar sama dengan format jam presensi.
+     */
+    private function formatJamDatang(string $jamDatang): string
+    {
+        return strlen($jamDatang) === 5 ? $jamDatang.':00' : $jamDatang;
+    }
+
+    /**
+     * Pesan penolakan absen pulang karena minimal jam kerja belum terpenuhi.
+     */
+    private function pesanBelumBolehPulang(string $jamIn, float $selisihJamKerja, bool $setengahHari): string
+    {
+        if (! $setengahHari) {
+            return 'Belum bisa presensi pulang! Minimal bekerja 8 jam.';
+        }
+
+        $minimalJam = self::MINIMAL_JAM_KERJA_SETENGAH_HARI;
+        $bisaPulangPukul = Carbon::parse($jamIn, 'Asia/Jakarta')->addHours($minimalJam)->format('H:i');
+
+        $jamKerja = (int) floor($selisihJamKerja);
+        $menitKerja = (int) round(($selisihJamKerja - $jamKerja) * 60);
+
+        $sisaMenit = (int) ceil(max(0, $minimalJam - $selisihJamKerja) * 60);
+        $sisaJam = intdiv($sisaMenit, 60);
+        $sisaSisaMenit = $sisaMenit % 60;
+
+        return sprintf(
+            'Anda memiliki Izin Setengah Hari yang disetujui, jadi hari ini minimal bekerja %d jam (bukan %d jam). '
+            . 'Baru bekerja %d jam %d menit — kurang %d jam %d menit lagi. '
+            . 'Anda bisa presensi pulang pukul %s.',
+            $minimalJam,
+            self::MINIMAL_JAM_KERJA,
+            $jamKerja,
+            $menitKerja,
+            $sisaJam,
+            $sisaSisaMenit,
+            $bisaPulangPukul
+        );
     }
 
     public function deletePresensiAdmin(int $id): array

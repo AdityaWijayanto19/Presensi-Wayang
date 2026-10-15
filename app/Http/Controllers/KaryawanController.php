@@ -78,20 +78,31 @@ class KaryawanController extends Controller
 
         $unitId = Unitperusahaan::where('unit', $request->unit)->value('id');
 
-        $karyawan = Karyawan::create([
-            'nik' => $request->nik,
-            'nama_lengkap' => $request->nama_lengkap,
-            'unit' => $request->unit,
-            'unit_id' => $unitId,
-            'jabatan' => $request->jabatan,
-            'posisi' => $request->posisi,
-            'role_approved' => $roleApproved,
-            'atasan_nik' => $atasanNik,
-            'no_hp' => $request->no_hp,
-            'foto' => $foto,
-            'jatah_cuti' => (int) $request->jatah_cuti,
-            'password' => Hash::make($request->password),
-        ]);
+        try {
+            $karyawan = Karyawan::create([
+                'nik' => $request->nik,
+                'nama_lengkap' => $request->nama_lengkap,
+                'unit' => $request->unit,
+                'unit_id' => $unitId,
+                'jabatan' => $request->jabatan,
+                'posisi' => $request->posisi,
+                'role_approved' => $roleApproved,
+                'atasan_nik' => $atasanNik,
+                'no_hp' => $request->no_hp,
+                'foto' => $foto,
+                'jatah_cuti' => (int) $request->jatah_cuti,
+                'password' => Hash::make($request->password),
+            ]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            Log::error('Store karyawan FAILED', ['nik' => $request->nik, 'error' => $e->getMessage()]);
+
+            return Redirect::back()->with(
+                'error',
+                $this->isDuplikatNik($e)
+                    ? 'NIK ' . $request->nik . ' sudah dipakai karyawan lain. Silakan gunakan NIK lain.'
+                    : 'Data karyawan gagal disimpan. Silakan coba lagi.'
+            );
+        }
 
         return Redirect::back()->with('success', 'Data karyawan berhasil disimpan!');
     }
@@ -175,14 +186,44 @@ class KaryawanController extends Controller
             }
 
             DB::commit();
+        } catch (\Illuminate\Database\QueryException $e) {
+            DB::rollBack();
+            Log::error('Update karyawan FAILED', ['nik' => $nik, 'error' => $e->getMessage()]);
+
+            return Redirect::back()->with(
+                'error',
+                $this->isDuplikatNik($e)
+                    ? 'NIK ' . $request->nik . ' sudah dipakai karyawan lain. Silakan gunakan NIK lain.'
+                    : 'Data karyawan gagal diperbarui. Silakan coba lagi.'
+            );
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Update karyawan FAILED', ['nik' => $nik, 'error' => $e->getMessage()]);
-            return Redirect::back()->with('error', 'Data karyawan gagal diperbarui!');
+            return Redirect::back()->with('error', 'Data karyawan gagal diperbarui! Silakan coba lagi.');
         }
 
         return Redirect::to('/panel/karyawan?page=' . $request->page)
             ->with('success', 'Data karyawan berhasil diperbarui!');
+    }
+
+    /**
+     * Deteksi pelanggaran unique constraint NIK (MySQL 1062 / SQLite 'UNIQUE constraint failed').
+     */
+    private function isDuplikatNik(\Throwable $e): bool
+    {
+        $code = (string) $e->getCode();
+
+        if ($e instanceof \Illuminate\Database\QueryException) {
+            $driverCode = $e->errorInfo[1] ?? null;
+            $message = $e->getMessage();
+
+            return $code === '23000'
+                || $driverCode === 1062
+                || str_contains($message, 'Duplicate entry')
+                || str_contains($message, 'UNIQUE constraint failed');
+        }
+
+        return $code === '23000';
     }
 
     public function getAtasan(Request $request)

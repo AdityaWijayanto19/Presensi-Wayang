@@ -145,8 +145,8 @@
                         @php
                             $jenis = [
                                 ['icon' => 'calendar-x', 'c' => 'bg-amber-50 border-amber-200 text-amber-600', 't' => 'Izin Tidak Masuk', 'd' => 'Tidak masuk kerja pada tanggal itu. Tidak memblokir absen — absen tetap bisa jika kamu akhirnya masuk.'],
-                                ['icon' => 'alarm-clock', 'c' => 'bg-orange-50 border-orange-200 text-orange-600', 't' => 'Izin Terlambat', 'd' => 'Wajib isi <b>Jam Datang</b> antara <b>08.00–12.00</b>. Catatan: izin ini tidak otomatis menghapus keterlambatan di laporan.'],
-                                ['icon' => 'clock-4', 'c' => 'bg-indigo-50 border-indigo-200 text-indigo-600', 't' => 'Izin Setengah Hari', 'd' => 'Izin paruh hari. Saat ini hanya berupa kategori surat — tidak ada aturan jam masuk/pulang otomatis di sistem.'],
+                                ['icon' => 'alarm-clock', 'c' => 'bg-orange-50 border-orange-200 text-orange-600', 't' => 'Izin Terlambat', 'd' => 'Wajib isi <b>Jam Datang</b> antara <b>08.00–12.00</b>. Saat disetujui, patokan keterlambatanmu pindah ke <b>Jam Datang</b> itu: datang sebelum atau tepat Jam Datang dianggap <b>Tepat Waktu</b>, dan sisa telatnya dihitung dari Jam Datang (bukan jam masuk kantor).'],
+                                ['icon' => 'clock-4', 'c' => 'bg-indigo-50 border-indigo-200 text-indigo-600', 't' => 'Izin Setengah Hari', 'd' => 'Saat disetujui, keterlambatanmu hari itu <b>langsung dihapus (dianggap Tepat Waktu)</b> — berapa pun telatnya. Minimal kerja sebelum boleh absen pulang juga turun dari 8 jam menjadi <b>4 jam</b>.'],
                                 ['icon' => 'log-out', 'c' => 'bg-cyan-50 border-cyan-200 text-cyan-600', 't' => 'Izin Pulang Cepat', 'd' => '<b>Wajib sudah absen masuk hari ini</b> sebelum mengajukan. Setelah disetujui, kamu <b>boleh absen pulang walau belum 8 jam</b>.'],
                                 ['icon' => 'heart-pulse', 'c' => 'bg-rose-50 border-rose-200 text-rose-600', 't' => 'Sakit', 'd' => 'Sertakan bukti (disarankan surat dokter). Dihitung terpisah sebagai total Sakit di laporan.'],
                             ];
@@ -243,6 +243,14 @@
                                     <td class="text-[12.5px] text-[#57534e] py-2.5 pr-3">Absen pulang + Pulang Cepat disetujui</td>
                                     <td class="text-[12.5px] font-semibold text-emerald-600 py-2.5">Boleh walau belum 8 jam</td>
                                 </tr>
+                                <tr>
+                                    <td class="text-[12.5px] text-[#57534e] py-2.5 pr-3">Absen pulang + Setengah Hari disetujui</td>
+                                    <td class="text-[12.5px] font-semibold text-emerald-600 py-2.5">Cukup 4 jam kerja</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-[12.5px] text-[#57534e] py-2.5 pr-3">Keterlambatan + Setengah Hari disetujui</td>
+                                    <td class="text-[12.5px] font-semibold text-emerald-600 py-2.5">Dihapus (dianggap Tepat Waktu)</td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -250,8 +258,8 @@
                     <div class="bg-rose-50 border border-rose-200 rounded-xl p-3 mt-3 flex gap-2.5">
                         <i data-lucide="circle-alert" class="text-rose-600 shrink-0 mt-0.5" style="width:16px;height:16px;"></i>
                         <p class="text-[12px] leading-relaxed text-rose-800">
-                            Izin <b>Pulang Cepat</b> baru berlaku setelah statusnya <b>Disetujui</b>.
-                            Selama masih menunggu, aturan 8 jam tetap berlaku.
+                            Izin <b>Pulang Cepat</b> dan <b>Setengah Hari</b> baru berlaku setelah statusnya <b>Disetujui</b>.
+                            Selama masih menunggu, aturan 8 jam tetap berlaku dan keterlambatan tetap dihitung.
                         </p>
                     </div>
                 </section>
@@ -273,7 +281,7 @@
                         </div>
                         <div class="border border-emerald-200 bg-emerald-50 rounded-xl p-3">
                             <span class="inline-block text-[10px] font-bold uppercase tracking-wide bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-full px-2 py-0.5">Disetujui</span>
-                            <p class="text-[12px] text-emerald-900 mt-1.5 leading-relaxed">Izin sah berlaku. Pulang Cepat: boleh absen pulang &lt; 8 jam.</p>
+                            <p class="text-[12px] text-emerald-900 mt-1.5 leading-relaxed">Izin sah berlaku. Pulang Cepat: boleh absen pulang &lt; 8 jam. Setengah Hari: terlambat dihapus &amp; cukup kerja 4 jam.</p>
                         </div>
                         <div class="border border-rose-200 bg-rose-50 rounded-xl p-3">
                             <span class="inline-block text-[10px] font-bold uppercase tracking-wide bg-rose-100 text-rose-700 border border-rose-200 rounded-full px-2 py-0.5">Ditolak</span>
@@ -384,13 +392,25 @@
                         </details>
                         <details class="group py-2.5">
                             <summary class="text-[13px] font-semibold text-[#1c1917] cursor-pointer list-none flex items-center justify-between gap-3">
+                                Apa yang terjadi kalau izin Setengah Hari disetujui?
+                                <i data-lucide="chevron-down" class="text-[#a8a29e] shrink-0 group-open:rotate-180 transition-transform" style="width:16px;height:16px;"></i>
+                            </summary>
+                            <p class="text-[12.5px] text-[#57534e] leading-relaxed mt-2">
+                                Dua hal: keterlambatanmu hari itu <b>langsung dihapus</b> (dianggap Tepat Waktu,
+                                berapa pun telatnya), dan kamu cukup <b>kerja 4 jam</b> untuk bisa absen pulang.
+                                Jika mencoba pulang lebih awal, sistem akan memberi tahu jam paling awal kamu boleh pulang.
+                            </p>
+                        </details>
+                        <details class="group py-2.5">
+                            <summary class="text-[13px] font-semibold text-[#1c1917] cursor-pointer list-none flex items-center justify-between gap-3">
                                 Apa bedanya izin terlambat dengan absen terlambat biasa?
                                 <i data-lucide="chevron-down" class="text-[#a8a29e] shrink-0 group-open:rotate-180 transition-transform" style="width:16px;height:16px;"></i>
                             </summary>
                             <p class="text-[12.5px] text-[#57534e] leading-relaxed mt-2">
                                 Izin Terlambat adalah surat izin dengan perkiraan jam datang (08.00–12.00)
-                                yang disetujui atasan & HR. Catatan: izin ini <b>tidak otomatis</b> menghapus
-                                catatan keterlambatan di laporan presensi.
+                                yang disetujui atasan &amp; HR. Saat disetujui, patokan keterlambatanmu dipindah ke
+                                <b>Jam Datang</b> itu: datang sebelum atau tepat Jam Datang dianggap <b>Tepat Waktu</b>,
+                                dan sisa telatnya dihitung dari Jam Datang, bukan jam masuk kantor.
                             </p>
                         </details>
                     </div>

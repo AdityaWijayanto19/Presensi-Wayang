@@ -363,6 +363,14 @@ class IzinService
         } catch (\Exception $e) {
             Log::warning('Izin admin approval notification failed: ' . $e->getMessage());
         }
+
+        // Izin terlambat yang disetujui memindahkan baseline keterlambatan ke
+        // jam_datang, jadi baris presensi hari itu (bila sudah tercatat) ikut
+        // dihitung ulang agar kolom terlambat tidak menyimpang.
+        if ($this->izinPerluRecalcTerlambat($izin)) {
+            $this->safeRecalcTerlambat($izin->nik, $this->tglIzinKey($izin));
+        }
+
         cache()->forget('pending_izin_admin_count');
 
         return ['success' => true, 'message' => 'Izin disetujui.'];
@@ -586,6 +594,7 @@ class IzinService
 
         DB::beginTransaction();
         try {
+            $tglSebelum = $this->tglIzinKey($izin);
             $izin->update($updateData);
 
             $karyawan = Karyawan::where('nik', $izin->nik)->first();
@@ -631,6 +640,15 @@ class IzinService
             if ($fresh) {
                 $this->notifyStatusChange($fresh, $oldStatus, $newStatus);
             }
+        }
+
+        // Perubahan oleh admin bisa menggeser tanggal, jenis, maupun status izin,
+        // jadi presensi di tanggal lama dan tanggal baru ikut dihitung ulang
+        // (recalc bersifat idempotent, baris yang tidak terpengaruh tidak diubah).
+        $this->safeRecalcTerlambat($izin->nik, $tglSebelum);
+        $tglSesudah = $this->tglIzinKey($izin->fresh() ?? $izin);
+        if ($tglSesudah !== $tglSebelum) {
+            $this->safeRecalcTerlambat($izin->nik, $tglSesudah);
         }
 
         return ['success' => true, 'message' => 'Data izin berhasil diperbarui'];
@@ -782,6 +800,43 @@ class IzinService
         return $izin->tgl_izin instanceof \Carbon\Carbon
             ? $izin->tgl_izin->format('d-m-Y')
             : date('d-m-Y', strtotime($izin->tgl_izin));
+    }
+
+    /** Format tanggal izin 'Y-m-d' untuk query presensi. */
+    private function tglIzinKey(Izin $izin): string
+    {
+        return $izin->tgl_izin instanceof \Carbon\Carbon
+            ? $izin->tgl_izin->format('Y-m-d')
+            : (string) $izin->tgl_izin;
+    }
+
+    /**
+     * Izin ini berdampak pada kolom terlambat presensi sehingga perlu recalc:
+     * jenis terlambat (baseline pindah ke jam_datang) atau setengah hari
+     * (keterlambatan ditiadakan). Status apa pun dipanggil supaya perubahan
+     * approved → non-approved ikut menghapus efek lama; recalc menghitung
+     * ulang dari state izin terkini sehingga idempotent.
+     */
+    private function izinPerluRecalcTerlambat(Izin $izin): bool
+    {
+        return in_array($izin->jenis_izin, [JenisIzin::Terlambat, JenisIzin::SetengahHari], true);
+    }
+
+    /**
+     * Recalc terlambat yang tidak boleh menggagalkan proses utama (approve/update
+     * izin sudah ter-commit). Kegagalan recalc hanya dicatat sebagai warning dan
+     * bisa dipulihkan lewat command `presensi:recalc-terlambat`.
+     */
+    private function safeRecalcTerlambat(string $nik, string $tgl): void
+    {
+        try {
+            app(PresensiService::class)->recalcTerlambatUntuk($nik, $tgl);
+        } catch (\Throwable $e) {
+            Log::warning('Recalc terlambat gagal (non-fatal): ' . $e->getMessage(), [
+                'nik' => $nik,
+                'tgl' => $tgl,
+            ]);
+        }
     }
 
     private function getJenisIzinLabel(string $jenis): string

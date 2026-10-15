@@ -231,11 +231,26 @@
         ->toJson();
 @endphp
 
+@php
+    $karyawanRestore = $errors->any()
+        ? [
+            'mode' => request()->is('karyawan/*/update') ? 'update' : 'store',
+            'nik' => request()->route('nik'),
+            'page' => request()->get('page', 1),
+            'errors' => collect($errors->keys())
+                ->mapWithKeys(fn ($key) => [$key => $errors->first($key)])
+                ->toArray(),
+            'messages' => $errors->all(),
+        ]
+        : null;
+@endphp
+
 @push('myscript')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
 
         var karyawanData = {!! $karyawanJson !!};
+        var karyawanRestore = {!! json_encode($karyawanRestore) !!};
         var formTpl = document.getElementById('formTemplate');
         var formContainer = document.getElementById('formContainer');
 
@@ -425,6 +440,104 @@
                 var wrapper = document.getElementById('atasan-wrapper');
                 if (wrapper) wrapper.style.display = '';
             });
+        }
+
+        // =====================================================
+        // Restore Form + Toast Error Saat Validasi Gagal
+        // =====================================================
+        function restoreFormFromErrors() {
+            if (!karyawanRestore || !karyawanRestore.messages || !karyawanRestore.messages.length) return;
+
+            var isUpdate = karyawanRestore.mode === 'update';
+            var clone = formTpl.content.cloneNode(true);
+            var form = clone.querySelector('form');
+
+            if (isUpdate) {
+                form.action = '/karyawan/' + karyawanRestore.nik + '/update';
+
+                var pageInput = form.querySelector('[name="page"]');
+                if (!pageInput) {
+                    pageInput = document.createElement('input');
+                    pageInput.type = 'hidden';
+                    pageInput.name = 'page';
+                    form.appendChild(pageInput);
+                }
+                pageInput.value = karyawanRestore.page || 1;
+
+                var passwordInput = form.querySelector('[name="password"]');
+                if (passwordInput) {
+                    passwordInput.placeholder = 'Kosongkan jika tidak diubah';
+                    passwordInput.removeAttribute('required');
+                }
+
+                var btn = form.querySelector('button[type="submit"]');
+                if (btn) {
+                    btn.innerHTML = '<i data-lucide="save" style="width:16px;height:16px;"></i> Perbarui Data';
+                }
+            }
+
+            formContainer.innerHTML = '';
+            formContainer.appendChild(clone);
+            if (window.lucide) lucide.createIcons();
+
+            var formLive = formContainer.querySelector('form');
+            var fieldErrors = karyawanRestore.errors || {};
+
+            // Sorot field yang bermasalah
+            Object.keys(fieldErrors).forEach(function(name) {
+                var el = formLive.querySelector('[name="' + name + '"]');
+                if (!el || el.type === 'file') return;
+
+                if (el.type === 'hidden') {
+                    // x-admin.select: kontrol tampilan adalah tombol di dalam .relative
+                    var btn = el.parentElement.querySelector('.relative > button');
+                    if (btn) {
+                        btn.classList.remove('border-slate-300');
+                        btn.classList.add('border-red-400');
+                    }
+                } else {
+                    el.classList.remove('border-slate-300');
+                    el.classList.add('border-red-400');
+                }
+            });
+
+            // Buka wrapper Role Approved & Atasan, lalu isi ulang opsi atasan via AJAX.
+            // Nilai diambil dulu sebelum change jabatan, karena cascade meresetnya.
+            var roleInput = formLive.querySelector('[name="role_approved"]');
+            var atasanInput = formLive.querySelector('[name="atasan_nik"]');
+            var nikInput = formLive.querySelector('[name="nik"]');
+            var roleApproved = roleInput ? roleInput.value : '';
+            var atasanNik = atasanInput ? atasanInput.value : '';
+            var nikValue = nikInput ? nikInput.value : '';
+
+            var jabatanInput = formLive.querySelector('[name="jabatan"]');
+            if (jabatanInput && jabatanInput.value) {
+                jabatanInput.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+
+            if (roleApproved) {
+                setTimeout(function() {
+                    formContainer.dispatchEvent(new CustomEvent('set-value', {
+                        detail: { name: 'role_approved', value: roleApproved },
+                        bubbles: true
+                    }));
+                    setTimeout(function() {
+                        if (roleInput) roleInput.dispatchEvent(new Event('change', { bubbles: true }));
+                        setTimeout(function() {
+                            fetchAtasanForEdit(roleApproved, atasanNik, nikValue);
+                        }, 30);
+                    }, 30);
+                }, 30);
+            }
+
+            // Toast detail tiap error
+            if (window.showToast) {
+                karyawanRestore.messages.forEach(function(msg) {
+                    window.showToast('error', msg);
+                });
+            }
+
+            openModal();
         }
 
         // =====================================================
@@ -699,6 +812,11 @@
                 return;
             }
         });
+
+        // =====================================================
+        // Jika server menolak (validasi gagal) → buka lagi form
+        // =====================================================
+        restoreFormFromErrors();
 
         // =====================================================
         // Image Crop — Event Delegation

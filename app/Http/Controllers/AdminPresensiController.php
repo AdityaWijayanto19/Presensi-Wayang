@@ -338,7 +338,12 @@ class AdminPresensiController extends Controller
         $presensi = Presensi::with('karyawan')->findOrFail($id);
 
         $unit = $presensi->karyawan->unit ?? '';
-        $terlambat = $presensiService->hitungTerlambatPresensi($unit, $request->jam_in);
+        $terlambat = $presensiService->hitungTerlambatPresensi(
+            $unit,
+            $request->jam_in,
+            $presensi->nik,
+            $presensi->tgl_presensi?->format('Y-m-d')
+        );
 
         $presensi->update([
             'jam_in' => $request->jam_in,

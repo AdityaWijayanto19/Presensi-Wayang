@@ -10,18 +10,18 @@
     @endif
 
     {{-- NIK --}}
-    <x-admin.input name="nik" id="nik" value="{{ $karyawan?->nik }}" placeholder="NIK" autocomplete="off"
-        icon="file-text" />
+    <x-admin.input name="nik" id="nik" value="{{ old('nik', $karyawan?->nik) }}" placeholder="NIK" autocomplete="off"
+        icon="file-text" :error="$errors->first('nik')" />
 
     {{-- Nama Lengkap --}}
-    <x-admin.input name="nama_lengkap" id="nama_lengkap" value="{{ $karyawan?->nama_lengkap }}"
+    <x-admin.input name="nama_lengkap" id="nama_lengkap" value="{{ old('nama_lengkap', $karyawan?->nama_lengkap) }}"
         placeholder="Nama Lengkap" autocomplete="off"
-        icon="user" />
+        icon="user" :error="$errors->first('nama_lengkap')" />
 
     {{-- Posisi --}}
-    <x-admin.input name="posisi" id="posisi" value="{{ $karyawan?->posisi }}"
+    <x-admin.input name="posisi" id="posisi" value="{{ old('posisi', $karyawan?->posisi) }}"
         placeholder="Posisi (contoh: Staff Accounting)" autocomplete="off"
-        icon="briefcase" />
+        icon="briefcase" :error="$errors->first('posisi')" />
 
     {{-- Jabatan --}}
     <x-admin.select name="jabatan" id="jabatan" label="Jabatan <span class='text-red-500'>*</span>"
@@ -87,19 +87,22 @@
     </x-admin.select>
 
     {{-- No. HP --}}
-    <x-admin.input name="no_hp" id="no_hp" value="{{ $karyawan?->no_hp }}" placeholder="No. HP"
+    <x-admin.input name="no_hp" id="no_hp" value="{{ old('no_hp', $karyawan?->no_hp) }}" placeholder="No. HP"
         autocomplete="off"
-        icon="phone" />
+        icon="phone" :error="$errors->first('no_hp')" />
 
     {{-- Jatah Cuti --}}
     <x-admin.input type="number" name="jatah_cuti" id="jatah_cuti"
-        value="{{ $karyawan?->jatah_cuti ?? 12 }}" placeholder="Jatah Cuti"
+        value="{{ old('jatah_cuti', $karyawan?->jatah_cuti ?? 12) }}" placeholder="Jatah Cuti"
         min="0" max="12" required
-        icon="calendar" />
+        icon="calendar" :error="$errors->first('jatah_cuti')" />
     <small class="text-slate-500 -mt-1 block mb-2">Jatah cuti tahunan (maksimal 12 hari).</small>
 
     {{-- Upload Foto --}}
     <x-admin.image-crop name="foto" id="foto" currentImage="{{ $karyawan?->foto }}" />
+    @error('foto')
+        <p class="mt-1 mb-2 text-xs text-red-600">{{ $message }}</p>
+    @enderror
 
     @if ($karyawan)
         <input type="hidden" name="foto_lama" value="{{ $karyawan->foto }}">
@@ -123,6 +126,9 @@
             <span class="eye-closed" style="display:none;"><i data-lucide="eye-off" style="width:18px;height:18px;"></i></span>
         </button>
     </div>
+    @error('password')
+        <p class="mt-1 mb-2 text-xs text-red-600">{{ $message }}</p>
+    @enderror
 
     {{-- Submit --}}
     <div class="mt-2">

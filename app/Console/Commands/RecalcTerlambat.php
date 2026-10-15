@@ -33,7 +33,12 @@ class RecalcTerlambat extends Command
                     continue;
                 }
 
-                $terlambat = $presensiService->hitungTerlambatPresensi($unit, $jamIn);
+                $terlambat = $presensiService->hitungTerlambatPresensi(
+                    $unit,
+                    $jamIn,
+                    $presensi->nik,
+                    $presensi->tgl_presensi?->format('Y-m-d')
+                );
 
                 if ($terlambat === (int) $presensi->terlambat) {
                     continue;
