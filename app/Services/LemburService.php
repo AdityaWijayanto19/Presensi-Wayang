@@ -122,9 +122,9 @@ class LemburService
         $presensiHariIni = Presensi::where('nik', $karyawan->nik)
             ->where('tgl_presensi', $hariIni)
             ->first();
-        if ($presensiHariIni && !$presensiHariIni->jam_out) {
-            return ['can' => false, 'message' => 'Silakan absen pulang terlebih dahulu sebelum mengajukan lembur.'];
-        }
+        // if ($presensiHariIni && !$presensiHariIni->jam_out) {
+        //     return ['can' => false, 'message' => 'Silakan absen pulang terlebih dahulu sebelum mengajukan lembur.'];
+        // }
 
         $jamSekarang = now('Asia/Jakarta');
         $jam = (int) $jamSekarang->format('H');
