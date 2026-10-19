@@ -61,6 +61,9 @@
                 <div class="activity-content">
                     Mulai: {{ $jam_mulai }} WIB — Selesai: {{ $jam_selesai }} WIB<br>
                     Total: {{ $durasi }}
+                    @if (($jumlah_sesi_harian ?? 1) > 1)
+                        <br>Total Hari Ini ({{ $jumlah_sesi_harian }} sesi): {{ $durasi_harian ?? '-' }}
+                    @endif
                 </div>
             </td>
         </tr>

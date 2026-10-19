@@ -32,6 +32,14 @@
                         <span class="text-[#78716c]">Durasi</span>
                         <span class="font-medium text-[#1c1917]">{{ $data->durasi_formatted }}</span>
                     </div>
+                    @if (($data->jumlah_sesi_harian ?? 1) > 1)
+                        <div class="flex justify-between text-[12px]">
+                            <span class="text-[#78716c]">Total Hari Ini ({{ $data->jumlah_sesi_harian }} sesi)</span>
+                            <span class="font-medium {{ ($data->is_prorate_harian ?? false) ? 'text-amber-600' : 'text-[#1c1917]' }}">
+                                {{ $data->durasi_harian_formatted ?? '-' }}{{ ($data->is_prorate_harian ?? false) ? ' (Prorate)' : '' }}
+                            </span>
+                        </div>
+                    @endif
                     <div class="flex justify-between text-[12px]">
                         <span class="text-[#78716c]">Keterangan</span>
                         <span class="font-medium text-[#1c1917] text-right max-w-[200px]">{{ $lembur->keterangan ?? '-' }}</span>

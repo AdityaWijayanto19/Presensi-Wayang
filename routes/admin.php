@@ -110,6 +110,11 @@ Route::group(['middleware' => 'permission:wfh-approve,user'], function () {
 
 // Data cuti
 Route::get('/panel/cuti', [AdminPresensiController::class, 'datacuti'])->middleware('permission:cuti-view,user');
+Route::get('/panel/cuti/{id}/pdf', [AdminPresensiController::class, 'pdfcutiadmin'])->middleware('permission:cuti-view,user');
+Route::group(['middleware' => 'permission:cuti-approve,user'], function () {
+    Route::post('/cuti/{id}/approve', [AdminPresensiController::class, 'approveCutiAdmin']);
+    Route::post('/cuti/{id}/reject', [AdminPresensiController::class, 'rejectCutiAdmin']);
+});
 Route::group(['middleware' => 'permission:cuti-edit,user'], function () {
     Route::post('/cuti/{id}/update', [AdminPresensiController::class, 'updatecutiadmin']);
 });

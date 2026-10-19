@@ -50,12 +50,16 @@ class DashboardController extends Controller
             ->first();
 
         $rekapcuti = Cuti::selectRaw('COUNT(*) as jmlcuti')
+            ->where('status', \App\Enums\CutiStatus::Approved)
             ->whereJsonContains('tanggal_cuti', $hariini)
             ->first();
 
         $cutiHariIniList = Cuti::with('karyawan')
+            ->where('status', \App\Enums\CutiStatus::Approved)
             ->whereJsonContains('tanggal_cuti', $hariini)
             ->get();
+
+        $pendingCutiAdmin = Cuti::where('status', \App\Enums\CutiStatus::PendingAdmin)->count();
 
         $pendingWfh = Wfh::whereIn('status', ['pending_admin', 'pending_atasan'])->count();
         $pendingWfhAdmin = Wfh::where('status', 'pending_admin')->count();
@@ -102,10 +106,10 @@ class DashboardController extends Controller
                 'jml' => (int) $row->jml,
             ]);
 
-        // ── Chart: penggunaan cuti tahun ini ──────────────────────────
+        // ── Chart: penggunaan cuti tahun ini (hanya yang approved) ─────
         $totalJatahCuti = (int) Karyawan::sum('jatah_cuti');
         $cutiTerpakaiTahun = 0;
-        foreach (Cuti::all() as $cuti) {
+        foreach (Cuti::approved()->get() as $cuti) {
             foreach ((array) $cuti->tanggal_cuti as $tglCuti) {
                 if (str_starts_with((string) $tglCuti, $tahunini.'-')) {
                     $cutiTerpakaiTahun++;
@@ -229,7 +233,7 @@ class DashboardController extends Controller
             ]);
         }
 
-        foreach (Cuti::with('karyawan')->latest('dikirim_tanggal')->take(5)->get() as $r) {
+        foreach (Cuti::with('karyawan')->approved()->latest('dikirim_tanggal')->take(5)->get() as $r) {
             [$bl, $bc] = $labelBadge(null);
             $feed->push([
                 'jenis' => 'Cuti',
@@ -249,7 +253,7 @@ class DashboardController extends Controller
         return view('admin.index', compact(
             'rekappresensi', 'rekapizin', 'rekaplembur', 'rekapwfh', 'rekapcuti',
             'cutiHariIniList', 'jmlkaryawan', 'pendingWfh', 'pendingWfhAdmin', 'pendingLaporanAdmin',
-            'pendingLemburAdmin', 'pendingLaporanLemburAdmin', 'pendingIzinAdmin',
+            'pendingLemburAdmin', 'pendingLaporanLemburAdmin', 'pendingIzinAdmin', 'pendingCutiAdmin',
             'tanggalIndo', 'sapaan',
             'labels7', 'hadir7', 'telat7',
             'unitChart', 'totalJatahCuti', 'cutiTerpakaiTahun', 'cutiSisaTahun',
@@ -385,6 +389,9 @@ class DashboardController extends Controller
 
                 return $l;
             });
+
+        // Total harian (gabungan maksimal 2 sesi lembur per hari) untuk ditampilkan di kartu.
+        \App\Services\LemburService::attachDailyTotals($lemburSaya);
 
         $pendingAtasanLembur = collect();
         $pendingLaporanLemburAtasan = collect();

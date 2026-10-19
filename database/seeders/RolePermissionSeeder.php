@@ -5,13 +5,14 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\PermissionRegistrar;
 use App\Models\User;
 
 class RolePermissionSeeder extends Seeder
 {
     public function run(): void
     {
-        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
         $permissions = [
             'dashboard-view',
@@ -39,6 +40,7 @@ class RolePermissionSeeder extends Seeder
             'cuti-view',
             'cuti-edit',
             'cuti-delete',
+            'cuti-approve',
             'laporan-view',
             'user-manage',
             'activity-log-view',

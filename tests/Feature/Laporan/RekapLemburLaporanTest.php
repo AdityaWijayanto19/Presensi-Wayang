@@ -199,6 +199,81 @@ class RekapLemburLaporanTest extends TestCase
     }
 
     // ======================================================================
+    // Rekap unit — kalkulasi harian (2 sesi lembur per hari)
+    // ======================================================================
+
+    public function test_rekap_unit_menjumlahkan_dua_sesi_lembur_dalam_satu_hari(): void
+    {
+        $this->lembur(['laporan_status' => 'approved', 'durasi_jam' => 2]);
+        $this->lembur(['laporan_status' => 'approved', 'durasi_jam' => 2.5, 'rencana_mulai' => '2026-09-22 21:00:00', 'rencana_selesai' => '2026-09-22 23:30:00']);
+
+        $data = $this->buildRekap($this->rekapParams());
+
+        $this->assertSame(4.5, (float) $data['dataKaryawan'][0]['totalLembur']);
+        $this->assertSame(0, (int) $data['dataKaryawan'][0]['totalProrate']);
+    }
+
+    public function test_rekap_unit_dua_sesi_lembur_lebih_dari_5_jam_jadi_satu_prorate(): void
+    {
+        $this->lembur(['laporan_status' => 'approved', 'durasi_jam' => 3]);
+        $this->lembur(['laporan_status' => 'approved', 'durasi_jam' => 3, 'rencana_mulai' => '2026-09-22 22:00:00', 'rencana_selesai' => '2026-09-23 01:00:00']);
+
+        $data = $this->buildRekap($this->rekapParams());
+
+        $this->assertSame(0.0, (float) $data['dataKaryawan'][0]['totalLembur']);
+        $this->assertSame(1, (int) $data['dataKaryawan'][0]['totalProrate']);
+        $this->assertSame(1, (int) $data['grandTotal']['totalProrate']);
+    }
+
+    public function test_rekap_unit_prorate_hitung_per_hari_bukan_per_record(): void
+    {
+        // Hari 1: 2 sesi x 3 jam = 6 jam → 1x prorate. Hari 2: 1 sesi 4 jam → dihitung.
+        $this->lembur(['laporan_status' => 'approved', 'durasi_jam' => 3]);
+        $this->lembur(['laporan_status' => 'approved', 'durasi_jam' => 3, 'rencana_mulai' => '2026-09-22 22:00:00', 'rencana_selesai' => '2026-09-23 01:00:00']);
+        $this->lembur(['tgl_lembur' => '2026-09-24', 'laporan_status' => 'approved', 'durasi_jam' => 4]);
+
+        $data = $this->buildRekap($this->rekapParams());
+
+        $this->assertSame(4.0, (float) $data['dataKaryawan'][0]['totalLembur']);
+        $this->assertSame(1, (int) $data['dataKaryawan'][0]['totalProrate']);
+    }
+
+    // ======================================================================
+    // Rekap detail karyawan — kalkulasi harian
+    // ======================================================================
+
+    public function test_detail_karyawan_lembur_harian_menjumlahkan_dua_sesi(): void
+    {
+        $this->lembur(['laporan_status' => 'approved', 'durasi_jam' => 2]);
+        $this->lembur(['laporan_status' => 'approved', 'durasi_jam' => 2.5, 'rencana_mulai' => '2026-09-22 21:00:00', 'rencana_selesai' => '2026-09-22 23:30:00']);
+
+        $data = $this->buildDetail($this->detailParams());
+
+        $this->assertSame(4.5, (float) $data['totalLembur']);
+
+        $hari = $this->cariHari($data, self::TGL_DALAM_PERIODE);
+        $this->assertNotNull($hari);
+        $this->assertSame('4,5', $hari['lembur_jam']);
+        $this->assertFalse($hari['lembur_prorate']);
+    }
+
+    public function test_detail_karyawan_lembur_harian_lebih_5_jam_jadi_prorate(): void
+    {
+        $this->lembur(['laporan_status' => 'approved', 'durasi_jam' => 3]);
+        $this->lembur(['laporan_status' => 'approved', 'durasi_jam' => 3, 'rencana_mulai' => '2026-09-22 22:00:00', 'rencana_selesai' => '2026-09-23 01:00:00']);
+
+        $data = $this->buildDetail($this->detailParams());
+
+        $this->assertSame(0.0, (float) $data['totalLembur']);
+        $this->assertSame(1, (int) $data['totalProrateLembur']);
+
+        $hari = $this->cariHari($data, self::TGL_DALAM_PERIODE);
+        $this->assertNotNull($hari);
+        $this->assertTrue($hari['lembur_prorate']);
+        $this->assertNull($hari['lembur_jam']);
+    }
+
+    // ======================================================================
     // Laporan detail 1 karyawan (export "Per Karyawan")
     // ======================================================================
 

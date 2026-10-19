@@ -119,16 +119,26 @@ class LaporanService
         $totalJamKerja = floor($totalMenitKerja / 60);
         $sisaMenitKerja = $totalMenitKerja % 60;
 
+        // Lembur dikelompokkan per hari: total gabungan semua sesi lembur pada tanggal
+        // yang sama. Total harian > 5 jam = Prorate (1x per hari, jam tidak dihitung).
         $lembur = Lembur::where('nik', $nik)
             ->where('status', 'approved')
             ->where('laporan_status', 'approved')
             ->whereBetween('tgl_lembur', [$startDate, $endDate])
             ->get()
-            ->keyBy(fn ($item) => $item->tgl_lembur->format('Y-m-d'));
+            ->groupBy(fn ($item) => $item->tgl_lembur->format('Y-m-d'));
 
+        $lemburHarian = [];
         $totalLembur = 0;
-        foreach ($lembur as $item) {
-            $totalLembur += (float) $item->durasi_jam;
+        $totalProrateLembur = 0;
+        foreach ($lembur as $tgl => $group) {
+            $harian = LemburService::summarizeDaily($group);
+            $lemburHarian[$tgl] = $harian;
+            if ($harian['is_prorate']) {
+                $totalProrateLembur++;
+            } else {
+                $totalLembur += $harian['jam'];
+            }
         }
 
         $izin = Izin::where('nik', $nik)
@@ -146,7 +156,10 @@ class LaporanService
         $cutiDates = [];
         $startKey = $startDate->format('Y-m-d');
         $endKey = $endDate->format('Y-m-d');
-        foreach (Cuti::where('nik', $nik)->get() as $cuti) {
+        // Hanya cuti yang sudah disetujui yang tampil di laporan.
+        foreach (Cuti::where('nik', $nik)
+            ->where('status', \App\Enums\CutiStatus::Approved)
+            ->get() as $cuti) {
             foreach ((array) $cuti->tanggal_cuti as $tgl) {
                 $ts = strtotime($tgl);
                 if ($ts === false) {
@@ -168,6 +181,7 @@ class LaporanService
             $key = $cursor->format('Y-m-d');
             $p = $presensi->get($key);
             $l = $lembur->get($key);
+            $lHarian = $lemburHarian[$key] ?? null;
             $i = $izin->get($key);
             $w = $wfh->get($key);
             $isMinggu = $cursor->dayOfWeek === Carbon::SUNDAY;
@@ -198,8 +212,9 @@ class LaporanService
                 'hari' => self::NAMA_HARI[$cursor->dayOfWeekIso],
                 'is_minggu' => $isMinggu,
                 'presensi' => $p,
-                'lembur' => $l,
-                'lembur_jam' => $l ? self::formatJam((float) $l->durasi_jam) : null,
+                'lembur' => $l?->first(),
+                'lembur_jam' => $lHarian && !$lHarian['is_prorate'] ? self::formatJam($lHarian['jam']) : null,
+                'lembur_prorate' => (bool) ($lHarian['is_prorate'] ?? false),
                 'izin' => $i,
                 'wfh' => $w,
                 'is_cuti' => $isCuti,
@@ -209,9 +224,12 @@ class LaporanService
             $cursor->addDay();
         }
 
+        // Ringkasan jumlah hari cuti approved pada periode (setara kolom Total Cuti di rekap unit).
+        $totalCuti = count($cutiDates);
+
         return compact(
             'bulan', 'tahun', 'namabulan', 'karyawan', 'days',
-            'lembur', 'wfh', 'totalLembur', 'totalWfh',
+            'lembur', 'wfh', 'totalLembur', 'totalProrateLembur', 'totalWfh', 'totalCuti',
             'sisaMenitKerja', 'totalJamKerja', 'startDate', 'endDate'
         );
     }
@@ -282,7 +300,10 @@ class LaporanService
             ->groupBy('nik');
 
         $cutiDates = [];
-        foreach (Cuti::whereIn('nik', $niks)->get() as $cuti) {
+        // Hanya cuti yang sudah disetujui yang tampil di rekap unit.
+        foreach (Cuti::whereIn('nik', $niks)
+            ->where('status', \App\Enums\CutiStatus::Approved)
+            ->get() as $cuti) {
             foreach ((array) $cuti->tanggal_cuti as $tgl) {
                 $ts = strtotime($tgl);
                 if ($ts === false) {
@@ -336,13 +357,18 @@ class LaporanService
             $totalJamKerja = floor($totalMenitKerja / 60);
             $sisaMenitKerja = $totalMenitKerja % 60;
 
+            // Rekap lembur per hari: total gabungan semua sesi pada tanggal yang sama.
+            // Total harian > 5 jam = 1x Prorate, jam hari itu tidak dihitung.
             $totalLembur = 0;
             $totalProrate = 0;
-            foreach ($lemburs->get($k->nik, collect()) as $item) {
-                if ($item->durasi_jam > 5) {
+            $lemburPerHari = $lemburs->get($k->nik, collect())
+                ->groupBy(fn ($item) => $item->tgl_lembur->format('Y-m-d'));
+            foreach ($lemburPerHari as $group) {
+                $harian = LemburService::summarizeDaily($group);
+                if ($harian['is_prorate']) {
                     $totalProrate++;
                 } else {
-                    $totalLembur += (float) $item->durasi_jam;
+                    $totalLembur += $harian['jam'];
                 }
             }
 

@@ -13,9 +13,14 @@ class UpdateCutiAdminRequest extends FormRequest
 
     public function rules(): array
     {
+        // Rule "size:" hanya menerima angka literal, bukan nama field.
+        // "size:durasi_hari" membuat Brick\Math gagal parse "durasi_hari"
+        // menjadi angka dan melempar NumberFormatException (HTTP 500).
+        $durasi = (int) $this->input('durasi_hari');
+
         return [
             'durasi_hari' => 'required|integer|in:1,2,3',
-            'tanggal_cuti' => 'required|array|size:durasi_hari',
+            'tanggal_cuti' => 'required|array' . ($durasi > 0 ? "|size:{$durasi}" : ''),
             'tanggal_cuti.*' => 'required|date|distinct',
             'keterangan' => 'nullable|string|max:500',
         ];

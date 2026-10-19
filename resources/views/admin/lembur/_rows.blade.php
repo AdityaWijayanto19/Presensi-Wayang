@@ -112,7 +112,14 @@
                 <div class="text-rose-500 text-[10px] mt-1" title="{{ $d->rejected_reason }}">{{ Str::limit($d->rejected_reason, 30) }}</div>
             @endif
         </td>
-        <td class="px-2 py-2 text-xs text-slate-700">{{ $d->durasi_formatted ?? '-' }}</td>
+        <td class="px-2 py-2 text-xs text-slate-700">
+            {{ $d->durasi_harian_formatted ?? $d->durasi_formatted ?? '-' }}
+            @if (($d->jumlah_sesi_harian ?? 1) > 1)
+                <div class="text-[10px] text-slate-400 mt-0.5">
+                    Total hari ini ({{ $d->jumlah_sesi_harian }} sesi) • sesi ini: {{ $d->durasi_formatted ?? '-' }}
+                </div>
+            @endif
+        </td>
         <td class="px-2 py-2 text-xs">
             @if ($lStatus)
                 <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold {{ $lBadgeClass }}">{{ $lLabel }}</span>
@@ -168,7 +175,7 @@
                         data-jabatan-atasan="{{ $jabatanAtasan }}"
                         data-tgl-lembur="{{ $d->tgl_lembur instanceof \Carbon\Carbon ? $d->tgl_lembur->format('d M Y') : date('d M Y', strtotime($d->tgl_lembur)) }}"
                         data-rencana-waktu="{{ $rencanaWaktu }}"
-                        data-durasi="{{ $d->durasi_formatted ?? '—' }}"
+                        data-durasi="{{ ($d->durasi_harian_formatted ?? null) ?? ($d->durasi_formatted ?? '—') }}{{ ($d->jumlah_sesi_harian ?? 1) > 1 ? ' (total ' . $d->jumlah_sesi_harian . ' sesi)' : '' }}"
                         data-waktu-mulai="{{ $waktuMulai }}"
                         data-waktu-selesai="{{ $waktuSelesai }}"
                         data-keterangan="{{ $d->keterangan ?? '' }}"

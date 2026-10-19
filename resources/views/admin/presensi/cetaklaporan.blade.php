@@ -146,6 +146,14 @@
 
             </tr>
 
+            <tr>
+
+                <td>Hari Cuti</td>
+                <td>:</td>
+                <td>{{ $totalCuti }} Hari</td>
+
+            </tr>
+
         </table>
 
         <br>
@@ -270,7 +278,11 @@
                     {{-- ================================================== --}}
                     <td align="center">
 
-                        @if ($day['lembur_jam'] !== null)
+                        @if (!empty($day['lembur_prorate']))
+
+                            Prorate
+
+                        @elseif ($day['lembur_jam'] !== null)
 
                             {{ $day['lembur_jam'] }} jam
 

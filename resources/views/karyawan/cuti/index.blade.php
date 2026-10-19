@@ -18,6 +18,19 @@
 
     @php
         $weekdayMap = ['Sunday'=>'Minggu','Monday'=>'Senin','Tuesday'=>'Selasa','Wednesday'=>'Rabu','Thursday'=>'Kamis','Friday'=>'Jumat','Saturday'=>'Sabtu'];
+        $statusLabels = [
+            'draft' => 'Draft',
+            'pending_admin' => 'Menunggu Persetujuan',
+            'approved' => 'Disetujui',
+            'rejected' => 'Ditolak',
+        ];
+        $statusBadgeClasses = [
+            'draft' => 'bg-slate-100 text-slate-600 border-slate-200',
+            'pending_admin' => 'bg-amber-100 text-amber-700 border-amber-200',
+            'approved' => 'bg-emerald-100 text-emerald-700 border-emerald-200',
+            'rejected' => 'bg-rose-100 text-rose-700 border-rose-200',
+        ];
+        $status = fn ($d) => $d->status instanceof \App\Enums\CutiStatus ? $d->status->value : ($d->status ?? 'approved');
     @endphp
 
     {{-- Kartu Kuota --}}
@@ -31,7 +44,7 @@
                             <span class="text-[28px] font-bold text-[#1c1917] leading-none">{{ $sisaCuti }}</span>
                             <span class="text-[13px] text-[#78716c]">/ {{ $jatahCuti }} hari</span>
                         </div>
-                        <div class="text-[11px] text-[#78716c] mt-1">Terpakai: {{ $terpakai }} hari</div>
+                        <div class="text-[11px] text-[#78716c] mt-1">Terpakai: {{ $terpakai }} hari <span class="text-[#a8a29e]">(disetujui)</span></div>
                     </div>
                     <div class="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center shrink-0">
                         <i data-lucide="calendar-check" class="text-emerald-600" style="width:22px;height:22px;"></i>
@@ -45,11 +58,28 @@
     </div>
 
     @if ($datacuti->count() > 0)
+        @php
+            $pendingCount = $datacuti->filter(fn ($d) => in_array($status($d), ['draft', 'pending_admin'], true))->count();
+            $approvedCount = $datacuti->filter(fn ($d) => $status($d) === 'approved')->count();
+            $rejectedCount = $datacuti->filter(fn ($d) => $status($d) === 'rejected')->count();
+        @endphp
         <div class="flex mt-3">
             <div class="w-full px-3">
                 <div class="flex items-center justify-between">
                     <p class="text-[12px] font-semibold tracking-wide text-[#a8a29e] uppercase">
                         <span class="inline-flex items-center gap-1.5"><i data-lucide="check-check" class="text-emerald-600" style="width:13px;height:13px;"></i> {{ $datacuti->count() }} Data</span>
+                        @if ($pendingCount > 0)
+                            <span class="mx-1.5 text-[#e7e5e4]">•</span>
+                            <span class="text-amber-700">{{ $pendingCount }} Diproses</span>
+                        @endif
+                        @if ($approvedCount > 0)
+                            <span class="mx-1.5 text-[#e7e5e4]">•</span>
+                            <span class="text-emerald-700">{{ $approvedCount }} Disetujui</span>
+                        @endif
+                        @if ($rejectedCount > 0)
+                            <span class="mx-1.5 text-[#e7e5e4]">•</span>
+                            <span class="text-rose-700">{{ $rejectedCount }} Ditolak</span>
+                        @endif
                     </p>
                     <span class="text-[11px] font-medium text-[#78716c] bg-white border border-[#f0ece8] rounded-full px-2.5 py-1">{{ date('M Y') }}</span>
                 </div>
@@ -61,6 +91,7 @@
         <div class="w-full px-3">
             @forelse ($datacuti as $d)
                 @php
+                    $st = $status($d);
                     $tanggalList = is_array($d->tanggal_cuti) ? $d->tanggal_cuti : (json_decode($d->tanggal_cuti, true) ?: []);
                     $tanggalDisplay = collect($tanggalList)
                         ->map(function ($t) use ($weekdayMap) {
@@ -76,6 +107,7 @@
                         ? $d->dikirim_tanggal->format('d M Y H:i')
                         : date('d M Y H:i', strtotime($d->dikirim_tanggal));
                     $buktiUrl = !empty($d->bukti_file) ? \Illuminate\Support\Facades\Storage::disk('public')->url('uploads/cuti/' . $d->bukti_file) : null;
+                    $formUrl = !empty($d->pdf_form_path) ? '/cuti/' . $d->id . '/pdf' : null;
                 @endphp
                 <div class="presensi-card mb-2.5">
                     <div class="flex items-start gap-3">
@@ -85,7 +117,7 @@
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-2 flex-wrap">
                                 <span class="text-[14.5px] font-bold text-[#1c1917] tracking-tight leading-none">{{ $d->durasi_hari }} Hari Cuti</span>
-                                <span class="presensi-badge bg-emerald-100 text-emerald-700 border-emerald-200">Terpakai {{ $d->durasi_hari }}</span>
+                                <span class="presensi-badge {{ $statusBadgeClasses[$st] ?? 'bg-gray-100 text-gray-700 border-gray-200' }}">{{ $statusLabels[$st] ?? ucfirst($st) }}</span>
                             </div>
                             <div class="flex items-center gap-1.5 mt-1.5">
                                 <i data-lucide="calendar" class="text-[#a8a29e]" style="width:12px;height:12px;"></i>
@@ -94,18 +126,55 @@
                             @if (!empty($d->keterangan))
                                 <div class="text-[12px] text-[#57534e] mt-1.5 leading-snug">{{ Str::limit($d->keterangan, 80) }}</div>
                             @endif
-                            <div class="text-[11px] text-[#a8a29e] mt-1">Diupload {{ $uploaded }}</div>
+                            @if ($st === 'rejected' && !empty($d->rejected_reason))
+                                <div class="mt-1 text-[11px] text-rose-500">Alasan: {{ $d->rejected_reason }}</div>
+                            @endif
+                            @if ($st === 'pending_admin')
+                                <div class="mt-1 text-[11px] text-amber-600">Menunggu persetujuan superadmin.</div>
+                            @endif
+                            <div class="text-[11px] text-[#a8a29e] mt-1">{{ $st === 'draft' ? 'Dibuat' : 'Diupload' }} {{ $uploaded }}</div>
                         </div>
                     </div>
 
                     <div class="presensi-divider"></div>
 
                     <div class="flex items-center gap-2 flex-wrap">
+                        @if ($formUrl)
+                            <a href="{{ $formUrl }}" target="_blank" rel="noopener" class="file-pill">
+                                <i data-lucide="file"></i> Formulir
+                                <span class="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-[#f0f9ff] border border-[#bae6fd] text-[9px] font-bold text-[#0369a1] uppercase">pdf</span>
+                            </a>
+                        @endif
                         @if($buktiUrl)
-                            <button type="button" class="file-pill js-preview" data-url="{{ $buktiUrl }}" data-filename="{{ basename($buktiUrl) }}" data-label="File Cuti — {{ $tanggalPlain }}">
+                            <a href="{{ $buktiUrl }}" target="_blank" rel="noopener" class="file-pill">
                                 <i data-lucide="paperclip"></i> File Cuti
                                 <span class="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-[#f0f9ff] border border-[#bae6fd] text-[9px] font-bold text-[#0369a1] uppercase">{{ strtolower(pathinfo($d->bukti_file, PATHINFO_EXTENSION)) }}</span>
-                            </button>
+                            </a>
+                        @endif
+
+                        @if ($st === 'draft')
+                            <a href="/cuti/{{ $d->id }}/upload" class="file-pill bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100">
+                                <i data-lucide="upload"></i> Upload File
+                            </a>
+                            <a href="/cuti/{{ $d->id }}/edit" class="file-pill bg-sky-50 border-sky-200 text-sky-700 hover:bg-sky-100">
+                                <i data-lucide="pencil"></i> Edit
+                            </a>
+                        @endif
+
+                        @if ($st === 'rejected')
+                            <a href="/cuti/{{ $d->id }}/upload" class="file-pill bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100">
+                                <i data-lucide="upload"></i> Upload Ulang
+                            </a>
+                        @endif
+
+                        @if (in_array($st, ['draft', 'rejected'], true))
+                            <form action="/cuti/{{ $d->id }}" method="POST" class="m-0 inline">
+                                @csrf
+                                @method('DELETE')
+                                <button type="button" class="file-pill bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100 delete-confirm">
+                                    <i data-lucide="trash-2"></i> Hapus
+                                </button>
+                            </form>
                         @endif
                     </div>
                 </div>
@@ -115,10 +184,10 @@
                         <i data-lucide="palmtree" class="text-[#059669]" style="width:40px;height:40px;"></i>
                     </div>
                     <h4 class="mt-4 text-[16px] font-bold text-[#1c1917]">Belum Ada Riwayat Cuti</h4>
-                    <p class="mt-1.5 text-[13px] leading-relaxed text-[#78716c] max-w-[28ch] mx-auto">Riwayat cuti tahunan yang sudah diupload akan muncul di sini.</p>
+                    <p class="mt-1.5 text-[13px] leading-relaxed text-[#78716c] max-w-[28ch] mx-auto">Pengajuan cuti tahunan yang kamu buat akan muncul di sini.</p>
                     <a href="/cuti/create" class="inline-flex items-center gap-2 mt-5 px-5 py-2.5 rounded-full bg-coklat text-white text-[13px] font-semibold shadow-sm hover:bg-coklat-dark transition"
                         @if ($sisaCuti <= 0) data-sisa-habis="1" @endif>
-                        <i data-lucide="plus" style="width:16px;height:16px;"></i> Upload Cuti
+                        <i data-lucide="plus" style="width:16px;height:16px;"></i> Ajukan Cuti
                     </a>
                 </x-admin.card>
             @endforelse
@@ -143,6 +212,27 @@
                 text: 'Anda tidak dapat mengajukan cuti tahunan karena kuota cuti Anda sudah habis.',
                 confirmButtonColor: '#7a5234',
                 confirmButtonText: 'OK'
+            });
+            return;
+        });
+
+        // Konfirmasi hapus draft / pengajuan ditolak
+        document.addEventListener('click', function (e) {
+            var btn = e.target.closest('.delete-confirm');
+            if (!btn) return;
+            var form = btn.closest('form');
+            e.preventDefault();
+            Swal.fire({
+                title: 'Hapus pengajuan cuti ini?',
+                text: 'Data pengajuan dan formulir PDF akan dihapus permanen.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#7a5234',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Hapus',
+                cancelButtonText: 'Batal'
+            }).then(function (r) {
+                if (r.isConfirmed) form.submit();
             });
         });
     </script>

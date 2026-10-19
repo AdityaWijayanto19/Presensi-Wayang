@@ -2,7 +2,11 @@
 
 namespace Tests\Feature\ActivityLog;
 
+use App\Enums\IzinStatus;
+use App\Enums\JenisIzin;
 use App\Models\AdminActivityLog;
+use App\Models\Izin;
+use App\Models\Karyawan;
 use App\Models\Unitperusahaan;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
@@ -126,6 +130,72 @@ class ActivityLogTest extends TestCase
             ->assertOk()
             ->assertDontSee('Membuat data unit perusahaan baru')
             ->assertSee('Belum ada aktivitas yang tercatat');
+    }
+
+    public function test_izin_approval_log_includes_karyawan_name_and_date(): void
+    {
+        $karyawan = Karyawan::factory()->create();
+
+        $izin = Izin::create([
+            'nik' => $karyawan->nik,
+            'tgl_izin' => '2026-10-01',
+            'jenis_izin' => JenisIzin::TidakMasuk->value,
+            'status' => IzinStatus::PendingAdmin->value,
+            'admin_status' => 'pending',
+            'dikirim_tanggal' => now('Asia/Jakarta'),
+        ]);
+
+        $this->actingAs($this->superAdmin, 'user')
+            ->post('/presensi/dataizin/'.$izin->id.'/approve')
+            ->assertStatus(302);
+
+        $this->assertDatabaseHas('admin_activity_logs', [
+            'module' => 'izin',
+            'action' => 'approve',
+            'entity_id' => (string) $izin->id,
+            'description' => 'Menyetujui pengajuan izin #'.$izin->id.' — '.$karyawan->nama_lengkap.' (tanggal 01 Oktober 2026)',
+            'status' => 'success',
+        ]);
+    }
+
+    public function test_karyawan_delete_log_includes_name_even_after_record_removed(): void
+    {
+        $karyawan = Karyawan::factory()->create();
+
+        $this->actingAs($this->superAdmin, 'user')
+            ->post('/karyawan/'.$karyawan->nik.'/delete')
+            ->assertStatus(302);
+
+        $this->assertDatabaseMissing('karyawans', ['nik' => $karyawan->nik]);
+        $this->assertDatabaseHas('admin_activity_logs', [
+            'module' => 'karyawan',
+            'action' => 'delete',
+            'entity_id' => $karyawan->nik,
+            'description' => 'Menghapus data karyawan '.$karyawan->nik.' ('.$karyawan->nama_lengkap.')',
+            'status' => 'success',
+        ]);
+    }
+
+    public function test_karyawan_store_log_includes_submitted_name(): void
+    {
+        $this->actingAs($this->superAdmin, 'user')->post('/karyawan/store', [
+            'nik' => '9001',
+            'nama_lengkap' => 'Budi Santoso',
+            'jabatan' => 'Staff',
+            'posisi' => 'Staff Accounting',
+            'role_approved' => 'Staff',
+            'unit' => 'Unit Test',
+            'no_hp' => '081234567890',
+            'jatah_cuti' => 12,
+            'password' => 'rahasia123',
+        ])->assertStatus(302);
+
+        $this->assertDatabaseHas('admin_activity_logs', [
+            'module' => 'karyawan',
+            'action' => 'create',
+            'description' => 'Membuat data karyawan baru Budi Santoso',
+            'status' => 'success',
+        ]);
     }
 
     public function test_cleanup_command_removes_expired_logs(): void

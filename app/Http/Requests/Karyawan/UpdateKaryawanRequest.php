@@ -28,7 +28,9 @@ class UpdateKaryawanRequest extends FormRequest
 
         $nik = $this->route('nik');
         if ($nik) {
-            $terpakai = (int) \App\Models\Cuti::where('nik', $nik)->sum('durasi_hari');
+            $terpakai = (int) \App\Models\Cuti::where('nik', $nik)
+                ->approved()
+                ->sum('durasi_hari');
             if ($terpakai > 0) {
                 $rules['jatah_cuti'] .= '|gte:' . $terpakai;
             }

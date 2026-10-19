@@ -568,7 +568,23 @@
                 cekLokasi();
             });
 
-        document.getElementById('takeabsen').addEventListener('click', function (e) {
+        var absenSedangProses = false;
+        var tombolAbsen = document.getElementById('takeabsen');
+
+        // Kunci tombol selama request berjalan supaya tap ganda / retry jaringan
+        // tidak mengirim beberapa POST /presensi/store sekaligus (race condition
+        // yang membuat baris presensi dobel).
+        function bukaKunciAbsen() {
+            absenSedangProses = false;
+            if (tombolAbsen) tombolAbsen.disabled = false;
+        }
+
+        tombolAbsen.addEventListener('click', function (e) {
+            if (absenSedangProses) {
+                e.preventDefault();
+                return false;
+            }
+
             if (faceStatus !== 'ok' && faceStatus !== 'unavailable') {
                 Swal.fire({
                     title: 'Wajah Belum Siap',
@@ -645,6 +661,9 @@
                 }
             }
 
+            absenSedangProses = true;
+            tombolAbsen.disabled = true;
+
             Webcam.snap(function (uri) {
                 var image = uri;
 
@@ -676,6 +695,7 @@
                     // Server tidak membalas protokol "success|pesan|type":
                     // kemungkinan session expired (redirect) atau halaman error HTTP.
                     if (response.redirected) {
+                        bukaKunciAbsen();
                         Swal.fire({
                             title: 'Sesi Berakhir',
                             text: 'Silakan login ulang untuk melanjutkan presensi.',
@@ -689,6 +709,7 @@
                     }
 
                     if (!response.ok) {
+                        bukaKunciAbsen();
                         var pesanHttp;
                         if (response.status === 419) {
                             pesanHttp = 'Sesi Anda telah berakhir. Muat ulang halaman lalu coba lagi.';
@@ -711,6 +732,7 @@
                     }
 
                     if (!/^(success|error)\|/.test(respond)) {
+                        bukaKunciAbsen();
                         Swal.fire({
                             title: 'Respons Tidak Dikenali',
                             text: 'Muat ulang halaman lalu coba lagi.',
@@ -746,6 +768,8 @@
                         }, 3100);
 
                     } else {
+                        // Server menolak (radius, sesi, dst) — izinkan coba lagi.
+                        bukaKunciAbsen();
                         Swal.fire({
                             title: 'Presensi Ditolak',
                             text: status[1],
@@ -756,6 +780,7 @@
                     }
                 })
                 .catch(function () {
+                    bukaKunciAbsen();
                     Swal.fire({
                         title: 'Gagal Terhubung',
                         text: 'Tidak bisa menghubungi server. Periksa koneksi lalu coba lagi.',

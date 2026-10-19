@@ -83,10 +83,16 @@ Route::post('/wfh/{id}/approve-laporan-atasan', [KaryawanPresensiController::cla
 Route::post('/wfh/{id}/reject-laporan-atasan', [KaryawanPresensiController::class, 'rejectLaporanAtasan']);
 Route::get('/presensi/showfilewfh/{file}', [KaryawanPresensiController::class, 'showfilewfh']);
 
-// Cuti Tahunan
+// Cuti Tahunan (2 step: input data + upload file, approval superadmin)
 Route::get('/cuti', [KaryawanPresensiController::class, 'cuti']);
 Route::get('/cuti/create', [KaryawanPresensiController::class, 'buatCuti']);
 Route::post('/cuti/store', [KaryawanPresensiController::class, 'storeCuti']);
+Route::get('/cuti/{id}/edit', [KaryawanPresensiController::class, 'editCuti']);
+Route::post('/cuti/{id}/update-draft', [KaryawanPresensiController::class, 'updateDraftCuti']);
+Route::delete('/cuti/{id}', [KaryawanPresensiController::class, 'deleteCuti']);
+Route::get('/cuti/{id}/upload', [KaryawanPresensiController::class, 'uploadCuti']);
+Route::post('/cuti/{id}/upload', [KaryawanPresensiController::class, 'storeUploadCuti']);
+Route::get('/cuti/{id}/pdf', [KaryawanPresensiController::class, 'downloadCutiPdf']);
 Route::get('/presensi/showfilecuti/{file}', [KaryawanPresensiController::class, 'showfilecuti']);
 
 // Notifications

@@ -1,5 +1,18 @@
 @forelse ($datacuti as $d)
     @php
+        $status = $d->status instanceof \App\Enums\CutiStatus ? $d->status->value : ($d->status ?? 'approved');
+        $statusLabels = [
+            'draft' => 'Draft',
+            'pending_admin' => 'Menunggu Persetujuan',
+            'approved' => 'Disetujui',
+            'rejected' => 'Ditolak',
+        ];
+        $statusBadgeClasses = [
+            'draft' => 'bg-slate-100 text-slate-600 border-slate-200',
+            'pending_admin' => 'bg-amber-100 text-amber-700 border-amber-200',
+            'approved' => 'bg-emerald-100 text-emerald-700 border-emerald-200',
+            'rejected' => 'bg-rose-100 text-rose-700 border-rose-200',
+        ];
         $tanggalList = is_array($d->tanggal_cuti) ? $d->tanggal_cuti : (json_decode($d->tanggal_cuti, true) ?: []);
         $tanggalJson = json_encode(array_values($tanggalList));
         $usedDatesOther = \App\Services\CutiService::getUsedDates($d->nik, $d->id);
@@ -9,6 +22,7 @@
             ->implode(', ');
         $keteranganValue = $d->keterangan ?? '';
         $buktiUrl = !empty($d->bukti_file) ? Storage::disk('public')->url('uploads/cuti/' . $d->bukti_file) : null;
+        $formUrl = !empty($d->pdf_form_path) ? '/panel/cuti/' . $d->id . '/pdf' : null;
         $karyawanData = $d->karyawan;
         $namaKaryawan = $karyawanData->nama_lengkap ?? '-';
         $jabatanKaryawan = $karyawanData->jabatan ?? '-';
@@ -28,11 +42,11 @@
             ? $d->dikirim_tanggal->format('d M Y H:i')
             : date('d M Y H:i', strtotime($d->dikirim_tanggal));
     @endphp
-    <tr class="hover:bg-slate-50/50 transition-colors">
+    <tr class="hover:bg-slate-50/50 transition-colors {{ $status === 'pending_admin' ? 'bg-amber-50/40' : '' }}">
         <td class="px-2 py-2 text-xs text-slate-500 whitespace-nowrap">{{ ($datacuti->currentPage() - 1) * $datacuti->perPage() + $loop->iteration }}</td>
         <td class="px-2 py-2 text-xs whitespace-nowrap">
             <span class="font-medium text-slate-700">{{ $tanggalDisplay ?: '-' }}</span>
-            <div class="text-slate-400 text-[10px] mt-0.5">Upload: {{ $dikirim }}</div>
+            <div class="text-slate-400 text-[10px] mt-0.5">{{ $status === 'draft' ? 'Dibuat' : 'Upload' }}: {{ $dikirim }}</div>
         </td>
         <td class="px-2 py-2 text-xs">
             <div class="font-medium text-slate-800 leading-tight">{{ $namaKaryawan }}</div>
@@ -49,15 +63,38 @@
         <td class="px-2 py-2 text-xs">
             <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">{{ $d->durasi_hari }} Hari</span>
         </td>
+        <td class="px-2 py-2 text-xs">
+            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium {{ $statusBadgeClasses[$status] ?? 'bg-slate-100 text-slate-600 border-slate-200' }}">{{ $statusLabels[$status] ?? ucfirst($status) }}</span>
+            @if ($status === 'rejected' && !empty($d->rejected_reason))
+                <div class="text-rose-500 text-[10px] mt-0.5 max-w-[140px]" title="{{ $d->rejected_reason }}">{{ Str::limit($d->rejected_reason, 40) }}</div>
+            @endif
+        </td>
         <td class="px-2 py-2 text-xs text-slate-600 max-w-[160px]">
             {{ $keteranganValue ? Str::limit($keteranganValue, 40) : '—' }}
         </td>
         <td class="px-2 py-2 text-xs whitespace-nowrap">
-            <div x-data="{ open: false, posTop: 0, posLeft: 0 }"
+            <div class="flex items-center gap-1.5">
+                @can('cuti-approve')
+                    @if ($status === 'pending_admin')
+                        <form action="/cuti/{{ $d->id }}/approve" method="POST" class="m-0 inline">
+                            @csrf
+                            <button type="submit" class="approve-confirm inline-flex items-center gap-1 px-2 py-1 rounded-md border border-emerald-200 bg-emerald-50 text-emerald-700 text-[11px] font-semibold leading-none hover:bg-emerald-100 active:scale-[0.97] transition">
+                                <i data-lucide="check-circle-2" style="width:12px;height:12px;"></i> Setujui
+                            </button>
+                        </form>
+                        <button type="button" class="reject-cuti inline-flex items-center gap-1 px-2 py-1 rounded-md border border-rose-200 bg-rose-50 text-rose-700 text-[11px] font-semibold leading-none hover:bg-rose-100 active:scale-[0.97] transition"
+                            data-id="{{ $d->id }}"
+                            data-nama="{{ e($namaKaryawan) }}"
+                            data-tanggal="{{ e($tanggalDisplay) }}">
+                            <i data-lucide="x-circle" style="width:12px;height:12px;"></i> Tolak
+                        </button>
+                    @endif
+                @endcan
+                <div x-data="{ open: false, posTop: 0, posLeft: 0 }"
                 @keydown.escape.window="open = false"
                 @click.outside="open = false">
                 <button type="button" x-ref="trigger"
-                    @click="open = !open; if(open) { $nextTick(() => { const r = $refs.trigger.getBoundingClientRect(); posTop = r.bottom + 4; posLeft = r.right - 160; }) }"
+                    @click="open = !open; if(open) { $nextTick(() => { const r = $refs.trigger.getBoundingClientRect(); posTop = r.bottom + 4; posLeft = r.right - 180; }) }"
                     class="inline-flex items-center justify-center w-7 h-7 rounded hover:bg-slate-100 transition-colors text-slate-500 hover:text-slate-700">
                     <i data-lucide="ellipsis-vertical" style="width:14px;height:14px;"></i>
                 </button>
@@ -69,10 +106,15 @@
                     x-transition:leave="transition ease-in duration-75"
                     x-transition:leave-start="opacity-100 scale-100"
                     x-transition:leave-end="opacity-0 scale-95"
-                    class="fixed z-[999] w-40 bg-white rounded-lg shadow-lg border border-slate-200 py-1">
+                    class="fixed z-[999] w-44 bg-white rounded-lg shadow-lg border border-slate-200 py-1">
+                    @if ($formUrl)
+                    <a href="{{ $formUrl }}" target="_blank" class="w-full text-left px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2" @click="open = false">
+                        <i data-lucide="file-text" style="width:12px;height:12px;"></i> Formulir PDF
+                    </a>
+                    @endif
                     @if ($buktiUrl)
                     <a href="{{ $buktiUrl }}" target="_blank" class="w-full text-left px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2" @click="open = false">
-                        <i data-lucide="paperclip" style="width:12px;height:12px;"></i> File Cuti
+                        <i data-lucide="paperclip" style="width:12px;height:12px;"></i> File TTD
                     </a>
                     @endif
                     @can('cuti-edit')
@@ -96,11 +138,12 @@
                     @endcan
                 </div>
             </div>
+            </div>
         </td>
     </tr>
 @empty
     <tr>
-        <td colspan="8" class="px-2 py-8 text-center text-xs text-slate-400">
+        <td colspan="9" class="px-2 py-8 text-center text-xs text-slate-400">
             <div class="flex flex-col items-center gap-1">
                 <i data-lucide="inbox" style="width:24px;height:24px;" class="text-slate-300"></i>
                 <span>Data cuti tidak ditemukan</span>

@@ -93,6 +93,145 @@ class LemburService
         return $approvedAt !== '' && $approvedAt > self::tglLembur($lembur);
     }
 
+    // ======================================================================
+    // Kalkulasi harian (gabungan maksimal 2 sesi lembur pada 1 tanggal)
+    // ======================================================================
+
+    /**
+     * Total menit efektif 1 record: pakai durasi_menit aktual (hasil foto selesai)
+     * jika ada, kalau belum ada pakai rencana durasi_jam.
+     */
+    private static function menitRecord(object $lembur): int
+    {
+        if (!empty($lembur->durasi_menit)) {
+            return (int) $lembur->durasi_menit;
+        }
+
+        return (int) round(((float) ($lembur->durasi_jam ?? 0)) * 60);
+    }
+
+    /**
+     * Kalkulasi gabungan 1 tanggal: total menit/jam semua sesi + penanda Prorate.
+     * Aturan: total > 5 jam dalam sehari = Prorate (1x prorate per hari,
+     * jamnya tidak dihitung ke total lembur di rekap/laporan).
+     */
+    public static function summarizeDaily(iterable $lemburs): array
+    {
+        $totalMenit = 0;
+        $jumlah = 0;
+
+        foreach ($lemburs as $lembur) {
+            $totalMenit += self::menitRecord($lembur);
+            $jumlah++;
+        }
+
+        $jam = $totalMenit / 60;
+        $isProrate = $jam > Lembur::BATAS_PRORATE_JAM;
+
+        return [
+            'menit' => $totalMenit,
+            'jam' => $jam,
+            'is_prorate' => $isProrate,
+            'jumlah' => $jumlah,
+            'formatted' => $totalMenit <= 0
+                ? null
+                : ($isProrate ? 'prorate' : Lembur::formatJam($jam)),
+        ];
+    }
+
+    /**
+     * Kalkulasi harian untuk 1 karyawan pada 1 tanggal (dipakai PDF laporan, form, dll).
+     * Hanya sesi dengan pengajuan disetujui yang dihitung (pending/ditolak tidak).
+     */
+    public static function dailySummaryFor(Lembur $lembur): array
+    {
+        $rows = Lembur::where('nik', $lembur->nik)
+            ->where('tgl_lembur', self::tglLembur($lembur))
+            ->where('status', LemburStatus::Approved->value)
+            ->get(['id', 'nik', 'tgl_lembur', 'durasi_menit', 'durasi_jam']);
+
+        return self::summarizeDaily($rows);
+    }
+
+    /**
+     * Ringkasan rencana lembur (pakai durasi_jam rencana) untuk 1 karyawan pada 1 tanggal.
+     * Dipakai form pengajuan untuk menampilkan info total rencana hari itu.
+     */
+    public static function plannedSummary(string $nik, string $tglLembur): array
+    {
+        $rows = Lembur::where('nik', $nik)
+            ->where('tgl_lembur', $tglLembur)
+            ->get(['id', 'nik', 'tgl_lembur', 'durasi_menit', 'durasi_jam']);
+
+        return self::summarizeDaily($rows);
+    }
+
+    /**
+     * Anotasi total harian untuk 1 record: query sibling sesi pada tanggal yang sama.
+     */
+    public static function attachDailySummaryFor(Lembur $lembur): array
+    {
+        $summary = self::dailySummaryFor($lembur);
+
+        $lembur->setAttribute('durasi_harian_menit', $summary['menit']);
+        $lembur->setAttribute('durasi_harian_jam', $summary['jam']);
+        $lembur->setAttribute('durasi_harian_formatted', $summary['formatted']);
+        $lembur->setAttribute('is_prorate_harian', $summary['is_prorate']);
+        $lembur->setAttribute('jumlah_sesi_harian', $summary['jumlah']);
+
+        return $summary;
+    }
+
+    /**
+     * Anotasi total harian ke collection lembur (per nik+tanggal).
+     * Kalkulasi diambil dari DB (semua sesi pada tanggal tersebut, termasuk yang
+     * tidak ada di collection) supaya total harian akurat walau collection ter-filter.
+     * Set attribute: durasi_harian_menit, durasi_harian_jam, durasi_harian_formatted,
+     * is_prorate_harian, jumlah_sesi_harian.
+     */
+    public static function attachDailyTotals(iterable $lemburs): void
+    {
+        $keys = [];
+        foreach ($lemburs as $lembur) {
+            $keys[$lembur->nik . '|' . self::tglLembur($lembur)] = ['nik' => $lembur->nik, 'tgl' => self::tglLembur($lembur)];
+        }
+
+        if (empty($keys)) {
+            return;
+        }
+
+        // Ambil semua sesi pada tanggal-tanggal tersebut dari DB.
+        $rows = Lembur::where(function ($q) use ($keys) {
+            foreach ($keys as $info) {
+                $q->orWhere(fn ($sub) => $sub->where('nik', $info['nik'])->where('tgl_lembur', $info['tgl']));
+            }
+        })->get(['id', 'nik', 'tgl_lembur', 'status', 'durasi_menit', 'durasi_jam']);
+
+        $perHari = [];
+        foreach ($rows as $row) {
+            $perHari[$row->nik . '|' . self::tglLembur($row)][] = $row;
+        }
+
+        foreach ($lemburs as $lembur) {
+            $key = $lembur->nik . '|' . self::tglLembur($lembur);
+            $group = $perHari[$key] ?? [$lembur];
+
+            // Total harian hanya menghitung sesi dengan pengajuan disetujui.
+            // Kalau tidak ada (mis. semua pending/ditolak), pakai seluruh sesi di grup.
+            $disetujui = array_values(array_filter(
+                $group,
+                fn ($l) => ($l->status instanceof LemburStatus ? $l->status->value : $l->status) === LemburStatus::Approved->value
+            ));
+            $summary = self::summarizeDaily($disetujui ?: $group);
+
+            $lembur->setAttribute('durasi_harian_menit', $summary['menit']);
+            $lembur->setAttribute('durasi_harian_jam', $summary['jam']);
+            $lembur->setAttribute('durasi_harian_formatted', $summary['formatted']);
+            $lembur->setAttribute('is_prorate_harian', $summary['is_prorate']);
+            $lembur->setAttribute('jumlah_sesi_harian', $summary['jumlah']);
+        }
+    }
+
     public function canSubmit(Karyawan $karyawan, ?string $tglLembur = null): array
     {
         $hariIni = now('Asia/Jakarta')->format('Y-m-d');
@@ -104,13 +243,13 @@ class LemburService
             return ['can' => false, 'message' => 'Pengajuan lembur hanya bisa untuk hari ini atau besok. Tanggal lampau tidak diperkenankan.'];
         }
 
-        $exists = Lembur::where('nik', $karyawan->nik)
+        $jml = Lembur::where('nik', $karyawan->nik)
             ->where('tgl_lembur', $tgl)
-            ->exists();
-        if ($exists) {
+            ->count();
+        if ($jml >= Lembur::MAKS_PER_HARI) {
             return ['can' => false, 'message' => $tgl === $hariIni
-                ? 'Anda sudah mengajukan lembur hari ini.'
-                : 'Anda sudah mengajukan lembur pada tanggal tersebut.'];
+                ? 'Anda sudah mengajukan lembur ' . Lembur::MAKS_PER_HARI . 'x hari ini.'
+                : 'Anda sudah mengajukan lembur ' . Lembur::MAKS_PER_HARI . 'x pada tanggal tersebut.'];
         }
 
         // Syarat absen pulang + window jam hanya berlaku untuk pengajuan current day.
@@ -118,13 +257,6 @@ class LemburService
         if ($tgl !== $hariIni) {
             return ['can' => true];
         }
-
-        $presensiHariIni = Presensi::where('nik', $karyawan->nik)
-            ->where('tgl_presensi', $hariIni)
-            ->first();
-        // if ($presensiHariIni && !$presensiHariIni->jam_out) {
-        //     return ['can' => false, 'message' => 'Silakan absen pulang terlebih dahulu sebelum mengajukan lembur.'];
-        // }
 
         $jamSekarang = now('Asia/Jakarta');
         $jam = (int) $jamSekarang->format('H');
@@ -152,7 +284,7 @@ class LemburService
     // laporan menunggu approval atasan/HR) tampil di dashboard "Lembur Saya".
     public function getLemburHistory(string $nik)
     {
-        return Lembur::with('atasan')
+        $data = Lembur::with('atasan')
             ->where('nik', $nik)
             ->where(function ($q) {
                 $q->where('status', LemburStatus::Rejected->value)
@@ -162,6 +294,10 @@ class LemburService
             })
             ->orderBy('tgl_lembur', 'desc')
             ->get();
+
+        self::attachDailyTotals($data);
+
+        return $data;
     }
 
     public function getDataLemburAdmin(Request $request): array
@@ -187,6 +323,7 @@ class LemburService
         }
 
         $datalembur = $query->orderBy('tgl_lembur', 'desc')->paginate(10)->withQueryString();
+        self::attachDailyTotals($datalembur);
         $unitperusahaan = Unitperusahaan::orderBy('unit')->get();
         $pendingLemburAdmin = Lembur::where('status', LemburStatus::PendingAdmin->value)->count();
         $pendingLaporanAdmin = Lembur::where('laporan_status', LemburStatus::PendingAdmin->value)->count();
@@ -218,17 +355,15 @@ class LemburService
         $durasiJam = $isProrate ? 5.5 : (float) $request->durasi_jam;
         $jamMulai = $request->jam_mulai;
 
-        // Validasi jam_mulai: menit harus :00 atau :30
-        $jamMulaiParts = explode(':', $jamMulai);
-        $jamMulaiMenit = (int) ($jamMulaiParts[1] ?? -1);
-        if (!in_array($jamMulaiMenit, [0, 30], true)) {
-            return ['success' => false, 'message' => 'Jam mulai lembur harus interval 30 menit (:00 atau :30).'];
-        }
-
+        // Jam mulai bebas menit (format HH:MM dijamin StoreLemburRequest date_format:H:i),
+        // mis. 18:45. Rencana jam selesai dihitung otomatis dari jam mulai + durasi.
         $rencanaMulai = \Carbon\Carbon::parse($tglLembur . ' ' . $jamMulai);
         $rencanaSelesai = $isProrate
             ? null
             : $rencanaMulai->copy()->addMinutes((int) ($durasiJam * 60));
+        // Batas akhir untuk validasi tumpang tindih: prorate (tanpa jam selesai) dianggap
+        // berakhir sesuai batas durasi tersimpan (5,5 jam).
+        $batasSelesai = $rencanaSelesai ?? $rencanaMulai->copy()->addMinutes((int) ($durasiJam * 60));
 
         $pdfData = [
             'headerSuratPath' => 'assets/img/header-surat.png',
@@ -251,14 +386,34 @@ class LemburService
 
         DB::beginTransaction();
         try {
-            $exists = Lembur::where('nik', $nik)
+            $sehariIni = Lembur::where('nik', $nik)
                 ->where('tgl_lembur', $tglLembur)
                 ->lockForUpdate()
-                ->exists();
+                ->get();
 
-            if ($exists) {
+            if ($sehariIni->count() >= Lembur::MAKS_PER_HARI) {
                 DB::rollBack();
-                return ['success' => false, 'message' => 'Anda sudah mengajukan lembur pada tanggal tersebut!'];
+                return ['success' => false, 'message' => 'Anda sudah mengajukan lembur ' . Lembur::MAKS_PER_HARI . 'x pada tanggal tersebut!'];
+            }
+
+            // Validasi jam sesi baru tidak boleh tumpang tindih dengan sesi yang sudah ada.
+            foreach ($sehariIni as $sesi) {
+                if (empty($sesi->rencana_mulai)) {
+                    continue;
+                }
+                $sesiMulai = $sesi->rencana_mulai instanceof \Carbon\Carbon
+                    ? $sesi->rencana_mulai->copy()
+                    : \Carbon\Carbon::parse($sesi->rencana_mulai);
+                $sesiSelesai = !empty($sesi->rencana_selesai)
+                    ? ($sesi->rencana_selesai instanceof \Carbon\Carbon
+                        ? $sesi->rencana_selesai->copy()
+                        : \Carbon\Carbon::parse($sesi->rencana_selesai))
+                    : $sesiMulai->copy()->addMinutes((int) round(((float) $sesi->durasi_jam) * 60));
+
+                if ($rencanaMulai->lt($sesiSelesai) && $batasSelesai->gt($sesiMulai)) {
+                    DB::rollBack();
+                    return ['success' => false, 'message' => 'Jam lembur bertabrakan dengan sesi lembur Anda yang sudah ada pada tanggal tersebut (' . $sesiMulai->format('H:i') . ' - ' . $sesiSelesai->format('H:i') . ').'];
+                }
             }
 
             $lembur = Lembur::create([
@@ -509,6 +664,8 @@ class LemburService
             return (object) ['error' => 'Foto lembur hanya bisa diambil pada tanggal lembur (' . self::tglLembur($lembur) . '). Hari ini: ' . now('Asia/Jakarta')->format('d M Y') . '.'];
         }
 
+        self::attachDailySummaryFor($lembur);
+
         return (object) [
             'lembur' => $lembur,
             'karyawan' => $karyawan,
@@ -604,11 +761,15 @@ class LemburService
         if (!$karyawan) return null;
 
         $durasiFormatted = $lembur->durasi_formatted;
+        $harian = self::attachDailySummaryFor($lembur);
 
         return (object) [
             'lembur' => $lembur,
             'karyawan' => $karyawan,
             'durasi_formatted' => $durasiFormatted,
+            'durasi_harian_formatted' => $harian['formatted'],
+            'is_prorate_harian' => $harian['is_prorate'],
+            'jumlah_sesi_harian' => $harian['jumlah'],
         ];
     }
 
@@ -629,6 +790,8 @@ class LemburService
         $jabatan = $karyawan->jabatan instanceof Jabatan ? $karyawan->jabatan->value : $karyawan->jabatan;
         $perusahaan = Unitperusahaan::where('unit', $karyawan->unit)->value('perusahaan') ?? '-';
 
+        $harian = self::dailySummaryFor($lembur);
+
         return [
             'headerSuratPath' => 'assets/img/header-surat.png',
             'nik' => $lembur->nik,
@@ -645,6 +808,9 @@ class LemburService
                 ? $lembur->waktu_selesai->format('H:i')
                 : '-',
             'durasi' => $lembur->durasi_formatted ?? '-',
+            'durasi_harian' => $harian['formatted'] ?? '-',
+            'is_prorate_harian' => $harian['is_prorate'],
+            'jumlah_sesi_harian' => $harian['jumlah'],
             'deskripsi_pekerjaan' => $lembur->laporan_deskripsi ?? '-',
             'laporan_images' => $lembur->laporan_images ?? [],
             'foto_mulai' => $lembur->foto_mulai,
@@ -954,7 +1120,8 @@ class LemburService
             $jabatan = $karyawan->jabatan instanceof Jabatan ? $karyawan->jabatan->value : ($karyawan->jabatan ?? '-');
             $perusahaan = $karyawan->unitperusahaan?->perusahaan ?? '-';
             $atasan = $lembur->atasan_nik ? Karyawan::where('nik', $lembur->atasan_nik)->first() : null;
-            $isProrate = $lembur->durasi_jam > 5;
+            // Prorate manual dipilih saat pengajuan ditandai jam selesai kosong (Menyesuaikan).
+            $isProrate = empty($lembur->rencana_selesai);
 
             $pdfData = [
                 'headerSuratPath' => 'assets/img/header-surat.png',

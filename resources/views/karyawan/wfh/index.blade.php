@@ -101,15 +101,15 @@
 
                     <div class="flex items-center gap-2 flex-wrap">
                         @if($pdfUrl !== "#")
-                            <button type="button" class="file-pill js-preview" data-url="{{ $pdfUrl }}" data-filename="{{ $pdfName }}" data-label="Form WFH — {{ $displayDate }}">
+                            <a href="{{ $pdfUrl }}" target="_blank" rel="noopener" class="file-pill">
                                 <i data-lucide="file"></i> Form
                                 <span class="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-[#f0f9ff] border border-[#bae6fd] text-[9px] font-bold text-[#0369a1] uppercase">{{ strtolower(pathinfo($pdfName, PATHINFO_EXTENSION)) }}</span>
-                            </button>
+                            </a>
                         @endif
                         @if($laporanUrl)
-                            <button type="button" class="file-pill js-preview" data-url="{{ $laporanUrl }}" data-filename="{{ basename($laporanUrl) }}" data-label="Laporan WFH — {{ $displayDate }}">
+                            <a href="{{ $laporanUrl }}" target="_blank" rel="noopener" class="file-pill">
                                 <i data-lucide="clipboard"></i> Laporan
-                            </button>
+                            </a>
                         @elseif(!empty($d->laporan_deskripsi))
                             <button type="button" class="file-pill js-preview-laporan" data-deskripsi="{{ $d->laporan_deskripsi }}" data-tgl="{{ $displayDate }}" data-label="Laporan WFH — {{ $displayDate }}">
                                 <i data-lucide="clipboard"></i> Laporan

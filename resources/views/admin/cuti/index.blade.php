@@ -50,11 +50,27 @@
                             />
                         </div>
                         <div class="col-span-12 sm:col-span-2">
+                            <x-admin.select name="status" placeholder="Semua Status" :autoSubmit="true">
+                                <option value="draft" {{ Request('status') == 'draft' ? 'selected' : '' }}>Draft</option>
+                                <option value="pending_admin" {{ Request('status') == 'pending_admin' ? 'selected' : '' }}>Menunggu Persetujuan</option>
+                                <option value="approved" {{ Request('status') == 'approved' ? 'selected' : '' }}>Disetujui</option>
+                                <option value="rejected" {{ Request('status') == 'rejected' ? 'selected' : '' }}>Ditolak</option>
+                            </x-admin.select>
+                        </div>
+                        <div class="col-span-12 sm:col-span-2">
                             <x-admin.button variant="primary" icon="search" type="submit" block>Cari</x-admin.button>
                         </div>
                     </div>
 
                 </form>
+
+                @if (($pendingCuti ?? 0) > 0)
+                    <div class="mt-2 flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200">
+                        <i data-lucide="clock" class="text-amber-600" style="width:16px;height:16px;"></i>
+                        <span class="text-xs text-amber-800 font-medium">{{ $pendingCuti }} pengajuan cuti menunggu persetujuan Anda.</span>
+                        <a href="/panel/cuti?status=pending_admin" class="text-xs font-semibold text-amber-700 underline ml-auto">Lihat</a>
+                    </div>
+                @endif
 
                 {{-- ================================================== --}}
                 {{-- Tabel Data Cuti --}}
@@ -69,6 +85,7 @@
                                 <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Jabatan</th>
                                 <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Unit</th>
                                 <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Durasi</th>
+                                <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Status</th>
                                 <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Keterangan</th>
                                 <th class="px-2 py-1.5 text-left text-[11px] font-medium text-slate-500 uppercase tracking-wider">Actions</th>
                             </tr>
@@ -179,8 +196,9 @@
             editDurasiSelect.addEventListener('change', function() {
                 var count = parseInt(this.value, 10) || 1;
                 var existing = [];
-                editTanggalContainer.querySelectorAll('.edit-cuti-tanggal').forEach(function(inp) {
-                    existing.push(inp._flatpickr ? inp._flatpickr.input.value : inp.value);
+                // Input bernama saja — alt input flatpickr ikut membawa class tapi tanpa name.
+                editTanggalContainer.querySelectorAll('input[name="tanggal_cuti[]"]').forEach(function(inp) {
+                    existing.push(inp.value);
                 });
                 renderEditTanggalFields(count, existing);
             });
@@ -214,9 +232,9 @@
             // Submit validation edit cuti
             document.getElementById('formEditCuti').addEventListener('submit', function(e) {
                 var vals = [];
-                editTanggalContainer.querySelectorAll('.edit-cuti-tanggal').forEach(function(inp) {
-                    var v = inp._flatpickr ? inp._flatpickr.input.value : inp.value;
-                    if (v) vals.push(v);
+                // Input bernama saja — alt input flatpickr ikut membawa class tapi tanpa name.
+                editTanggalContainer.querySelectorAll('input[name="tanggal_cuti[]"]').forEach(function(inp) {
+                    if (inp.value) vals.push(inp.value);
                 });
                 if (new Set(vals).size !== vals.length) {
                     e.preventDefault();
@@ -227,6 +245,75 @@
                 if (dupes.length) {
                     e.preventDefault();
                     Swal.fire({ icon: 'warning', text: 'Tanggal ' + dupes.join(', ') + ' sudah pernah dipilih cuti lain.', confirmButtonColor: '#3085d6' });
+                }
+            });
+
+            // Konfirmasi Setujui
+            document.addEventListener('click', function(e) {
+                var btn = e.target.closest('.approve-confirm');
+                if (btn) {
+                    var form = btn.closest('form');
+                    e.preventDefault();
+
+                    Swal.fire({
+                        title: 'Setujui pengajuan cuti ini?',
+                        text: "Kuota cuti karyawan akan dikurangi sesuai durasi cuti. Pastikan sisa kuota mencukupi.",
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#059669',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Setujui',
+                        cancelButtonText: 'Batal',
+                        backdrop: false
+                    }).then(function(result) {
+                        if (result.isConfirmed) {
+                            form.submit();
+                        }
+                    });
+                }
+            });
+
+            // Tolak Cuti — dialog SweetAlert2 dengan input alasan (konsisten dengan panel Lembur/WFH)
+            document.addEventListener('click', function(e) {
+                var btn = e.target.closest('.reject-cuti');
+                if (btn) {
+                    e.preventDefault();
+                    var id = btn.dataset.id;
+                    var nama = (btn.dataset.nama || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                    var tanggal = (btn.dataset.tanggal || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+                    Swal.fire({
+                        title: 'Tolak Pengajuan Cuti?',
+                        html: 'Menolak pengajuan cuti <b>' + nama + '</b> (' + tanggal + '). Karyawan dapat mengupload ulang file yang sudah ditandatangani tanpa mengulang input data.',
+                        input: 'textarea',
+                        inputPlaceholder: 'Alasan penolakan...',
+                        inputAttributes: { maxlength: 500, autocapitalize: 'off' },
+                        showCancelButton: true,
+                        confirmButtonColor: '#e11d48',
+                        confirmButtonText: 'Tolak Pengajuan',
+                        cancelButtonText: 'Batal',
+                        inputValidator: function(v) {
+                            if (!v || v.trim().length < 5) return 'Minimal 5 karakter';
+                        }
+                    }).then(function(res) {
+                        if (res.isConfirmed) {
+                            var form = document.createElement('form');
+                            form.method = 'POST';
+                            form.action = '/cuti/' + id + '/reject';
+                            var csrf = document.createElement('input');
+                            csrf.type = 'hidden';
+                            csrf.name = '_token';
+                            csrf.value = '{{ csrf_token() }}';
+                            var reason = document.createElement('input');
+                            reason.type = 'hidden';
+                            reason.name = 'rejected_reason';
+                            reason.value = res.value;
+                            form.appendChild(csrf);
+                            form.appendChild(reason);
+                            document.body.appendChild(form);
+                            form.submit();
+                        }
+                    });
                 }
             });
 

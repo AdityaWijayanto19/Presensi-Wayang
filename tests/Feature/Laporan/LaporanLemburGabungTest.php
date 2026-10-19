@@ -255,6 +255,64 @@ class LaporanLemburGabungTest extends TestCase
     }
 
     // ======================================================================
+    // Kalkulasi harian (2 sesi lembur per hari)
+    // ======================================================================
+
+    public function test_dua_sesi_lembur_satu_hari_dijumlahkan_ke_total_durasi(): void
+    {
+        $this->lembur(['tgl_lembur' => self::TGL_DALAM_PERIODE, 'durasi_jam' => 2]);
+        $this->lembur(['tgl_lembur' => self::TGL_DALAM_PERIODE, 'durasi_jam' => 2.5]);
+
+        $data = $this->build($this->params());
+        $item = $this->item($data, $this->karyawanA->nik);
+
+        $this->assertSame(2, $data['totalLaporan']);
+        $this->assertSame(4.5, $item['total_durasi']);
+        $this->assertSame(0, $item['total_prorate']);
+    }
+
+    public function test_dua_sesi_lembur_lebih_dari_5_jam_jadi_prorate_dan_tidak_dihitung(): void
+    {
+        $this->lembur(['tgl_lembur' => self::TGL_DALAM_PERIODE, 'durasi_jam' => 3]);
+        $this->lembur(['tgl_lembur' => self::TGL_DALAM_PERIODE, 'durasi_jam' => 3]);
+
+        $data = $this->build($this->params());
+        $item = $this->item($data, $this->karyawanA->nik);
+
+        $this->assertSame(2, $data['totalLaporan']);
+        $this->assertSame(0.0, $item['total_durasi']);
+        $this->assertSame(1, $item['total_prorate']);
+        $this->assertSame(1, $data['totalProrate']);
+    }
+
+    public function test_prorate_gabungan_dihitung_per_hari_bukan_per_record(): void
+    {
+        // Hari 1: 3+3 = 6 jam → 1x prorate. Hari 2: 3 jam → dihitung normal.
+        $this->lembur(['tgl_lembur' => self::TGL_DALAM_PERIODE, 'durasi_jam' => 3]);
+        $this->lembur(['tgl_lembur' => self::TGL_DALAM_PERIODE, 'durasi_jam' => 3]);
+        $this->lembur(['tgl_lembur' => self::TGL_DALAM_PERIODE_2, 'durasi_jam' => 3]);
+
+        $data = $this->build($this->params());
+        $item = $this->item($data, $this->karyawanA->nik);
+
+        $this->assertSame(3.0, $item['total_durasi']);
+        $this->assertSame(1, $item['total_prorate']);
+    }
+
+    public function test_view_gabungan_menampilkan_info_prorate(): void
+    {
+        $this->lembur(['tgl_lembur' => self::TGL_DALAM_PERIODE, 'durasi_jam' => 3]);
+        $this->lembur(['tgl_lembur' => self::TGL_DALAM_PERIODE, 'durasi_jam' => 3]);
+
+        $data = $this->build($this->params());
+
+        $html = view('admin.presensi.cetaklaporan-lembur-gabung', $data)->render();
+
+        $this->assertStringContainsString('Hari Prorate', $html);
+        $this->assertStringContainsString('1 hari', $html);
+    }
+
+    // ======================================================================
     // Render view
     // ======================================================================
 

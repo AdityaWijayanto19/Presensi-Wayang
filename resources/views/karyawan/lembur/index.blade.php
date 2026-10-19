@@ -67,7 +67,10 @@
                     };
                     $statusLabel = $statusLabels[$displayStatus] ?? $displayStatus;
                     $statusColor = $statusColors[$displayStatus] ?? 'bg-gray-100 text-gray-700 border-gray-200';
-                    $durasi = $d->durasi_formatted;
+                    // Badge durasi memakai total gabungan semua sesi lembur pada tanggal yang sama.
+                    $durasi = $d->durasi_harian_formatted;
+                    $jumlahSesi = $d->jumlah_sesi_harian;
+                    $sesiIni = $d->durasi_formatted;
                 @endphp
                 <div class="presensi-card mb-2.5">
                     <div class="flex items-start gap-3">
@@ -81,9 +84,14 @@
                                     {{ $statusLabel }}
                                 </span>
                                 @if ($durasi)
-                                    <span class="presensi-badge badge-lembur">
+                                    <span class="presensi-badge badge-lembur" title="Total lembur hari ini">
                                         <i data-lucide="hourglass" style="width:11px;height:11px;"></i> {{ $durasi }}
                                     </span>
+                                    @if ($jumlahSesi > 1)
+                                        <span class="text-[10px] text-[#a8a29e] bg-[#f8f6f3] rounded-full px-2 py-0.5">
+                                            Sesi {{ $jumlahSesi }}x • Sesi ini: {{ $sesiIni ?? '-' }}
+                                        </span>
+                                    @endif
                                 @endif
                             </div>
                             <div class="flex items-center gap-1.5 mt-1">

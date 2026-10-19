@@ -57,7 +57,7 @@
             </div>
             <div class="flex-1 min-w-0">
                 <div class="text-[14px] font-bold text-[#1c1917]">Cuti Tahunan</div>
-                <div class="text-[11px] text-[#78716c] mt-0.5">Upload file cuti yang sudah ditandatangani</div>
+                <div class="text-[11px] text-[#78716c] mt-0.5">Ajukan cuti 2 langkah — tunggu persetujuan superadmin</div>
             </div>
             <i data-lucide="chevron-right" class="text-[#a8a29e] shrink-0" style="width:18px;height:18px;"></i>
         </a>

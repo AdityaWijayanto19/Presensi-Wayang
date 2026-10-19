@@ -127,18 +127,22 @@ class LemburServiceTest extends TestCase
     }
 
     // ======================================================================
-    // canSubmit — syarat absen pulang sebelum ajukan lembur
+    // canSubmit — kuota per hari, window jam, dan cek presensi
+    // Catatan: syarat "harus absen pulang dulu sebelum ajukan lembur" sudah
+    // DINONAKTIFKAN sejak commit 7986513, jadi presensi dengan jam_out kosong
+    // tidak lagi memblokir pengajuan lembur.
     // ======================================================================
 
-    public function test_can_submit_blocked_when_presensi_belum_pulang(): void
+    public function test_can_submit_tidak_diblokir_walau_presensi_belum_pulang(): void
     {
         $this->setTime('18:30:00');
         $this->presensiHariIni(null);
 
         $result = $this->lemburService->canSubmit($this->karyawan);
 
-        $this->assertFalse($result['can']);
-        $this->assertSame('Silakan absen pulang terlebih dahulu sebelum mengajukan lembur.', $result['message']);
+        // Presensi hari ini ada tapi belum absen pulang: tetap boleh mengajukan
+        // karena validasi absen pulang sudah dinonaktifkan.
+        $this->assertTrue($result['can']);
     }
 
     public function test_can_submit_allowed_setelah_presensi_pulang(): void
@@ -174,12 +178,23 @@ class LemburServiceTest extends TestCase
     {
         $this->setTime('18:30:00');
         $this->presensiHariIni(null);
-        $this->lemburHariIni();
+        $this->lemburHariIni(['rencana_mulai' => self::HARI_INI.' 18:00:00', 'rencana_selesai' => self::HARI_INI.' 19:00:00', 'durasi_jam' => 1]);
+        $this->lemburHariIni(['rencana_mulai' => self::HARI_INI.' 19:30:00', 'rencana_selesai' => self::HARI_INI.' 20:30:00', 'durasi_jam' => 1]);
 
         $result = $this->lemburService->canSubmit($this->karyawan);
 
         $this->assertFalse($result['can']);
-        $this->assertSame('Anda sudah mengajukan lembur hari ini.', $result['message']);
+        $this->assertSame('Anda sudah mengajukan lembur 2x hari ini.', $result['message']);
+    }
+
+    public function test_can_submit_masih_boleh_dengan_satu_lembur_sudah_ada(): void
+    {
+        $this->setTime('18:30:00');
+        $this->lemburHariIni(['rencana_mulai' => self::HARI_INI.' 18:00:00', 'rencana_selesai' => self::HARI_INI.' 20:00:00', 'durasi_jam' => 2]);
+
+        $result = $this->lemburService->canSubmit($this->karyawan);
+
+        $this->assertTrue($result['can']);
     }
 
     public function test_can_submit_window_pagi_tetap_berlaku(): void
@@ -303,12 +318,13 @@ class LemburServiceTest extends TestCase
     public function test_can_submit_tanggal_besok_duplikat_ditolak(): void
     {
         $this->setTime('10:00:00');
-        $this->lemburHariIni(['tgl_lembur' => '2026-09-29']);
+        $this->lemburHariIni(['tgl_lembur' => '2026-09-29', 'rencana_mulai' => '2026-09-29 18:00:00', 'rencana_selesai' => '2026-09-29 19:00:00', 'durasi_jam' => 1]);
+        $this->lemburHariIni(['tgl_lembur' => '2026-09-29', 'rencana_mulai' => '2026-09-29 19:30:00', 'rencana_selesai' => '2026-09-29 20:30:00', 'durasi_jam' => 1]);
 
         $result = $this->lemburService->canSubmit($this->karyawan, '2026-09-29');
 
         $this->assertFalse($result['can']);
-        $this->assertSame('Anda sudah mengajukan lembur pada tanggal tersebut.', $result['message']);
+        $this->assertSame('Anda sudah mengajukan lembur 2x pada tanggal tersebut.', $result['message']);
     }
 
     public function test_can_submit_tanggal_lampau_ditolak(): void
@@ -547,5 +563,257 @@ class LemburServiceTest extends TestCase
         $history = $this->lemburService->getLemburHistory($this->karyawan->nik);
 
         $this->assertCount(0, $history);
+    }
+
+    // ======================================================================
+    // 2x lembur per hari: kuota & validasi tumpang tindih
+    // ======================================================================
+
+    private function requestPengajuan(array $extra = []): Request
+    {
+        return new Request(array_merge([
+            'tgl_lembur' => self::HARI_INI,
+            'durasi_jam' => '2',
+            'jam_mulai' => '18:00',
+            'keterangan' => 'Lembur malam',
+        ], $extra));
+    }
+
+    public function test_store_pengajuan_ke_2_dalam_satu_hari_diperbolehkan(): void
+    {
+        $this->setTime('18:30:00');
+        $this->lemburHariIni([
+            'rencana_mulai' => self::HARI_INI . ' 09:00:00',
+            'rencana_selesai' => self::HARI_INI . ' 11:00:00',
+            'durasi_jam' => 2,
+        ]);
+
+        $result = $this->lemburService->storePengajuan(
+            $this->requestPengajuan(['jam_mulai' => '18:30']),
+            $this->karyawan
+        );
+
+        $this->assertTrue($result['message'] !== '' && $result['success'], $result['message']);
+        $this->assertSame(2, Lembur::where('nik', $this->karyawan->nik)->count());
+    }
+
+    public function test_store_pengajuan_ke_3_dalam_satu_hari_ditolak(): void
+    {
+        $this->setTime('18:30:00');
+        $this->lemburHariIni(['rencana_mulai' => self::HARI_INI . ' 09:00:00', 'rencana_selesai' => self::HARI_INI . ' 11:00:00', 'durasi_jam' => 2]);
+        $this->lemburHariIni(['rencana_mulai' => self::HARI_INI . ' 18:00:00', 'rencana_selesai' => self::HARI_INI . ' 20:00:00', 'durasi_jam' => 2]);
+
+        $result = $this->lemburService->storePengajuan($this->requestPengajuan(['jam_mulai' => '20:30']), $this->karyawan);
+
+        $this->assertFalse($result['success']);
+        $this->assertStringContainsString('mengajukan lembur 2x', $result['message']);
+    }
+
+    public function test_store_pengajuan_tumpang_tindih_ditolak(): void
+    {
+        $this->setTime('18:30:00');
+        $this->lemburHariIni([
+            'rencana_mulai' => self::HARI_INI . ' 18:00:00',
+            'rencana_selesai' => self::HARI_INI . ' 20:00:00',
+            'durasi_jam' => 2,
+        ]);
+
+        $result = $this->lemburService->storePengajuan(
+            $this->requestPengajuan(['jam_mulai' => '19:30']),
+            $this->karyawan
+        );
+
+        $this->assertFalse($result['success']);
+        $this->assertStringContainsString('bertabrakan', $result['message']);
+        $this->assertSame(1, Lembur::where('nik', $this->karyawan->nik)->where('tgl_lembur', self::HARI_INI)->count());
+    }
+
+    public function test_store_pengajuan_prorate_dihitung_batas_55_jam_saat_cek_bentrok(): void
+    {
+        $this->setTime('18:30:00');
+        // Sesi 1 prorate (tanpa jam selesai) mulai 18:00 → batas 23:30 (5,5 jam).
+        $this->lemburHariIni([
+            'rencana_mulai' => self::HARI_INI . ' 18:00:00',
+            'rencana_selesai' => null,
+            'durasi_jam' => 5.5,
+        ]);
+
+        $result = $this->lemburService->storePengajuan(
+            $this->requestPengajuan(['jam_mulai' => '22:00']),
+            $this->karyawan
+        );
+
+        $this->assertFalse($result['success']);
+        $this->assertStringContainsString('bertabrakan', $result['message']);
+    }
+
+    // ======================================================================
+    // Rencana jam mulai bebas menit & sinkron dengan Rencana Jam Selesai
+    // ======================================================================
+
+    public function test_store_pengajuan_jam_mulai_bebeas_menit_rencana_selesai_sinkron(): void
+    {
+        $this->setTime('18:30:00');
+
+        // Menit ganjil :45 diterima (tidak dibatasi :00/:30) — rencana selesai tetap sinkron.
+        $result = $this->lemburService->storePengajuan(
+            $this->requestPengajuan(['jam_mulai' => '18:45', 'durasi_jam' => '2']),
+            $this->karyawan
+        );
+
+        $this->assertTrue($result['success'], $result['message']);
+
+        $lembur = Lembur::where('nik', $this->karyawan->nik)->firstOrFail();
+        $this->assertSame(self::HARI_INI . ' 18:45:00', $lembur->rencana_mulai->format('Y-m-d H:i:s'));
+        $this->assertSame(self::HARI_INI . ' 20:45:00', $lembur->rencana_selesai->format('Y-m-d H:i:s'));
+    }
+
+    public function test_store_pengajuan_jam_mulai_menit_ganjil_lewati_tengah_malam_sinkron(): void
+    {
+        $this->setTime('18:30:00');
+
+        // 23:15 + 2 jam = 01:15 hari berikutnya (sinkron walau lewat tengah malam).
+        $result = $this->lemburService->storePengajuan(
+            $this->requestPengajuan(['jam_mulai' => '23:15', 'durasi_jam' => '2']),
+            $this->karyawan
+        );
+
+        $this->assertTrue($result['success'], $result['message']);
+
+        $lembur = Lembur::where('nik', $this->karyawan->nik)->firstOrFail();
+        $this->assertSame(self::HARI_INI . ' 23:15:00', $lembur->rencana_mulai->format('Y-m-d H:i:s'));
+        $this->assertSame('2026-09-29 01:15:00', $lembur->rencana_selesai->format('Y-m-d H:i:s'));
+    }
+
+    public function test_store_pengajuan_menit_ganjil_tetap_validasi_tumpang_tindih(): void
+    {
+        $this->setTime('18:30:00');
+        $this->lemburHariIni([
+            'rencana_mulai' => self::HARI_INI . ' 18:45:00',
+            'rencana_selesai' => self::HARI_INI . ' 20:45:00',
+            'durasi_jam' => 2,
+        ]);
+
+        // 20:15 - 22:15 menimpa sesi 18:45 - 20:45 → tetap ditolak.
+        $result = $this->lemburService->storePengajuan(
+            $this->requestPengajuan(['jam_mulai' => '20:15']),
+            $this->karyawan
+        );
+
+        $this->assertFalse($result['success']);
+        $this->assertStringContainsString('bertabrakan', $result['message']);
+        $this->assertSame(1, Lembur::where('nik', $this->karyawan->nik)->count());
+    }
+
+    public function test_store_pengajuan_menit_ganjil_setelah_sesi_pertama_diperbolehkan(): void
+    {
+        $this->setTime('18:30:00');
+        $this->lemburHariIni([
+            'rencana_mulai' => self::HARI_INI . ' 18:45:00',
+            'rencana_selesai' => self::HARI_INI . ' 20:45:00',
+            'durasi_jam' => 2,
+        ]);
+
+        // Mulai tepat setelah sesi 1 selesai (20:45) → boleh.
+        $result = $this->lemburService->storePengajuan(
+            $this->requestPengajuan(['jam_mulai' => '20:45', 'durasi_jam' => '1.5']),
+            $this->karyawan
+        );
+
+        $this->assertTrue($result['success'], $result['message']);
+        $this->assertSame(2, Lembur::where('nik', $this->karyawan->nik)->count());
+
+        $baru = Lembur::where('nik', $this->karyawan->nik)
+            ->where('rencana_mulai', self::HARI_INI . ' 20:45:00')
+            ->firstOrFail();
+        $this->assertSame(self::HARI_INI . ' 22:15:00', $baru->rencana_selesai->format('Y-m-d H:i:s'));
+    }
+
+    // ======================================================================
+    // Kalkulasi harian: total menit/jam & penanda Prorate (> 5 jam/hari)
+    // ======================================================================
+
+    public function test_summarize_daily_menjumlahkan_dua_sesi(): void
+    {
+        $summary = LemburService::summarizeDaily([
+            (object) ['durasi_menit' => 120, 'durasi_jam' => 2],
+            (object) ['durasi_menit' => 90, 'durasi_jam' => 1.5],
+        ]);
+
+        $this->assertSame(210, $summary['menit']);
+        $this->assertSame(3.5, $summary['jam']);
+        $this->assertFalse($summary['is_prorate']);
+        $this->assertSame(2, $summary['jumlah']);
+        $this->assertSame('3.5 jam', $summary['formatted']);
+    }
+
+    public function test_summarize_daily_lebih_dari_5_jam_jadi_prorate(): void
+    {
+        $summary = LemburService::summarizeDaily([
+            (object) ['durasi_menit' => 180, 'durasi_jam' => 3],
+            (object) ['durasi_menit' => 150, 'durasi_jam' => 2.5],
+        ]);
+
+        $this->assertSame(330, $summary['menit']);
+        $this->assertTrue($summary['is_prorate']);
+        $this->assertSame('prorate', $summary['formatted']);
+    }
+
+    public function test_summarize_daily_tepat_5_jam_bukan_prorate(): void
+    {
+        $summary = LemburService::summarizeDaily([
+            (object) ['durasi_menit' => 150, 'durasi_jam' => 2.5],
+            (object) ['durasi_menit' => 150, 'durasi_jam' => 2.5],
+        ]);
+
+        $this->assertFalse($summary['is_prorate']);
+    }
+
+    public function test_summarize_daily_pakai_durasi_menit_aktual_jika_ada(): void
+    {
+        // durasi_menit aktual (100 menit) menang atas durasi_jam rencana (2 jam).
+        $summary = LemburService::summarizeDaily([
+            (object) ['durasi_menit' => 100, 'durasi_jam' => 2],
+        ]);
+
+        $this->assertSame(100, $summary['menit']);
+    }
+
+    public function test_attach_daily_totals_anotasi_per_tanggal(): void
+    {
+        $this->setTime('10:00:00');
+        $this->lemburHariIni(['status' => 'approved', 'durasi_jam' => 3, 'laporan_status' => 'approved']);
+        $this->lemburHariIni(['status' => 'approved', 'durasi_jam' => 3, 'laporan_status' => 'rejected']);
+        $this->lemburHariIni(['tgl_lembur' => '2026-09-27', 'status' => 'approved', 'durasi_jam' => 2, 'laporan_status' => 'approved']);
+
+        $history = $this->lemburService->getLemburHistory($this->karyawan->nik);
+
+        $this->assertCount(3, $history);
+        foreach ($history as $item) {
+            if ($item->tgl_lembur->format('Y-m-d') === self::HARI_INI) {
+                $this->assertSame(2, $item->jumlah_sesi_harian);
+                $this->assertTrue($item->is_prorate_harian);
+                $this->assertSame('prorate', $item->durasi_harian_formatted);
+                $this->assertSame(360, $item->durasi_harian_menit);
+            } else {
+                $this->assertSame(1, $item->jumlah_sesi_harian);
+                $this->assertFalse($item->is_prorate_harian);
+                $this->assertSame('2 jam', $item->durasi_harian_formatted);
+            }
+        }
+    }
+
+    public function test_daily_summary_for_hanya_menghitung_lembur_disetujui(): void
+    {
+        $this->setTime('10:00:00');
+        $this->lemburHariIni(['status' => 'approved', 'durasi_jam' => 3]);
+        $this->lemburHariIni(['status' => 'pending_atasan', 'durasi_jam' => 3]);
+        $lembur = Lembur::where('nik', $this->karyawan->nik)->where('status', 'approved')->firstOrFail();
+
+        $summary = LemburService::dailySummaryFor($lembur);
+
+        $this->assertSame(1, $summary['jumlah']);
+        $this->assertSame(180, $summary['menit']);
+        $this->assertFalse($summary['is_prorate']);
     }
 }

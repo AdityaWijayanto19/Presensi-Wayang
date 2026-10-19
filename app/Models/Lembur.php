@@ -8,6 +8,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Lembur extends Model
 {
+    /**
+     * Maksimal jumlah record lembur untuk 1 karyawan pada 1 tanggal.
+     * Setiap record = 1 sesi (pengajuan, approve, foto & laporan masing-masing).
+     */
+    public const MAKS_PER_HARI = 2;
+
+    /** Total durasi lembur 1 hari (dalam jam) yang melebihi nilai ini dihitung Prorate. */
+    public const BATAS_PRORATE_JAM = 5.0;
+
     protected $table = 'lemburs';
 
     protected $fillable = [
@@ -71,9 +80,54 @@ class Lembur extends Model
     {
         $jam = $this->durasi_jam ?? 0;
         if ($jam <= 0) return null;
-        if ($jam > 5) return 'prorate';
+        if ($jam > self::BATAS_PRORATE_JAM) return 'prorate';
+
+        return self::formatJam($jam);
+    }
+
+    /**
+     * Format durasi mengikuti format lama: "2 jam" / "2,5 jam" (desimal dipisah titik lalu dirapikan).
+     */
+    public static function formatJam(float $jam): string
+    {
         $formatted = rtrim(rtrim(number_format($jam, 1, '.', ''), '0'), '.');
+
         return $formatted . ' jam';
+    }
+
+    /**
+     * Anotasi hasil kalkulasi harian (di-set oleh LemburService::attachDailyTotals).
+     * Total gabungan semua sesi lembur pada tanggal yang sama.
+     */
+    public function getDurasiHarianFormattedAttribute(): ?string
+    {
+        return $this->getAttributeFromArray('durasi_harian_formatted') ?? $this->durasi_formatted;
+    }
+
+    public function getDurasiHarianJamAttribute(): ?float
+    {
+        $raw = $this->getAttributeFromArray('durasi_harian_jam');
+
+        return $raw === null ? (($this->durasi_jam ?? 0) > 0 ? (float) $this->durasi_jam : null) : (float) $raw;
+    }
+
+    public function getDurasiHarianMenitAttribute(): ?int
+    {
+        $raw = $this->getAttributeFromArray('durasi_harian_menit');
+
+        return $raw === null
+            ? (($this->durasi_menit ?? 0) > 0 ? (int) $this->durasi_menit : null)
+            : (int) $raw;
+    }
+
+    public function getIsProrateHarianAttribute(): bool
+    {
+        return (bool) $this->getAttributeFromArray('is_prorate_harian');
+    }
+
+    public function getJumlahSesiHarianAttribute(): int
+    {
+        return (int) ($this->getAttributeFromArray('jumlah_sesi_harian') ?? 1);
     }
 
     public function getRencanaWaktuAttribute(): ?string
@@ -83,7 +137,7 @@ class Lembur extends Model
             ? $this->rencana_mulai->format('H:i')
             : \Carbon\Carbon::parse($this->rencana_mulai)->format('H:i');
         if (!$this->rencana_selesai) {
-            return ($this->durasi_jam ?? 0) > 5 ? $mulai . ' - Menyesuaikan' : null;
+            return ($this->durasi_jam ?? 0) > self::BATAS_PRORATE_JAM ? $mulai . ' - Menyesuaikan' : null;
         }
         $selesai = $this->rencana_selesai instanceof \Carbon\Carbon
             ? $this->rencana_selesai->format('H:i')

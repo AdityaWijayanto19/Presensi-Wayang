@@ -61,21 +61,38 @@ class LaporanLemburService
         $daftar = [];
         $totalLaporan = 0;
         $totalDurasi = 0.0;
+        $totalProrate = 0;
 
         foreach ($karyawans as $karyawan) {
             $jabatan = $karyawan->jabatan instanceof Jabatan ? $karyawan->jabatan->value : $karyawan->jabatan;
 
             $reports = [];
             $durasi = 0.0;
+            $prorateKaryawan = 0;
 
-            foreach ($lemburs->get($karyawan->nik, collect()) as $lembur) {
-                $pdfData = LemburService::buildLaporanPdfData($lembur);
-                if (empty($pdfData)) {
-                    continue;
+            // Kelompokkan per hari: total gabungan semua sesi lembur pada tanggal yang sama.
+            // Total harian > 5 jam = 1x Prorate, jam hari itu tidak dihitung ke total durasi.
+            $lemburPerHari = $lemburs->get($karyawan->nik, collect())
+                ->groupBy(fn ($l) => $l->tgl_lembur instanceof \Carbon\Carbon
+                    ? $l->tgl_lembur->format('Y-m-d')
+                    : (string) $l->tgl_lembur);
+
+            foreach ($lemburPerHari as $group) {
+                $harian = LemburService::summarizeDaily($group);
+                if ($harian['is_prorate']) {
+                    $prorateKaryawan++;
+                } else {
+                    $durasi += $harian['jam'];
                 }
-                $pdfData['stempelPath'] = $stempelPath;
-                $reports[] = $pdfData;
-                $durasi += (float) $lembur->durasi_jam;
+
+                foreach ($group as $lembur) {
+                    $pdfData = LemburService::buildLaporanPdfData($lembur);
+                    if (empty($pdfData)) {
+                        continue;
+                    }
+                    $pdfData['stempelPath'] = $stempelPath;
+                    $reports[] = $pdfData;
+                }
             }
 
             $daftar[] = [
@@ -84,11 +101,13 @@ class LaporanLemburService
                 'jabatan' => $jabatan,
                 'jumlah' => count($reports),
                 'total_durasi' => $durasi,
+                'total_prorate' => $prorateKaryawan,
                 'reports' => $reports,
             ];
 
             $totalLaporan += count($reports);
             $totalDurasi += $durasi;
+            $totalProrate += $prorateKaryawan;
         }
 
         if ($totalLaporan === 0) {
@@ -107,6 +126,7 @@ class LaporanLemburService
             'tahun' => (int) $tahun,
             'totalLaporan' => $totalLaporan,
             'totalDurasi' => $totalDurasi,
+            'totalProrate' => $totalProrate,
         ];
     }
 

@@ -20,6 +20,8 @@
         $tglLembur = $lembur->tgl_lembur instanceof \Carbon\Carbon ? $lembur->tgl_lembur->format('d M Y') : $lembur->tgl_lembur;
         $rencanaWaktu = $lembur->rencana_waktu;
         $durasiFormatted = $lembur->durasi_formatted;
+        $durasiHarian = $lembur->durasi_harian_formatted;
+        $jumlahSesi = $lembur->jumlah_sesi_harian;
         $isPreShift = $lembur->is_pre_shift;
     @endphp
 
@@ -51,13 +53,23 @@
             </div>
 
             {{-- Info Rencana Waktu --}}
-            @if ($rencanaWaktu)
+            @if ($rencanaWaktu || $durasiHarian)
                 <div class="mt-2 bg-blue-50 border border-blue-200 rounded-xl px-3 py-2">
                     <div class="flex items-center gap-2">
                         <i data-lucide="clock" class="text-blue-500 shrink-0" style="width:16px;height:16px;"></i>
                         <div>
-                            <span class="text-[12px] text-blue-700 font-semibold">Rencana: {{ $rencanaWaktu }}</span>
-                            <span class="text-[11px] text-blue-500">({{ $durasiFormatted }})</span>
+                            @if ($rencanaWaktu)
+                                <span class="text-[12px] text-blue-700 font-semibold">Rencana: {{ $rencanaWaktu }}</span>
+                                <span class="text-[11px] text-blue-500">({{ $durasiFormatted }})</span>
+                            @endif
+                            @if ($durasiHarian && $jumlahSesi > 1)
+                                <div class="text-[11px] text-blue-600 font-medium mt-0.5">
+                                    Total lembur hari ini ({{ $jumlahSesi }} sesi): {{ $durasiHarian }}
+                                    @if ($lembur->is_prorate_harian)
+                                        — dihitung Prorate
+                                    @endif
+                                </div>
+                            @endif
                         </div>
                     </div>
                     @if ($isPreShift)

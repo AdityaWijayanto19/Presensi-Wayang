@@ -1,5 +1,13 @@
 @extends('layouts.presensi')
 
+@php
+    $isEdit = isset($cuti) && $cuti;
+    $actionUrl = $isEdit ? '/cuti/' . $cuti->id . '/update-draft' : '/cuti/store';
+    $oldTanggal = old('tanggal_cuti', $isEdit ? (array) $cuti->tanggal_cuti : []);
+    $oldDurasi = old('durasi_hari', $isEdit ? $cuti->durasi_hari : '');
+    $oldKeterangan = old('keterangan', $isEdit ? ($cuti->keterangan ?? '') : '');
+@endphp
+
 @section('header')
     <div class="appHeader bg-coklat text-light">
         <div class="left">
@@ -7,7 +15,7 @@
                 <i data-lucide="chevron-left"></i>
             </a>
         </div>
-        <div class="pageTitle">Upload Cuti Tahunan</div>
+        <div class="pageTitle">{{ $isEdit ? 'Edit Pengajuan Cuti' : 'Pengajuan Cuti — Langkah 1' }}</div>
         <div class="right"></div>
     </div>
 @endsection
@@ -25,7 +33,16 @@
                 </div>
             @endif
 
-            <form method="POST" action="/cuti/store" id="form_cuti" enctype="multipart/form-data" autocomplete="off">
+            {{-- Langkah 1 dari 2 --}}
+            <div class="flex items-center gap-2 mb-3">
+                <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-coklat text-white text-[11px] font-bold">1</span>
+                <span class="text-[12px] font-semibold text-[#44403c]">Isi Data Pengajuan</span>
+                <span class="h-px flex-1 bg-[#e7e5e4]"></span>
+                <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#f0ece8] text-[#a8a29e] text-[11px] font-bold">2</span>
+                <span class="text-[12px] font-semibold text-[#a8a29e]">Upload File Ditandatangani</span>
+            </div>
+
+            <form method="POST" action="{{ $actionUrl }}" id="form_cuti" autocomplete="off">
                 @csrf
 
                 {{-- Profil Pengaju + Kuota --}}
@@ -75,7 +92,7 @@
                             class="w-full pl-10 pr-3 py-2 text-sm bg-white border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
                             <option value="">-- Pilih Durasi --</option>
                             @for ($i = 1; $i <= $maxDurasi; $i++)
-                                <option value="{{ $i }}" {{ (string) old('durasi_hari') === (string) $i ? 'selected' : '' }}>
+                                <option value="{{ $i }}" {{ (string) $oldDurasi === (string) $i ? 'selected' : '' }}>
                                     {{ $i }} Hari</option>
                             @endfor
                         </select>
@@ -98,31 +115,24 @@
 
                 {{-- Keterangan --}}
                 <div class="form-group mt-3">
-                    <label class="text-[12px] font-semibold text-[#44403c] mb-1 block">Keterangan</label>
+                    <label class="text-[12px] font-semibold text-[#44403c] mb-1 block">Keperluan / Keterangan</label>
                     <textarea name="keterangan" id="keterangan" rows="3" maxlength="500" class="w-full rounded-md border border-slate-300 px-2.5 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                        placeholder="Keterangan cuti (opsional)...">{{ old('keterangan') }}</textarea>
+                        placeholder="Keperluan cuti (opsional)...">{{ $oldKeterangan }}</textarea>
                     <small class="text-[11px] text-[#a8a29e]"><span id="charCount">0</span>/500 karakter</small>
                 </div>
 
-                {{-- File Cuti (sudah ditandatangani) --}}
-                <div class="form-group mt-3">
-                    <label class="text-[12px] font-semibold text-[#44403c] mb-1 block">File Cuti (Sudah Ditandatangani) <span class="text-red-500">*</span></label>
-                    <input type="file" name="bukti_file" id="bukti_file" required
-                        accept=".jpg,.jpeg,.png,.pdf"
-                        class="w-full rounded-md border border-slate-300 px-2.5 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-coklat file:text-white hover:file:bg-coklat-dark">
-                    <small class="text-[11px] text-[#a8a29e]">Format: JPG, JPEG, PNG, PDF (Maks 4MB)</small>
-                </div>
-
-                <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 mt-3 flex gap-2.5">
+                <div class="bg-sky-50 border border-sky-200 rounded-xl p-3 mt-3 flex gap-2.5">
                     <i data-lucide="info"
-                        class="text-amber-600 shrink-0 mt-0.5" style="width:18px;height:18px;"></i>
-                    <p class="text-[11px] leading-relaxed text-amber-800">Upload cuti akan langsung mengurangi kuota cuti
-                        Anda. Pastikan file sudah ditandatangani sebelum diupload.</p>
+                        class="text-sky-600 shrink-0 mt-0.5" style="width:18px;height:18px;"></i>
+                    <p class="text-[11px] leading-relaxed text-sky-900">Setelah data tersimpan, sistem membuat
+                        <b>formulir PDF surat cuti</b> yang bisa Anda cetak &amp; tanda tangani. Langkah berikutnya
+                        upload file hasil scan/tfoto di langkah 2. Kuota baru berkurang saat disetujui superadmin.</p>
                 </div>
 
                 <div class="form-group mt-4">
                     <button type="submit" class="btn btn-primary w-full">
-                        <i data-lucide="upload" style="margin-right:6px;"></i> Upload Cuti
+                        <i data-lucide="{{ $isEdit ? 'save' : 'arrow-right' }}" style="margin-right:6px;"></i>
+                        {{ $isEdit ? 'Simpan & Lanjut' : 'Selanjutnya — Upload File' }}
                     </button>
                 </div>
             </form>
@@ -137,7 +147,7 @@
             var USED_DATES = @json($usedDates ?? []);
             var durasiSelect = document.getElementById('durasi_hari');
             var fieldsContainer = document.getElementById('tanggalCutiFields');
-            var oldTanggal = @json(old('tanggal_cuti', []));
+            var oldTanggal = @json($oldTanggal);
             var pickers = [];
 
             function destroyPickers() {
@@ -191,12 +201,14 @@
                 document.getElementById('charCount').textContent = this.value.length;
             });
 
-            // Submit validation
+            // Submit validation (tanpa file — file diupload di langkah 2)
             document.getElementById('form_cuti').addEventListener('submit', function(e) {
                 e.preventDefault();
                 var durasi = currentDurasi();
-                var tanggalInputs = document.querySelectorAll('.cuti-tanggal');
-                var fileInput = document.getElementById('bukti_file');
+                // Pakai input bernama, BUKAN class .cuti-tanggal — flatpickr 4.6.x menyalin
+                // class input asli ke alt input (altInputClass), jadi kalau pakai class,
+                // jumlahnya dobel (2 per kolom) dan validasi tanggal dianggap gagal.
+                var tanggalInputs = fieldsContainer.querySelectorAll('input[name="tanggal_cuti[]"]');
                 var keterangan = el.value.trim();
                 var tanggalValues = [];
                 var validTanggal = true;
@@ -207,9 +219,9 @@
                 }
 
                 tanggalInputs.forEach(function(input) {
-                    var alt = input._flatpickr ? input._flatpickr.input.value : input.value;
-                    if (!alt) validTanggal = false;
-                    tanggalValues.push(alt);
+                    // Input asli selalu memegang value format Y-m-d (dateFormat).
+                    if (!input.value) validTanggal = false;
+                    tanggalValues.push(input.value);
                 });
 
                 if (!validTanggal || tanggalValues.filter(Boolean).length !== durasi) {
@@ -233,29 +245,14 @@
                     return;
                 }
 
-                if (!fileInput.files || fileInput.files.length === 0) {
-                    Swal.fire({ icon: "warning", text: "File cuti wajib diupload", confirmButtonColor: "#7a5234" });
-                    return;
-                }
-                var allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
-                var file = fileInput.files[0];
-                if (!allowedTypes.includes(file.type)) {
-                    Swal.fire({ icon: "warning", text: "Format file tidak valid. Gunakan JPG, PNG, atau PDF.", confirmButtonColor: "#7a5234" });
-                    return;
-                }
-                if (file.size > 4 * 1024 * 1024) {
-                    Swal.fire({ icon: "warning", text: "Ukuran file maksimal 4MB", confirmButtonColor: "#7a5234" });
-                    return;
-                }
-
                 Swal.fire({
-                    title: "Upload Cuti Tahunan?",
-                    text: "Durasi: " + durasi + " hari. Kuota cuti akan berkurang " + durasi + " hari.",
+                    title: @json($isEdit ? 'Simpan Perubahan?' : 'Lanjut ke Langkah 2?'),
+                    text: "Durasi: " + durasi + " hari. Sistem akan membuat formulir PDF surat cuti untuk dicetak. Kuota belum berkurang sampai disetujui.",
                     icon: "question",
                     showCancelButton: true,
                     confirmButtonColor: "#7a5234",
                     cancelButtonColor: "#d33",
-                    confirmButtonText: "Ya, Upload",
+                    confirmButtonText: "Ya, Lanjut",
                     cancelButtonText: "Batal"
                 }).then(function(r) {
                     if (r.isConfirmed) document.getElementById('form_cuti').submit();

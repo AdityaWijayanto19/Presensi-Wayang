@@ -9,6 +9,7 @@ use App\Models\Unitperusahaan;
 use App\Models\Wfh;
 use App\Services\Shared\LocationService;
 use Carbon\Carbon;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -78,8 +79,12 @@ class PresensiService
         $terlambat = $this->hitungTerlambatPresensi($unitKerja->unit, $jam, $nik, $tglPresensi);
 
         return DB::transaction(function () use ($nik, $tglPresensi, $jam, $unitKerja, $terlambat, $request, $setengahHari) {
+            // Lock baris (atau gap) untuk nik+tanggal ini: request masuk paralel
+            // (double tap / retry jaringan) saling menunggu, sehingga request kedua
+            // membaca baris terbaru dan jatuh ke cabang pulang — bukan INSERT kedua.
             $cek = Presensi::where('tgl_presensi', $tglPresensi)
                 ->where('nik', $nik)
+                ->lockForUpdate()
                 ->first();
 
             $status = $cek ? 'out' : 'in';
@@ -599,22 +604,44 @@ class PresensiService
     {
         $flag = $this->gabungFlag(null, $this->deteksiFlagMasuk($nik, $tglPresensi, $bukti['lokasi']));
 
-        Presensi::create([
-            'nik' => $nik,
-            'tgl_presensi' => $tglPresensi,
-            'jam_in' => $jam,
-            'foto_in' => $fileName,
-            'lokasi_in' => $bukti['lokasi'],
-            'lokasi_in_akurasi' => $bukti['akurasi'],
-            'lokasi_in_jarak' => $bukti['jarak'],
-            'gps_fix_in' => $bukti['fix'],
-            'gps_durasi_in_ms' => $bukti['durasi'],
-            'ip_in' => $bukti['ip'],
-            'terlambat' => $terlambat,
-            'flag_manipulasi' => $flag,
-        ]);
+        try {
+            Presensi::create([
+                'nik' => $nik,
+                'tgl_presensi' => $tglPresensi,
+                'jam_in' => $jam,
+                'foto_in' => $fileName,
+                'lokasi_in' => $bukti['lokasi'],
+                'lokasi_in_akurasi' => $bukti['akurasi'],
+                'lokasi_in_jarak' => $bukti['jarak'],
+                'gps_fix_in' => $bukti['fix'],
+                'gps_durasi_in_ms' => $bukti['durasi'],
+                'ip_in' => $bukti['ip'],
+                'terlambat' => $terlambat,
+                'flag_manipulasi' => $flag,
+            ]);
+        } catch (QueryException $e) {
+            // Pengaman terakhir dari unique index (nik, tgl_presensi): kalau baris
+            // sudah terlanjur dibuat request paralel, anggap presensi sudah tercatat
+            // (bukan error 500).
+            if ($this->adalahDuplikatPresensi($e)) {
+                return ['success' => false, 'message' => 'Anda sudah melakukan presensi masuk!', 'type' => 'in'];
+            }
+
+            throw $e;
+        }
 
         return ['success' => true, 'message' => 'Presensi berhasil, selamat bekerja!', 'type' => 'in'];
+    }
+
+    /**
+     * Deteksi pelanggaran unique index presensis (nik, tgl_presensi).
+     * MySQL: error 1062. SQLite (test): SQLSTATE 23000 / UNIQUE constraint failed.
+     */
+    private function adalahDuplikatPresensi(QueryException $e): bool
+    {
+        return ($e->errorInfo[1] ?? null) === 1062
+            || str_contains($e->getMessage(), 'Duplicate entry')
+            || str_contains($e->getMessage(), 'UNIQUE constraint failed');
     }
 
     public function reverseGeocode(string $coordinates): string

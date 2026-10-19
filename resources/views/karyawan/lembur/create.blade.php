@@ -56,6 +56,10 @@
                     $bolehHariIni = $canHariIni['can'] ?? false;
                     $bolehBesok = $canBesok['can'] ?? false;
                     $defaultTgl = $bolehHariIni ? $tglHariIni : $tglBesok;
+                    $rencanaByTgl = [
+                        $tglHariIni => $rencanaHariIni ?? ['jumlah' => 0, 'jam' => 0, 'formatted' => null],
+                        $tglBesok => $rencanaBesok ?? ['jumlah' => 0, 'jam' => 0, 'formatted' => null],
+                    ];
                 @endphp
 
                 {{-- Tanggal Lembur --}}
@@ -78,6 +82,20 @@
                     @if (!$bolehBesok && !empty($canBesok['message']))
                         <small class="block text-rose-500 text-[11px]">Besok: {{ $canBesok['message'] }}</small>
                     @endif
+                </div>
+
+                {{-- Info Sesi ke-2 & Prorate Harian --}}
+                <div x-show="rencanaSekarang.jumlah > 0" x-cloak
+                     class="mt-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                    <div class="flex items-start gap-2">
+                        <i data-lucide="info" class="text-amber-500 shrink-0 mt-0.5" style="width:16px;height:16px;"></i>
+                        <div class="text-[12px] text-amber-800 leading-relaxed">
+                            <span class="font-semibold" x-text="'Sesi ke-' + (rencanaSekarang.jumlah + 1) + ' lembur'"></span>
+                            — sudah ada <span x-text="rencanaSekarang.jumlah"></span> lembur
+                            (<span x-text="rencanaSekarang.formatted || '-'"></span>) pada tanggal ini.
+                            Total lembur dalam 1 hari yang melebihi 5 jam akan dihitung <b>Prorate</b>.
+                        </div>
+                    </div>
                 </div>
 
                 {{-- Durasi Lembur --}}
@@ -105,8 +123,8 @@
                     <label class="text-sm font-medium text-[#1c1917]">Rencana Jam Mulai <span class="text-red-500">*</span></label>
                     <input type="time" name="jam_mulai" id="jam_mulai" x-model="jamMulai"
                            class="w-full rounded-md border border-slate-300 px-2.5 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                           required step="1800">
-                    <small class="text-[#a8a29e] text-[11px]">Pilihan menit hanya :00 dan :30.</small>
+                           required step="60">
+                    <small class="text-[#a8a29e] text-[11px]">Menit bebas, misal 18:45. Jam selesai dihitung otomatis dari jam mulai + durasi.</small>
                 </div>
 
                 {{-- Rencana Jam Selesai (Otomatis) --}}
@@ -121,7 +139,7 @@
                 <div x-show="durasi && jamMulai" x-cloak class="mt-2 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
                     <div class="flex items-center gap-2">
                         <i data-lucide="clock" class="text-blue-500 shrink-0" style="width:16px;height:16px;"></i>
-                        <span class="text-[12px] text-blue-700 font-medium" x-text="infoText"></span>
+                        <span class="text-[12px] text-blue-700 font-medium" x-text="infoText + infoProrateHarian"></span>
                     </div>
                 </div>
 
@@ -151,8 +169,23 @@
             tglLembur: '{{ $defaultTgl }}',
             durasi: '',
             jamMulai: '',
+            rencanaMap: @json($rencanaByTgl),
             get isProrate() {
                 return this.durasi === 'prorate';
+            },
+            get rencanaSekarang() {
+                return this.rencanaMap[this.tglLembur] || { jumlah: 0, jam: 0, formatted: null };
+            },
+            get totalRencanaHarian() {
+                if (!this.durasi) return null;
+                const tambahan = this.isProrate ? 5.5 : parseFloat(this.durasi);
+                return ((this.rencanaSekarang.jam || 0) + tambahan).toFixed(1).replace('.', ',');
+            },
+            get infoProrateHarian() {
+                if (!this.durasi) return '';
+                const total = (this.rencanaSekarang.jam || 0) + (this.isProrate ? 5.5 : parseFloat(this.durasi));
+                if (total <= 5) return '';
+                return ' Total gabungan lembur hari ini ' + total.toFixed(1).replace('.', ',') + ' jam (melebihi 5 jam) — akan dihitung Prorate.';
             },
             get jamSelesai() {
                 if (!this.durasi || !this.jamMulai) return '-';
@@ -223,9 +256,18 @@
                 : alpineEl._x_dataStack?.[0]?.jamSelesai ?? '-';
             var durasiText = durasi === 'prorate' ? 'Prorate' : durasiLabel + ' jam';
 
+            var prorateNote = '';
+            if (typeof Alpine !== 'undefined' && Alpine.$data) {
+                var alpineData = Alpine.$data(alpineEl);
+                prorateNote = alpineData ? alpineData.infoProrateHarian : '';
+            } else if (alpineEl._x_dataStack && alpineEl._x_dataStack[0]) {
+                prorateNote = alpineEl._x_dataStack[0].infoProrateHarian || '';
+            }
+
             Swal.fire({
                 title: 'Kirim Pengajuan Lembur?',
-                html: 'Lembur <b>' + durasiText + '</b> pada <b>' + tglLabel + '</b> pukul <b>' + jamMulai + ' - ' + jamSelesai + '</b>',
+                html: 'Lembur <b>' + durasiText + '</b> pada <b>' + tglLabel + '</b> pukul <b>' + jamMulai + ' - ' + jamSelesai + '</b>'
+                    + (prorateNote ? '<br><span class="text-amber-600 text-[12px]">' + prorateNote + '</span>' : ''),
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonColor: '#7a5234',

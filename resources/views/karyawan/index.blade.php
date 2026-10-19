@@ -715,8 +715,8 @@
                                         <div class="text-[11px] text-[#78716c] mt-0.5 italic">
                                             {{ Str::limit($l->keterangan, 50) }}</div>
                                     @endif
-                                    @if ($l->durasi_formatted)
-                                        <div class="text-[11px] text-[#78716c] mt-0.5">Durasi: {{ $l->durasi_formatted }}
+                                    @if ($l->durasi_harian_formatted)
+                                        <div class="text-[11px] text-[#78716c] mt-0.5">Durasi: {{ $l->durasi_harian_formatted }}{{ ($l->jumlah_sesi_harian ?? 1) > 1 ? ' (total ' . $l->jumlah_sesi_harian . ' sesi)' : '' }}
                                         </div>
                                     @endif
                                     @if ($llStatus)
@@ -1693,9 +1693,10 @@
                                             '<div class="text-[11px] text-[#78716c] mt-0.5 italic">' + esc((
                                                 l.keterangan.length > 50 ? l.keterangan.substring(0,
                                                     50) + '...' : l.keterangan)) + '</div>' : '';
-                                        var durasi = l.durasi_formatted ?
+                                        var durasiHarian = l.durasi_harian_formatted || l.durasi_formatted;
+                                        var durasi = durasiHarian ?
                                             '<div class="text-[11px] text-[#78716c] mt-0.5">Durasi: ' + esc(
-                                                l.durasi_formatted) + '</div>' : '';
+                                                durasiHarian) + ((l.jumlah_sesi_harian || 1) > 1 ? ' (total ' + l.jumlah_sesi_harian + ' sesi)' : '') + '</div>' : '';
                                         var laporanBadge = '';
                                         if (l.laporan_status) {
                                             var lb = llBadgeMap[l.laporan_status] ||

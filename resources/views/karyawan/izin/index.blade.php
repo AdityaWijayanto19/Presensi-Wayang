@@ -119,15 +119,15 @@
 
                     <div class="flex items-center gap-2 flex-wrap">
                         @if($pdfUrl !== "#")
-                            <button type="button" class="file-pill js-preview" data-url="{{ $pdfUrl }}" data-filename="{{ $pdfName }}" data-label="Form Izin — {{ $displayDate }}">
+                            <a href="{{ $pdfUrl }}" target="_blank" rel="noopener" class="file-pill">
                                 <i data-lucide="file"></i> Form
                                 <span class="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-[#f0f9ff] border border-[#bae6fd] text-[9px] font-bold text-[#0369a1] uppercase">{{ strtolower(pathinfo($pdfName, PATHINFO_EXTENSION)) }}</span>
-                            </button>
+                            </a>
                         @endif
                         @if($buktiUrl)
-                            <button type="button" class="file-pill js-preview" data-url="{{ $buktiUrl }}" data-filename="{{ basename($buktiUrl) }}" data-label="Bukti Izin — {{ $displayDate }}">
+                            <a href="{{ $buktiUrl }}" target="_blank" rel="noopener" class="file-pill">
                                 <i data-lucide="paperclip"></i> Bukti
-                            </button>
+                            </a>
                         @endif
                         @if($status === 'rejected')
                             <a href="/izin/{{ $d->id }}/edit" class="file-pill bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100">

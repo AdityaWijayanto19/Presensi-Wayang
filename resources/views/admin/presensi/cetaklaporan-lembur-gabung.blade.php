@@ -140,6 +140,12 @@
                 <td class="cover-label">Total Laporan Lembur</td>
                 <td>{{ $totalLaporan }} laporan ({{ $fmtDurasi($totalDurasi) }})</td>
             </tr>
+            <tr>
+                <td class="cover-label">Hari Prorate</td>
+                <td>{{ $totalProrate ?? 0 }} hari</td>
+                <td class="cover-label">Keterangan</td>
+                <td>Total lembur &gt; 5 jam dalam sehari dihitung Prorate (1x per hari, jam tidak dihitung ke total durasi).</td>
+            </tr>
         </table>
 
 
@@ -147,12 +153,13 @@
         <table class="daftar">
             <thead>
                 <tr>
-                    <th class="center" style="width:7%;">No.</th>
-                    <th style="width:16%;">NIK</th>
-                    <th style="width:27%;">Nama Karyawan</th>
-                    <th style="width:21%;">Jabatan</th>
-                    <th class="center" style="width:14%;">Jumlah Laporan</th>
-                    <th class="center" style="width:15%;">Total Durasi</th>
+                    <th class="center" style="width:6%;">No.</th>
+                    <th style="width:15%;">NIK</th>
+                    <th style="width:25%;">Nama Karyawan</th>
+                    <th style="width:20%;">Jabatan</th>
+                    <th class="center" style="width:12%;">Jumlah Laporan</th>
+                    <th class="center" style="width:12%;">Total Durasi</th>
+                    <th class="center" style="width:10%;">Prorate</th>
                 </tr>
             </thead>
             <tbody>
@@ -164,12 +171,14 @@
                         <td>{{ $item['jabatan'] }}</td>
                         <td class="center">{{ $item['jumlah'] }}</td>
                         <td class="center">{{ $fmtDurasi($item['total_durasi']) }}</td>
+                        <td class="center">{{ ($item['total_prorate'] ?? 0) }}x</td>
                     </tr>
                 @endforeach
                 <tr class="total">
                     <td class="center" colspan="4">Total</td>
                     <td class="center">{{ $totalLaporan }}</td>
                     <td class="center">{{ $fmtDurasi($totalDurasi) }}</td>
+                    <td class="center">{{ ($totalProrate ?? 0) }}x</td>
                 </tr>
             </tbody>
         </table>

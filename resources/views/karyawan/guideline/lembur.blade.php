@@ -188,7 +188,7 @@
                         <li>Buka menu <b>Pengajuan → Lembur</b>, lalu tombol <b>+</b> (Ajukan).</li>
                         <li>Pilih <b>Tanggal Lembur</b>: <b>Hari ini</b> (default) atau <b>Besok</b>. Tanggal lain tidak bisa dipilih.</li>
                         <li>Pilih <b>Durasi</b> (1–5 jam) atau <b>Prorate</b> (durasi aktual).</li>
-                        <li>Isi <b>Rencana Jam Mulai</b> — menit hanya <b>:00</b> atau <b>:30</b>.</li>
+                        <li>Isi <b>Rencana Jam Mulai</b> — menit bebas, misal <b>18.45</b>.</li>
                         <li>Jam selesai dihitung otomatis (Prorate → "Menyesuaikan").</li>
                         <li>Isi <b>Keterangan</b> (min. 5 karakter) — alasan lembur yang jelas.</li>
                         <li>Tekan <b>Kirim Pengajuan Lembur</b> dan konfirmasi. Surat PDF otomatis dibuat dan dikirim ke atasanmu.</li>
@@ -200,8 +200,8 @@
                             <b>Penting soal waktu:</b> untuk tanggal <b>hari ini</b>, pengajuan hanya bisa dilakukan
                             pada pukul <b>00.01–16.50</b> atau <b>18.00–23.59</b>. Di antaranya (16.51–17.59) sistem
                             menutup sementara. Kamu juga harus sudah <b>absen pulang</b> hari ini.
-                            Untuk tanggal <b>besok</b>, pengajuan bebas kapan saja. Satu tanggal hanya
-                            boleh satu pengajuan lembur.
+                            Untuk tanggal <b>besok</b>, pengajuan bebas kapan saja. Satu tanggal maksimal
+                            <b>dua</b> pengajuan lembur (dua sesi), dan jamnya tidak boleh tumpang tindih.
                         </div>
                     </div>
                 </section>
@@ -247,12 +247,12 @@
                                     <td class="text-[12.5px] font-semibold text-[#1c1917] py-2.5">Bebas kapan saja, tanpa syarat absen pulang</td>
                                 </tr>
                                 <tr>
-                                    <td class="text-[12.5px] text-[#57534e] py-2.5 pr-3">Satu lembur per tanggal</td>
-                                    <td class="text-[12.5px] font-semibold text-[#1c1917] py-2.5">Tidak boleh dobel</td>
+                                    <td class="text-[12.5px] text-[#57534e] py-2.5 pr-3">Lembur per tanggal</td>
+                                    <td class="text-[12.5px] font-semibold text-[#1c1917] py-2.5">Maksimal 2 sesi, jam tidak boleh tumpang tindih</td>
                                 </tr>
                                 <tr>
                                     <td class="text-[12.5px] text-[#57534e] py-2.5 pr-3">Rencana jam mulai</td>
-                                    <td class="text-[12.5px] font-semibold text-[#1c1917] py-2.5">Interval :00 atau :30</td>
+                                    <td class="text-[12.5px] font-semibold text-[#1c1917] py-2.5">Bebas menit (:00, :45, dst)</td>
                                 </tr>
                                 <tr>
                                     <td class="text-[12.5px] text-[#57534e] py-2.5 pr-3">Keterangan</td>
@@ -343,6 +343,17 @@
                             Durasi tetap dipakai sebagai <b>rencana</b> di surat pengajuan.
                             Durasi yang dihitung untuk keperluan teknis (laporan, monitoring) memakai
                             <b>durasi aktual</b> hasil pembulatan saat foto selesai — terutama untuk Prorate.
+                        </p>
+                    </div>
+
+                    <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 mt-2 flex gap-2.5">
+                        <i data-lucide="layers" class="text-amber-600 shrink-0 mt-0.5" style="width:16px;height:16px;"></i>
+                        <p class="text-[12px] leading-relaxed text-amber-900">
+                            <b>2x lembur dalam sehari:</b> kamu bisa mengajukan lembur maksimal 2 sesi per tanggal.
+                            Durasi kedua sesi dijumlahkan menjadi <b>total lembur 1 hari</b>.
+                            Jika total tersebut <b>melebihi 5 jam</b>, maka hari itu dihitung <b>Prorate</b>
+                            (ditandai "prorate" di rekap & laporan, dan jam lembur hari itu tidak dihitung
+                            ke total jam lembur — dihitung 1x prorate per hari).
                         </p>
                     </div>
                 </section>
@@ -511,6 +522,7 @@
                                 <li class="flex gap-1.5"><span>✓</span><span>Ajukan lembur <b>hari ini</b> setelah absen pulang di window <b>00.01–16.50</b> atau <b>18.00–23.59</b>.</span></li>
                                 <li class="flex gap-1.5"><span>✓</span><span>Ajukan lembur <b>besok</b> kapan saja, tanpa syarat absen pulang.</span></li>
                                 <li class="flex gap-1.5"><span>✓</span><span>Pilih Prorate jika durasi lembur tidak pasti.</span></li>
+                                <li class="flex gap-1.5"><span>✓</span><span>Ajukan lembur ke-2 pada tanggal yang sama (maksimal 2 sesi), selama jamnya tidak tumpang tindih.</span></li>
                                 <li class="flex gap-1.5"><span>✓</span><span>Ambil foto mulai setelah lembur disetujui (di hari-H).</span></li>
                                 <li class="flex gap-1.5"><span>✓</span><span>Ambil foto selesai setelah ≥ 60 menit dari foto mulai (masih di hari-H).</span></li>
                                 <li class="flex gap-1.5"><span>✓</span><span>Edit & kirim ulang laporan setelah <b>Ditolak</b>.</span></li>
@@ -521,10 +533,10 @@
                                 <i data-lucide="circle-x" style="width:14px;height:14px;"></i> Tidak Boleh
                             </div>
                             <ul class="space-y-1.5 text-[12.5px] text-rose-900 leading-relaxed">
-                                <li class="flex gap-1.5"><span>✗</span><span>Dua lembur untuk tanggal yang sama.</span></li>
+                                <li class="flex gap-1.5"><span>✗</span><span>Lebih dari 2 lembur untuk tanggal yang sama, atau jam tumpang tindih.</span></li>
                                 <li class="flex gap-1.5"><span>✗</span><span>Ajukan untuk tanggal lampau atau lebih dari besok.</span></li>
                                 <li class="flex gap-1.5"><span>✗</span><span>Ajukan di gap 16.51–17.59 atau jam 00.00 (khusus lembur hari ini).</span></li>
-                                <li class="flex gap-1.5"><span>✗</span><span>Jam mulai selain :00 atau :30.</span></li>
+                                <li class="flex gap-1.5"><span>✗</span><span>Jam mulai di luar jam wajar, atau bentrok dengan sesi lembur sendiri.</span></li>
                                 <li class="flex gap-1.5"><span>✗</span><span>Ambil foto mulai/selesai lebih dari sekali atau di luar tanggal lembur.</span></li>
                                 <li class="flex gap-1.5"><span>✗</span><span>Foto selesai sebelum 60 menit dari foto mulai.</span></li>
                                 <li class="flex gap-1.5"><span>✗</span><span>Kirim laporan sebelum foto lengkap, kurang dari 2 foto, atau di luar tanggal lembur.</span></li>
@@ -562,6 +574,8 @@
                                 Durasi biasa (1–5 jam) adalah rencana tetap di surat pengajuan.
                                 <b>Prorate</b> dipakai jika durasi aktual tidak pasti — jam selesai "Menyesuaikan",
                                 dan durasi dihitung dari foto mulai → foto selesai (dibulatkan 30 menit, min. 0.5 jam).
+                                Selain itu, total gabungan lembur dalam <b>1 hari</b> yang melebihi <b>5 jam</b>
+                                juga otomatis dihitung <b>Prorate</b> untuk hari tersebut.
                             </p>
                         </details>
                         <details class="group py-2.5">
@@ -644,12 +658,13 @@
                         </details>
                         <details class="group py-2.5">
                             <summary class="text-[13px] font-semibold text-[#1c1917] cursor-pointer list-none flex items-center justify-between gap-3">
-                                Kenapa jam mulai harus :00 atau :30?
+                                Apakah jam mulai harus :00 atau :30?
                                 <i data-lucide="chevron-down" class="text-[#a8a29e] shrink-0 group-open:rotate-180 transition-transform" style="width:16px;height:16px;"></i>
                             </summary>
                             <p class="text-[12.5px] text-[#57534e] leading-relaxed mt-2">
-                                Agar rencana lembur rapi dan mudah dicocokkan. Pilihan menit di form hanya
-                                :00 dan :30 (step 30 menit).
+                                Tidak harus lagi. Jam mulai kini <b>bebas menit</b> — boleh <b>:45</b>,
+                                <b>:15</b>, atau menit apa pun (mis. 18.45). Rencana jam selesai tetap
+                                dihitung otomatis dari jam mulai + durasi, jadi tetap sinkron.
                             </p>
                         </details>
                     </div>

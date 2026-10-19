@@ -78,7 +78,8 @@ class Karyawan extends Authenticatable
 
     public function totalCutiTerpakai(): int
     {
-        return (int) $this->cuti()->sum('durasi_hari');
+        // Kuota hanya berkurang untuk cuti yang sudah disetujui superadmin.
+        return (int) $this->cuti()->approved()->sum('durasi_hari');
     }
 
     public function sisaCuti(): int

@@ -863,7 +863,7 @@ class WfhServiceTest extends TestCase
         $result = $service->storeWfh($request, $this->karyawan);
 
         $this->assertTrue($result['success']);
-        $wfh = Wfh::where('nik', 'KRY001')->where('tgl_wfh', $tgl)->first();
+        $wfh = Wfh::where('nik', 'KRY001')->whereDate('tgl_wfh', $tgl)->first();
         $this->assertNotNull($wfh);
         $this->assertEquals('Anak sakit', $wfh->keterangan);
     }

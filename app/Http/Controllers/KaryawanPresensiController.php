@@ -4,13 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Presensi\GetHistoriRequest;
 use App\Http\Requests\RejectRequest;
-use App\Http\Requests\Service\StoreCutiRequest;
+use App\Http\Requests\Service\StoreCutiDraftRequest;
 use App\Http\Requests\Service\StoreFotoLemburRequest;
 use App\Http\Requests\Service\StoreIzinRequest;
 use App\Http\Requests\Service\StoreLaporanLemburRequest;
 use App\Http\Requests\Service\StoreLaporanWfhRequest;
 use App\Http\Requests\Service\StoreLemburRequest;
 use App\Http\Requests\Service\StoreWfhRequest;
+use App\Http\Requests\Service\UploadCutiFileRequest;
 use App\Http\Requests\Service\UpdateIzinKaryawanRequest;
 use App\Models\Presensi;
 use App\Models\Unitperusahaan;
@@ -238,7 +239,11 @@ class KaryawanPresensiController extends Controller
             return redirect('/lembur')->with('error', implode(' ', $messages));
         }
 
-        return view('karyawan.lembur.create', compact('karyawan', 'canHariIni', 'canBesok'));
+        // Ringkasan rencana lembur per tanggal (untuk info sesi ke-2 & peringatan prorate).
+        $rencanaHariIni = LemburService::plannedSummary($karyawan->nik, $hariIni);
+        $rencanaBesok = LemburService::plannedSummary($karyawan->nik, $besok);
+
+        return view('karyawan.lembur.create', compact('karyawan', 'canHariIni', 'canBesok', 'rencanaHariIni', 'rencanaBesok'));
     }
 
     public function storelembur(StoreLemburRequest $request, LemburService $lemburService)
@@ -472,18 +477,20 @@ class KaryawanPresensiController extends Controller
         return redirect()->back()->with($result['success'] ? 'success' : 'error', $result['message']);
     }
 
-    // ==================== CUTI TAHUNAN ====================
+    // ==================== CUTI TAHUNAN (2 STEP + APPROVAL) ====================
 
     public function cuti(CutiService $cutiService)
     {
         $karyawan = Auth::guard('karyawan')->user();
         $datacuti = $cutiService->getHistory($karyawan->nik);
         $jatahCuti = (int) $karyawan->jatah_cuti;
-        $terpakai = (int) $datacuti->sum('durasi_hari');
+        $terpakai = $karyawan->totalCutiTerpakai();
         $sisaCuti = max(0, $jatahCuti - $terpakai);
 
         return view('karyawan.cuti.index', compact('datacuti', 'jatahCuti', 'terpakai', 'sisaCuti'));
     }
+
+    // ---- STEP 1: input data pengajuan -> draft + generate PDF ----
 
     public function buatCuti()
     {
@@ -502,16 +509,124 @@ class KaryawanPresensiController extends Controller
         return view('karyawan.cuti.create', compact('karyawan', 'jatahCuti', 'terpakai', 'sisaCuti', 'maxDurasi', 'usedDates'));
     }
 
-    public function storeCuti(StoreCutiRequest $request, CutiService $cutiService)
+    public function storeCuti(StoreCutiDraftRequest $request, CutiService $cutiService)
     {
         $karyawan = Auth::guard('karyawan')->user();
-        $result = $cutiService->storeCuti($request, $karyawan);
+        $result = $cutiService->storeDraftCuti($request, $karyawan);
+
+        if ($result['success']) {
+            return redirect('/cuti/'.$result['cuti_id'].'/upload')
+                ->with('success', $result['message']);
+        }
+
+        return redirect()->back()->with('error', $result['message'])->withInput();
+    }
+
+    public function editCuti(int $id, CutiService $cutiService)
+    {
+        $karyawan = Auth::guard('karyawan')->user()->load('unitperusahaan');
+        $cuti = \App\Models\Cuti::find($id);
+
+        if (! $cuti || $cuti->nik !== $karyawan->nik) {
+            abort(404);
+        }
+        if ($cuti->status !== \App\Enums\CutiStatus::Draft) {
+            return redirect('/cuti')->with('error', 'Hanya pengajuan berstatus draft yang bisa diubah.');
+        }
+
+        $jatahCuti = (int) $karyawan->jatah_cuti;
+        $terpakai = $karyawan->totalCutiTerpakai();
+        $sisaCuti = max(0, $jatahCuti - $terpakai);
+        $maxDurasi = min(CutiService::MAX_DURASI_PER_UPLOAD, $sisaCuti);
+        $usedDates = CutiService::getUsedDates($karyawan->nik, $cuti->id);
+
+        return view('karyawan.cuti.create', compact(
+            'karyawan', 'cuti', 'jatahCuti', 'terpakai', 'sisaCuti', 'maxDurasi', 'usedDates'
+        ));
+    }
+
+    public function updateDraftCuti(StoreCutiDraftRequest $request, int $id, CutiService $cutiService)
+    {
+        $karyawan = Auth::guard('karyawan')->user();
+        $result = $cutiService->updateDraftCuti($id, $request, $karyawan);
+
+        if ($result['success']) {
+            return redirect('/cuti/'.$id.'/upload')->with('success', $result['message']);
+        }
+
+        return redirect()->back()->with('error', $result['message'])->withInput();
+    }
+
+    public function deleteCuti(int $id, CutiService $cutiService)
+    {
+        $karyawan = Auth::guard('karyawan')->user();
+        $cuti = \App\Models\Cuti::find($id);
+
+        if (! $cuti || $cuti->nik !== $karyawan->nik) {
+            abort(404);
+        }
+        if (! in_array($cuti->status, [\App\Enums\CutiStatus::Draft, \App\Enums\CutiStatus::Rejected], true)) {
+            return redirect('/cuti')->with('error', 'Hanya draft atau pengajuan yang ditolak yang bisa dihapus.');
+        }
+
+        $result = $cutiService->deleteCuti($id);
+
+        return redirect('/cuti')->with($result['success'] ? 'success' : 'error', $result['message']);
+    }
+
+    // ---- STEP 2: upload file hasil print & tanda tangan ----
+
+    public function uploadCuti(int $id, CutiService $cutiService)
+    {
+        $karyawan = Auth::guard('karyawan')->user()->load('unitperusahaan');
+        $cuti = \App\Models\Cuti::find($id);
+
+        if (! $cuti || $cuti->nik !== $karyawan->nik) {
+            abort(404);
+        }
+        if (! in_array($cuti->status, [\App\Enums\CutiStatus::Draft, \App\Enums\CutiStatus::Rejected], true)) {
+            return redirect('/cuti')->with('error', 'Pengajuan ini tidak menunggu upload file.');
+        }
+
+        $jatahCuti = (int) $karyawan->jatah_cuti;
+        $terpakai = $karyawan->totalCutiTerpakai();
+        $sisaCuti = max(0, $jatahCuti - $terpakai);
+
+        return view('karyawan.cuti.upload', compact('karyawan', 'cuti', 'jatahCuti', 'terpakai', 'sisaCuti'));
+    }
+
+    public function storeUploadCuti(UploadCutiFileRequest $request, int $id, CutiService $cutiService)
+    {
+        $karyawan = Auth::guard('karyawan')->user();
+        $result = $cutiService->uploadBuktiCuti($id, $request, $karyawan);
 
         if ($result['success']) {
             return redirect('/cuti')->with('success', $result['message']);
         }
 
-        return redirect()->back()->with('error', $result['message'])->withInput();
+        return redirect()->back()->with('error', $result['message']);
+    }
+
+    // ---- Download / print formulir PDF ----
+
+    public function downloadCutiPdf(int $id, CutiService $cutiService)
+    {
+        $nik = Auth::guard('karyawan')->user()->nik;
+        $path = $cutiService->getPdfForKaryawan($id, $nik);
+
+        if (! $path) {
+            abort(404);
+        }
+
+        $abs = storage_path('app/public/'.$path);
+        if (! file_exists($abs)) {
+            abort(404);
+        }
+
+        return response()->file($abs, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="'.basename($path).'"',
+        ]);
     }
 
     public function showfilecuti(string $file)

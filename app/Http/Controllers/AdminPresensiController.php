@@ -188,6 +188,16 @@ class AdminPresensiController extends Controller
             ? $lembur->tgl_lembur->format('Y-m-d')
             : (string) $lembur->tgl_lembur;
         $newTgl = $request->tgl_lembur;
+
+        // Kuota maksimal lembur per hari (2 sesi) juga berlaku saat admin mengubah tanggal.
+        $jmlSesiLain = Lembur::where('nik', $lembur->nik)
+            ->where('tgl_lembur', $newTgl)
+            ->where('id', '!=', $lembur->id)
+            ->count();
+        if ($jmlSesiLain >= \App\Models\Lembur::MAKS_PER_HARI) {
+            return redirect()->back()->with('error', 'Karyawan sudah memiliki ' . \App\Models\Lembur::MAKS_PER_HARI . ' lembur pada tanggal tersebut!');
+        }
+
         $durasiChanged = abs((float) $lembur->durasi_jam - $durasiJam) > 0.001;
         if (($oldTgl !== $newTgl || $durasiChanged) && $lembur->rencana_mulai) {
             $jam = $lembur->rencana_mulai instanceof \Carbon\Carbon
@@ -268,8 +278,24 @@ class AdminPresensiController extends Controller
     {
         $datacuti = $cutiService->getDataCutiAdmin($request);
         $unitperusahaan = Unitperusahaan::orderBy('unit')->get();
+        $pendingCuti = $cutiService->pendingCount();
 
-        return view('admin.cuti.index', compact('datacuti', 'unitperusahaan'));
+        return view('admin.cuti.index', compact('datacuti', 'unitperusahaan', 'pendingCuti'));
+    }
+
+    public function approveCutiAdmin(int $id, CutiService $cutiService)
+    {
+        $adminUserId = \Illuminate\Support\Facades\Auth::user()?->id;
+        $result = $cutiService->approveCuti($id, (int) $adminUserId);
+
+        return redirect()->back()->with($result['success'] ? 'success' : 'error', $result['message']);
+    }
+
+    public function rejectCutiAdmin(RejectRequest $request, int $id, CutiService $cutiService)
+    {
+        $result = $cutiService->rejectCuti($id, $request->rejected_reason);
+
+        return redirect()->back()->with($result['success'] ? 'success' : 'error', $result['message']);
     }
 
     public function updatecutiadmin(UpdateCutiAdminRequest $request, int $id, CutiService $cutiService)
@@ -282,6 +308,24 @@ class AdminPresensiController extends Controller
     {
         $result = $cutiService->deleteCuti($id);
         return redirect()->back()->with($result['success'] ? 'success' : 'error', $result['message']);
+    }
+
+    public function pdfcutiadmin(int $id, CutiService $cutiService)
+    {
+        $path = $cutiService->getPdfForAdmin($id);
+        if (! $path) {
+            abort(404);
+        }
+
+        $abs = storage_path('app/public/'.$path);
+        if (! file_exists($abs)) {
+            abort(404);
+        }
+
+        return response()->file($abs, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="'.basename($path).'"',
+        ]);
     }
 
     // ==================== DATA WFH ====================

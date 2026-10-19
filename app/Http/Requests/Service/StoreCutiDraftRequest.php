@@ -7,7 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
-class StoreCutiRequest extends FormRequest
+class StoreCutiDraftRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -16,12 +16,16 @@ class StoreCutiRequest extends FormRequest
 
     public function rules(): array
     {
+        // Rule "size:" hanya menerima angka literal, bukan nama field.
+        // "size:durasi_hari" membuat Brick\Math gagal parse "durasi_hari"
+        // menjadi angka dan melempar NumberFormatException (HTTP 500).
+        $durasi = (int) $this->input('durasi_hari');
+
         return [
             'durasi_hari' => 'required|integer|in:1,2,3',
-            'tanggal_cuti' => 'required|array|size:durasi_hari',
+            'tanggal_cuti' => 'required|array' . ($durasi > 0 ? "|size:{$durasi}" : ''),
             'tanggal_cuti.*' => 'required|date|distinct',
             'keterangan' => 'nullable|string|max:500',
-            'bukti_file' => 'required|file|mimes:jpg,jpeg,png,pdf|max:4096',
         ];
     }
 
@@ -38,16 +42,12 @@ class StoreCutiRequest extends FormRequest
             'tanggal_cuti.*.date' => 'Format tanggal cuti tidak valid.',
             'tanggal_cuti.*.distinct' => 'Tanggal cuti tidak boleh sama.',
             'keterangan.max' => 'Keterangan maksimal 500 karakter.',
-            'bukti_file.required' => 'File cuti wajib diupload.',
-            'bukti_file.file' => 'Format file tidak valid.',
-            'bukti_file.mimes' => 'File cuti harus berupa JPG, JPEG, PNG, atau PDF.',
-            'bukti_file.max' => 'Ukuran file cuti maksimal 4MB.',
         ];
     }
 
     protected function failedValidation(Validator $validator): void
     {
-        Log::warning('StoreCutiRequest: Validation failed', [
+        Log::warning('StoreCutiDraftRequest: Validation failed', [
             'errors' => $validator->errors()->toArray(),
         ]);
 

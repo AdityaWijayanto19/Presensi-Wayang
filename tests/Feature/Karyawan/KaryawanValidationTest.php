@@ -204,8 +204,11 @@ class KaryawanValidationTest extends TestCase
     {
         \App\Models\Cuti::create([
             'nik' => 'KRY001',
+            'status' => \App\Enums\CutiStatus::Approved,
+            'admin_status' => 'approved',
             'durasi_hari' => 5,
             'tanggal_cuti' => [now()->format('Y-m-d')],
+            'approved_at' => now(),
             'dikirim_tanggal' => now(),
         ]);
 

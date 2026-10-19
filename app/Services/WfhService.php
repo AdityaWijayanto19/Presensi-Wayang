@@ -171,8 +171,12 @@ class WfhService
 
         DB::beginTransaction();
         try {
+            // whereDate (bukan where) supaya perbandingan tanggal dinormalisasi
+            // ke Y-m-d. Cast 'date' tanpa $dateFormat menyimpan nilai lewat
+            // format default Y-m-d H:i:s; whereDate tetap match di MySQL
+            // (kolom DATE) maupun SQLite (teks) — where mentah bisa meleset.
             $exists = Wfh::where('nik', $nik)
-                ->where('tgl_wfh', $request->tgl_wfh)
+                ->whereDate('tgl_wfh', $request->tgl_wfh)
                 ->lockForUpdate()
                 ->exists();
 
@@ -462,7 +466,11 @@ class WfhService
         }
 
         $cekTgl = $adminRecovery ? $tglWfh : $hariIni;
-        $presensiToday = Presensi::where('nik', $nik)->where('tgl_presensi', $cekTgl)->first();
+        // whereDate: kolom tgl_presensi di-cast 'date' tanpa $dateFormat, jadi
+        // nilainya tersimpan dengan format Y-m-d H:i:s di SQLite. Where mentah
+        // dengan string Y-m-d bisa meleset; whereDate aman untuk MySQL (kolom
+        // DATE) maupun SQLite (teks).
+        $presensiToday = Presensi::where('nik', $nik)->whereDate('tgl_presensi', $cekTgl)->first();
         if (!$presensiToday || !$presensiToday->jam_in) {
             return (object) ['error' => 'Anda belum melakukan absen masuk hari ini. Silakan absen masuk terlebih dahulu.'];
         }
@@ -514,7 +522,11 @@ class WfhService
             }
 
             $cekTgl = $adminRecovery ? $tglWfh : $hariIni;
-            $presensiCek = Presensi::where('nik', $nik)->where('tgl_presensi', $cekTgl)->first();
+            // whereDate: kolom tgl_presensi di-cast 'date' tanpa $dateFormat,
+            // jadi nilai tersimpan dengan format Y-m-d H:i:s di SQLite.
+            // where mentah dengan string Y-m-d bisa meleset; whereDate aman
+            // untuk MySQL (kolom DATE) maupun SQLite (teks).
+            $presensiCek = Presensi::where('nik', $nik)->whereDate('tgl_presensi', $cekTgl)->first();
             if (!$presensiCek || !$presensiCek->jam_in) {
                 return ['success' => false, 'message' => 'Data presensi hari ini tidak ditemukan. Silakan presensi terlebih dahulu.'];
             }
