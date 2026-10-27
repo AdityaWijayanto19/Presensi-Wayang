@@ -110,11 +110,6 @@
                                 <span class="bg-white/90 text-[#1c1917] text-[10px] font-semibold font-mono px-2 py-0.5 rounded">{{ $data->karyawan->nik }}</span>
                             </div>
 
-                            {{-- Line 3: Location --}}
-                            <div class="flex items-center gap-1.5">
-                                <i data-lucide="map-pin" class="text-white" style="width:11px;height:11px;"></i>
-                                <span class="bg-white/90 text-[#78716c] text-[9px] font-medium px-2 py-0.5 rounded">Lokasi otomatis</span>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -276,17 +271,14 @@
             reader.onload = function() {
                 const base64 = reader.result; // full data URL with prefix
 
-                navigator.geolocation.getCurrentPosition(function(pos) {
-                    const lokasi = pos.coords.latitude + ',' + pos.coords.longitude;
-                    sendFoto(type, base64, lokasi);
-                }, function() {
-                    sendFoto(type, base64, '');
-                }, { enableHighAccuracy: true, timeout: 10000 });
+                // Kirim foto langsung — lembur tidak menyimpan lokasi (lembur boleh
+                // dari mana saja), jadi tidak perlu menunggu GPS sama sekali.
+                sendFoto(type, base64);
             };
             reader.readAsDataURL(currentBlob);
         });
 
-        function sendFoto(type, image, lokasi) {
+        function sendFoto(type, image) {
             const lemburId = {!! $lembur->id !!};
 
             fetch('/lembur/' + lemburId + '/foto', {
@@ -296,7 +288,7 @@
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                     'Accept': 'application/json',
                 },
-                body: JSON.stringify({ type: type, image: image, lokasi: lokasi })
+                body: JSON.stringify({ type: type, image: image })
             })
             .then(res => {
                 if (!res.ok) {

@@ -157,17 +157,7 @@
                         @endforeach
                     </ol>
 
-                    <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 mt-1 flex gap-2.5">
-                        <i data-lucide="log-out" class="text-amber-600 shrink-0 mt-0.5" style="width:16px;height:16px;"></i>
-                        <p class="text-[12px] leading-relaxed text-amber-900">
-                            Untuk lembur <b>hari ini</b>, pengajuan hanya bisa dibuka <b>setelah kamu absen pulang</b>
-                            hari ini — tanda bahwa jam kerja normal sudah selesai. Untuk lembur <b>besok</b>,
-                            pengajuan bebas kapan saja tanpa syarat absen pulang. Karyawan yang presensinya tidak
-                            lewat sistem ini tetap boleh mengajukan.
-                        </p>
-                    </div>
-
-                    <div class="bg-rose-50 border border-rose-200 rounded-xl p-3 mt-2 flex gap-2.5">
+                    <div class="bg-rose-50 border border-rose-200 rounded-xl p-3 mt-1 flex gap-2.5">
                         <i data-lucide="circle-alert" class="text-rose-600 shrink-0 mt-0.5" style="width:16px;height:16px;"></i>
                         <p class="text-[12px] leading-relaxed text-rose-800">
                             Laporan wajib dikirim <b>di hari yang sama dengan tanggal lembur</b>.
@@ -199,8 +189,8 @@
                         <div class="text-[12px] leading-relaxed text-amber-900">
                             <b>Penting soal waktu:</b> untuk tanggal <b>hari ini</b>, pengajuan hanya bisa dilakukan
                             pada pukul <b>00.01–16.50</b> atau <b>18.00–23.59</b>. Di antaranya (16.51–17.59) sistem
-                            menutup sementara. Kamu juga harus sudah <b>absen pulang</b> hari ini.
-                            Untuk tanggal <b>besok</b>, pengajuan bebas kapan saja. Satu tanggal maksimal
+                            menutup sementara. Tidak ada syarat presensi — kamu bisa mengajukan kapan pun di dalam
+                            window tersebut. Untuk tanggal <b>besok</b>, pengajuan bebas kapan saja. Satu tanggal maksimal
                             <b>dua</b> pengajuan lembur (dua sesi), dan jamnya tidak boleh tumpang tindih.
                         </div>
                     </div>
@@ -224,7 +214,7 @@
                             <tbody class="divide-y divide-[#f0ece8]">
                                 <tr>
                                     <td class="text-[12.5px] text-[#57534e] py-2.5 pr-3">Syarat ajukan (hari ini)</td>
-                                    <td class="text-[12.5px] font-semibold text-[#1c1917] py-2.5">Sudah absen pulang hari ini*</td>
+                                    <td class="text-[12.5px] font-semibold text-[#1c1917] py-2.5">Tidak ada syarat presensi — hanya ikut window jam</td>
                                 </tr>
                                 <tr>
                                     <td class="text-[12.5px] text-[#57534e] py-2.5 pr-3">Window ajukan (pagi)</td>
@@ -244,7 +234,7 @@
                                 </tr>
                                 <tr>
                                     <td class="text-[12.5px] text-[#57534e] py-2.5 pr-3">Ajukan untuk besok</td>
-                                    <td class="text-[12.5px] font-semibold text-[#1c1917] py-2.5">Bebas kapan saja, tanpa syarat absen pulang</td>
+                                    <td class="text-[12.5px] font-semibold text-[#1c1917] py-2.5">Bebas kapan saja</td>
                                 </tr>
                                 <tr>
                                     <td class="text-[12.5px] text-[#57534e] py-2.5 pr-3">Lembur per tanggal</td>
@@ -295,9 +285,7 @@
                         <p class="text-[12px] leading-relaxed text-rose-800">
                             Lembur hanya bisa diajukan untuk <b>hari ini atau besok</b> — tidak bisa untuk tanggal
                             lampau. Untuk lembur hari ini, lewat window jam (16.51–17.59),
-                            coba lagi setelah pukul 18.00.<br>
-                            * Kecuali kamu tidak presensi lewat sistem ini (tidak ada data presensi hari ini),
-                            pengajuan tetap bisa dibuka sesuai window.
+                            coba lagi setelah pukul 18.00.
                         </p>
                     </div>
                 </section>
@@ -519,8 +507,8 @@
                                 <i data-lucide="circle-check" style="width:14px;height:14px;"></i> Boleh
                             </div>
                             <ul class="space-y-1.5 text-[12.5px] text-emerald-900 leading-relaxed">
-                                <li class="flex gap-1.5"><span>✓</span><span>Ajukan lembur <b>hari ini</b> setelah absen pulang di window <b>00.01–16.50</b> atau <b>18.00–23.59</b>.</span></li>
-                                <li class="flex gap-1.5"><span>✓</span><span>Ajukan lembur <b>besok</b> kapan saja, tanpa syarat absen pulang.</span></li>
+                                <li class="flex gap-1.5"><span>✓</span><span>Ajukan lembur <b>hari ini</b> pada window <b>00.01–16.50</b> atau <b>18.00–23.59</b>.</span></li>
+                                <li class="flex gap-1.5"><span>✓</span><span>Ajukan lembur <b>besok</b> kapan saja.</span></li>
                                 <li class="flex gap-1.5"><span>✓</span><span>Pilih Prorate jika durasi lembur tidak pasti.</span></li>
                                 <li class="flex gap-1.5"><span>✓</span><span>Ajukan lembur ke-2 pada tanggal yang sama (maksimal 2 sesi), selama jamnya tidak tumpang tindih.</span></li>
                                 <li class="flex gap-1.5"><span>✓</span><span>Ambil foto mulai setelah lembur disetujui (di hari-H).</span></li>
@@ -541,7 +529,6 @@
                                 <li class="flex gap-1.5"><span>✗</span><span>Foto selesai sebelum 60 menit dari foto mulai.</span></li>
                                 <li class="flex gap-1.5"><span>✗</span><span>Kirim laporan sebelum foto lengkap, kurang dari 2 foto, atau di luar tanggal lembur.</span></li>
                                 <li class="flex gap-1.5"><span>✗</span><span>Edit laporan yang belum berstatus Ditolak.</span></li>
-                                <li class="flex gap-1.5"><span>✗</span><span>Ajukan lembur hari ini sebelum absen pulang (khusus yang presensi lewat sistem).</span></li>
                             </ul>
                         </div>
                     </div>
@@ -560,9 +547,9 @@
                                 <i data-lucide="chevron-down" class="text-[#a8a29e] shrink-0 group-open:rotate-180 transition-transform" style="width:16px;height:16px;"></i>
                             </summary>
                             <p class="text-[12.5px] text-[#57534e] leading-relaxed mt-2">
-                                Untuk <b>hari ini</b>: pukul <b>00.01–16.50</b> atau <b>18.00–23.59</b>,
-                                setelah absen pulang (di antaranya 16.51–17.59 sistem menutup sementara).
-                                Untuk <b>besok</b>: kapan saja, tanpa syarat absen pulang.
+                                Untuk <b>hari ini</b>: pukul <b>00.01–16.50</b> atau <b>18.00–23.59</b>
+                                (di antaranya 16.51–17.59 sistem menutup sementara).
+                                Untuk <b>besok</b>: kapan saja.
                             </p>
                         </details>
                         <details class="group py-2.5">
@@ -594,10 +581,9 @@
                                 <i data-lucide="chevron-down" class="text-[#a8a29e] shrink-0 group-open:rotate-180 transition-transform" style="width:16px;height:16px;"></i>
                             </summary>
                             <p class="text-[12.5px] text-[#57534e] leading-relaxed mt-2">
-                                Empat kemungkinan: (1) kamu <b>belum absen pulang</b> hari ini (khusus lembur hari ini),
-                                (2) lewat window jam — coba <b>00.01–16.50</b> atau <b>18.00–23.59</b>
-                                (gap 16.51–17.59 ditutup), (3) sudah ada lembur untuk tanggal itu, atau
-                                (4) tanggal yang dipilih <b>lewat lampau atau lebih dari besok</b>.
+                                Tiga kemungkinan: (1) lewat window jam — coba <b>00.01–16.50</b> atau <b>18.00–23.59</b>
+                                (gap 16.51–17.59 ditutup), (2) sudah ada lembur untuk tanggal itu, atau
+                                (3) tanggal yang dipilih <b>lewat lampau atau lebih dari besok</b>.
                                 Aturan minimal 8 jam kerja tetap berlaku untuk absen pulang.
                             </p>
                         </details>
