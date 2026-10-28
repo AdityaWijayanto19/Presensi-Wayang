@@ -21,11 +21,12 @@ class MarkUnpaidLembur extends Command
         $hariIni = now('Asia/Jakarta')->format('Y-m-d');
 
         // Lembur yang jadi unpaid (1 kondisi, beda dengan WFH yang butuh laporan + absen pulang):
-        // status approved, tgl_lembur sudah lewat, DAN (belum upload laporan ATAU laporan ditolak belum diperbaiki)
+        // status approved ATAU upload_laporan (status jembatan yang belum dipenuhi), tgl_lembur
+        // sudah lewat, DAN (belum upload laporan ATAU laporan ditolak belum diperbaiki)
         $lemburList = collect();
         try {
             $lemburList = DB::table('lemburs')
-                ->where('lemburs.status', LemburStatus::Approved->value)
+                ->whereIn('lemburs.status', [LemburStatus::Approved->value, LemburStatus::UploadLaporan->value])
                 ->where('lemburs.tgl_lembur', '<', $hariIni)
                 ->where(function ($q) {
                     $q->whereNull('lemburs.laporan_deskripsi')
@@ -47,7 +48,7 @@ class MarkUnpaidLembur extends Command
 
         $affected = DB::table('lemburs')
             ->whereIn('id', $lemburList->pluck('id'))
-            ->where('status', LemburStatus::Approved->value)
+            ->whereIn('status', [LemburStatus::Approved->value, LemburStatus::UploadLaporan->value])
             ->update(['status' => LemburStatus::Unpaid->value]);
 
         Log::info('MarkUnpaidLembur: '.$affected.' lembur ditandai unpaid', ['ids' => $lemburList->pluck('id')->all()]);

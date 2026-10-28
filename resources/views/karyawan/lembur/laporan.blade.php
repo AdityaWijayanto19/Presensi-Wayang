@@ -3,7 +3,15 @@
 @section('header')
     <div class="appHeader bg-coklat text-light">
         <div class="left">
-            <a href="/lembur/{{ $data->lembur->id }}/foto" class="headerButton goBack">
+            @php
+                // Balik ke halaman foto hanya saat status Disetujui. Untuk jalur
+                // "upload_laporan" (dan Unpaid), halaman foto menolak — arahkan ke
+                // daftar lembur supaya tombol back tidak memicu redirect error.
+                $statusKartu = $data->lembur->status instanceof \App\Enums\LemburStatus
+                    ? $data->lembur->status->value
+                    : $data->lembur->status;
+            @endphp
+            <a href="{{ $statusKartu === 'approved' ? '/lembur/' . $data->lembur->id . '/foto' : '/lembur' }}" class="headerButton goBack">
                 <i data-lucide="chevron-left"></i>
             </a>
         </div>

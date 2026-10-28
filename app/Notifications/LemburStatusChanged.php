@@ -15,9 +15,16 @@ class LemburStatusChanged extends Notification
         'approved' => 'Disetujui',
         'rejected' => 'Ditolak',
         'unpaid' => 'Unpaid',
+        'upload_laporan' => 'Diminta Upload Laporan',
     ];
 
-    public function __construct(public $lembur, public $oldStatus, public $newStatus) {}
+    public function __construct(
+        public $lembur,
+        public $oldStatus,
+        public $newStatus,
+        /** Pesan custom; kalau null pakai format baku "berubah dari X ke Y". */
+        public ?string $customMessage = null,
+    ) {}
 
     public function via(object $notifiable): array
     {
@@ -32,7 +39,8 @@ class LemburStatusChanged extends Notification
             'old_status' => $this->oldStatus,
             'new_status' => $this->newStatus,
             'tgl_lembur' => $this->lembur->tgl_lembur->format('Y-m-d'),
-            'message' => 'Status lembur berubah dari ' . (self::STATUS_LABELS[$this->oldStatus] ?? $this->oldStatus) . ' ke ' . (self::STATUS_LABELS[$this->newStatus] ?? $this->newStatus),
+            'message' => $this->customMessage
+                ?? ('Status lembur berubah dari ' . (self::STATUS_LABELS[$this->oldStatus] ?? $this->oldStatus) . ' ke ' . (self::STATUS_LABELS[$this->newStatus] ?? $this->newStatus)),
         ];
     }
 

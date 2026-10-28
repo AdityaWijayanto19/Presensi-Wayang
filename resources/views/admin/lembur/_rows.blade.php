@@ -15,6 +15,7 @@
             'approved' => 'bg-emerald-100 text-emerald-700 border-emerald-200',
             'rejected' => 'bg-rose-100 text-rose-700 border-rose-200',
             'unpaid' => 'bg-gray-100 text-gray-700 border border-gray-200',
+            'upload_laporan' => 'bg-sky-100 text-sky-700 border border-sky-200',
             default => 'bg-slate-100 text-slate-600 border border-slate-200',
         };
         $label = match ($status) {
@@ -23,6 +24,7 @@
             'approved' => 'Disetujui',
             'rejected' => 'Ditolak',
             'unpaid' => 'Unpaid',
+            'upload_laporan' => 'Upload Laporan',
             default => $status,
         };
         $jabatanBadge = match($jabatanKaryawan) {

@@ -368,7 +368,7 @@ class DashboardController extends Controller
 
         $lemburSaya = Lembur::where('nik', $nik)
             ->where(function ($q) {
-                $q->whereIn('status', ['pending_atasan', 'pending_admin', 'rejected'])
+                $q->whereIn('status', ['pending_atasan', 'pending_admin', 'rejected', 'upload_laporan'])
                     ->orWhere(function ($q2) {
                         $q2->where('status', 'approved')
                             ->where(function ($q3) {

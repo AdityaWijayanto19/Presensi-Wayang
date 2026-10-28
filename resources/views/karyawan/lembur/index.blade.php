@@ -24,6 +24,7 @@
             'approved' => 'Selesai',
             'rejected' => 'Ditolak',
             'unpaid' => 'Unpaid',
+            'upload_laporan' => 'Upload Laporan',
             'laporan_rejected' => 'Laporan Ditolak',
         ];
         $statusColors = [
@@ -32,6 +33,7 @@
             'approved' => 'bg-emerald-100 text-emerald-700 border-emerald-200',
             'rejected' => 'bg-rose-100 text-rose-700 border-rose-200',
             'unpaid' => 'bg-gray-100 text-gray-700 border-gray-200',
+            'upload_laporan' => 'bg-sky-100 text-sky-700 border-sky-200',
             'laporan_rejected' => 'bg-rose-100 text-rose-700 border-rose-200',
         ];
     @endphp

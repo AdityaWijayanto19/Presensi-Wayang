@@ -175,6 +175,24 @@ class AdminPresensiController extends Controller
         $oldStatus = $lembur->status instanceof \App\Enums\LemburStatus ? $lembur->status->value : $lembur->status;
         $newStatus = $request->status;
 
+        // Status jembatan "upload_laporan": hanya boleh dipilih super_admin untuk lembur
+        // yang sudah disetujui (atau Unpaid), dan tidak boleh menimpa laporan yang sudah
+        // terkirim — reset isi laporan dilakukan di bawah saat status berubah.
+        // Status yang sudah "upload_laporan" boleh disimpan ulang tanpa error (no-op,
+        // reset tidak jalan karena oldStatus === newStatus).
+        if ($newStatus === 'upload_laporan' && $oldStatus !== 'upload_laporan') {
+            if (! in_array($oldStatus, ['approved', 'unpaid'], true)) {
+                return redirect()->back()->with('error', 'Status "Upload Laporan" hanya bisa dipilih untuk lembur yang sudah disetujui (atau Unpaid).');
+            }
+
+            $laporanStatusAktif = $lembur->laporan_status instanceof \App\Enums\LemburStatus
+                ? $lembur->laporan_status->value
+                : $lembur->laporan_status;
+            if (! empty($laporanStatusAktif) && $laporanStatusAktif !== 'rejected') {
+                return redirect()->back()->with('error', 'Laporan lembur ini sudah terkirim dan sedang diproses — tidak perlu diminta upload ulang.');
+            }
+        }
+
         $durasiJam = $request->durasi_jam == '5.5' ? 5.5 : (float) $request->durasi_jam;
 
         $updateData = [
@@ -225,11 +243,30 @@ class AdminPresensiController extends Controller
                 $updateData['admin_status'] = 'pending';
             } elseif ($newStatus === 'unpaid') {
                 $updateData['admin_status'] = 'approved';
+            } elseif ($newStatus === 'upload_laporan') {
+                $updateData['admin_status'] = 'approved';
             }
 
             // Recovery Unpaid -> Disetujui: reset isi laporan agar karyawan bisa isi ulang
             // (approved_at di-reset di atas = waiver hard cutoff hari-H, pola sama dengan WFH)
             if ($oldStatus === 'unpaid' && $newStatus === 'approved') {
+                $updateData['laporan_status'] = null;
+                $updateData['laporan_deskripsi'] = null;
+                $updateData['laporan_file'] = null;
+                $updateData['laporan_approved_at'] = null;
+                $updateData['laporan_images'] = null;
+                $updateData['laporan_atasan_nik'] = null;
+                $updateData['laporan_atasan_status'] = null;
+                $updateData['laporan_admin_status'] = null;
+                $updateData['laporan_rejected_reason'] = null;
+            }
+
+            // Diminta Upload Laporan: isi laporan lama (bila ada, mis. ditolak) di-reset
+            // supaya kirim berikutnya jadi laporan baru. Foto TIDAK direset — kalau sudah
+            // ada foto_mulai, karyawan boleh lanjut tanpa foto selesai.
+            // approved_at sengaja TIDAK disentuh supaya isRecoveryAdmin() tetap false
+            // dan foto tidak bisa diambil di luar hari-H lewat jalur status ini.
+            if ($newStatus === 'upload_laporan') {
                 $updateData['laporan_status'] = null;
                 $updateData['laporan_deskripsi'] = null;
                 $updateData['laporan_file'] = null;
@@ -251,15 +288,29 @@ class AdminPresensiController extends Controller
         if ($oldStatus !== $newStatus) {
             $karyawan = \App\Models\Karyawan::where('nik', $lembur->nik)->first();
             if ($karyawan) {
-                $statusNotification = new \App\Notifications\LemburStatusChanged($lembur, $oldStatus, $newStatus);
+                $mintaUploadLaporan = $newStatus === 'upload_laporan';
+                $tglLembur = $lembur->tgl_lembur instanceof \Carbon\Carbon
+                    ? $lembur->tgl_lembur->format('d M Y')
+                    : $lembur->tgl_lembur;
+
+                $statusNotification = new \App\Notifications\LemburStatusChanged(
+                    $lembur,
+                    $oldStatus,
+                    $newStatus,
+                    // Pesan khusus supaya karyawan tahu foto tidak diperlukan dan langsung
+                    // diarahkan ke halaman laporan, bukan sekadar "status berubah".
+                    $mintaUploadLaporan
+                        ? 'HR meminta kamu mengunggah laporan lembur tanggal ' . $tglLembur . ' tanpa perlu foto. Buka laporan lembur untuk mengisi.'
+                        : null
+                );
                 $karyawan->notify($statusNotification);
 
                 // Web Push memakai kalimat yang sama dengan notifikasi database.
                 app(\App\Services\Shared\WebPushService::class)->send(
                     $lembur->nik,
-                    'Status Lembur',
+                    $mintaUploadLaporan ? 'Mohon Upload Laporan Lembur' : 'Status Lembur',
                     (string) ($statusNotification->toDatabase($karyawan)['message'] ?? ''),
-                    '/lembur',
+                    $mintaUploadLaporan ? '/lembur/' . $lembur->id . '/laporan' : '/lembur',
                     'lembur-status-' . $lembur->id
                 );
             }

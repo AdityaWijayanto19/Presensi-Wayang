@@ -139,6 +139,7 @@
                                 ['t' => 'Ambil Foto Selesai', 'd' => 'Minimal 60 menit setelah foto mulai. Durasi aktual dihitung otomatis.'],
                                 ['t' => 'Kirim Laporan', 'd' => 'Deskripsi hasil kerja (10–3000 karakter) + 2–5 foto. Wajib dikirim di hari yang sama dengan tanggal lembur (pengingat otomatis pukul 22.00).'],
                                 ['t' => 'Disetujui Atasan → HR', 'd' => 'Laporan juga disetujui 2 tahap. Jika ditolak, perbaiki lalu Edit Laporan.'],
+                                ['t' => 'Jika HR minta: cukup "Upload Laporan"', 'd' => 'Badge biru <b>Upload Laporan</b> berarti HR memintamu mengirim laporan saja — tombolnya langsung menuju form laporan dan foto mulai/selesai tidak diminta.'],
                             ];
                         @endphp
                         @foreach ($alur2 as $i => $a)
@@ -464,6 +465,14 @@
                             <span class="inline-block text-[10px] font-bold uppercase tracking-wide bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-full px-2 py-0.5">Disetujui</span>
                             <p class="text-[12px] text-emerald-900 mt-1.5 leading-relaxed">Lembur sah. Ambil foto mulai & selesai, lalu kirim laporan.</p>
                         </div>
+                        <div class="border border-sky-200 bg-sky-50 rounded-xl p-3">
+                            <span class="inline-block text-[10px] font-bold uppercase tracking-wide bg-sky-100 text-sky-700 border border-sky-200 rounded-full px-2 py-0.5">Upload Laporan</span>
+                            <p class="text-[12px] text-sky-900 mt-1.5 leading-relaxed">
+                                HR memintamu mengirim laporan tanpa foto. Klik tombol
+                                <b>Upload Laporan</b> untuk langsung mengisi; laporan langsung diperiksa HR
+                                (atasan tidak dilibatkan) dan status kembali menjadi <b>Disetujui</b> setelah terkirim.
+                            </p>
+                        </div>
                         <div class="border border-rose-200 bg-rose-50 rounded-xl p-3">
                             <span class="inline-block text-[10px] font-bold uppercase tracking-wide bg-rose-100 text-rose-700 border border-rose-200 rounded-full px-2 py-0.5">Ditolak</span>
                             <p class="text-[12px] text-rose-900 mt-1.5 leading-relaxed">Tidak disetujui. Ada alasan penolakan; boleh ajukan ulang untuk tanggal lain.</p>
@@ -490,7 +499,8 @@
                         <p class="text-[12px] leading-relaxed text-stone-600">
                             Menu <b>Lembur</b> menampilkan semua status. Yang masih menunggu persetujuan juga
                             terlihat di <b>dashboard</b>. Di dashboard, lembur disetujui tapi belum ada laporan
-                            tampil sebagai <b>"Menunggu Laporan"</b>.
+                            tampil sebagai <b>"Menunggu Laporan"</b>, dan lembur yang diminta HR untuk dilaporkan
+                            tampil dengan badge <b>"Upload Laporan"</b> plus tombolnya langsung.
                         </p>
                     </div>
                 </section>
@@ -607,6 +617,18 @@
                                 perbaikan setelah ditolak. Sistem menandainya otomatis setiap pukul 00.00,
                                 dan lembur tersebut <b>tidak dihitung</b>. Perbaiki laporan (jika memungkinkan)
                                 atau hubungi HR untuk pembahasan.
+                            </p>
+                        </details>
+                        <details class="group py-2.5">
+                            <summary class="text-[13px] font-semibold text-[#1c1917] cursor-pointer list-none flex items-center justify-between gap-3">
+                                Muncul badge "Upload Laporan", maksudnya apa?
+                                <i data-lucide="chevron-down" class="text-[#a8a29e] shrink-0 group-open:rotate-180 transition-transform" style="width:16px;height:16px;"></i>
+                            </summary>
+                            <p class="text-[12.5px] text-[#57534e] leading-relaxed mt-2">
+                                HR memintamu mengirim laporan lembur <b>tanpa perlu foto</b> mulai/selesai.
+                                Klik tombol <b>Upload Laporan</b> untuk langsung mengisi. Laporan langsung
+                                diperiksa HR (atasan tidak dilibatkan), dan statusnya kembali menjadi
+                                <b>Disetujui</b> begitu terkirim. Deadline & aturan Unpaid tetap berlaku.
                             </p>
                         </details>
                         <details class="group py-2.5">

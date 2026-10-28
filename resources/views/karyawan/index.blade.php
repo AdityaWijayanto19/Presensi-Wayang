@@ -693,6 +693,7 @@
                                 'pending_admin' => 'bg-amber-100 text-amber-700 border-amber-200',
                                 'approved' => 'bg-emerald-100 text-emerald-700 border-emerald-200',
                                 'rejected' => 'bg-rose-100 text-rose-700 border-rose-200',
+                                'upload_laporan' => 'bg-sky-100 text-sky-700 border-sky-200',
                                 default => 'bg-gray-100 text-gray-700 border-gray-200',
                             };
                             $lLabel = match ($l->status?->value) {
@@ -700,6 +701,7 @@
                                 'pending_admin' => 'Menunggu Persetujuan HR',
                                 'approved' => empty($l->laporan_deskripsi) ? 'Menunggu Laporan' : 'Disetujui',
                                 'rejected' => 'Ditolak',
+                                'upload_laporan' => 'Upload Laporan',
                                 default => $l->status?->value ?? '',
                             };
                             $llStatus = $l->laporan_status ?? null;
@@ -741,7 +743,13 @@
                                     @endif
                                 </div>
                                 <div class="flex items-center gap-2 shrink-0 ml-2">
-                                    @if ($l->status?->value === 'approved' && empty($l->foto_mulai))
+                                    {{-- Jalur "upload_laporan": super_admin minta laporan tanpa foto,
+                                         jadi langsung ke form laporan (foto mulai/selesai dilewati). --}}
+                                    @if ($l->status?->value === 'upload_laporan')
+                                        <a href="/lembur/{{ $l->id }}/laporan"
+                                            class="btn btn-sm bg-emerald-500 text-white rounded-full px-3 py-1 text-[11px] font-semibold">Upload
+                                            Laporan</a>
+                                    @elseif ($l->status?->value === 'approved' && empty($l->foto_mulai))
                                         <a href="/lembur/{{ $l->id }}/foto"
                                             class="btn btn-sm bg-blue-500 text-white rounded-full px-3 py-1 text-[11px] font-semibold">Ambil
                                             Foto</a>
@@ -1658,7 +1666,10 @@
                                             'Menunggu Persetujuan HR'
                                         ],
                                         'approved': ['bg-emerald-100 text-emerald-700 border-emerald-200', ''],
-                                        'rejected': ['bg-rose-100 text-rose-700 border-rose-200', 'Ditolak']
+                                        'rejected': ['bg-rose-100 text-rose-700 border-rose-200', 'Ditolak'],
+                                        'upload_laporan': ['bg-sky-100 text-sky-700 border-sky-200',
+                                            'Upload Laporan'
+                                        ]
                                     };
                                     let llBadgeMap = {
                                         'pending_atasan': 'bg-amber-100 text-amber-700',
@@ -1708,7 +1719,12 @@
                                                 lb + '">' + esc(ll) + '</span>';
                                         }
                                         var actionBtn = '';
-                                        if (l.status === 'approved' && !l.foto_mulai) {
+                                        // Jalur "upload_laporan": super_admin minta laporan tanpa foto,
+                                        // jadi tombol langsung menuju form laporan.
+                                        if (l.status === 'upload_laporan') {
+                                            actionBtn = '<a href="/lembur/' + l.id +
+                                                '/laporan" class="btn btn-sm bg-emerald-500 text-white rounded-full px-3 py-1 text-[11px] font-semibold">Upload Laporan</a>';
+                                        } else if (l.status === 'approved' && !l.foto_mulai) {
                                             actionBtn = '<a href="/lembur/' + l.id +
                                                 '/foto" class="btn btn-sm bg-blue-500 text-white rounded-full px-3 py-1 text-[11px] font-semibold">Ambil Foto</a>';
                                         } else if (l.status === 'approved' && l.foto_mulai && !l

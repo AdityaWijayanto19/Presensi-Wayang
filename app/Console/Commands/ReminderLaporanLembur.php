@@ -18,8 +18,10 @@ class ReminderLaporanLembur extends Command
 
         // Deadline laporan lembur = akhir tgl_lembur (sebelum pukul 00:00),
         // jadi reminder hanya untuk lembur ber-TANGGAL HARI INI.
+        // Status upload_laporan ikut: karyawan diminta upload tapi belum pasti lapor,
+        // jadi tetap diingatkan sebelum kena mark-unpaid.
         $lemburList = DB::table('lemburs')
-            ->where('status', LemburStatus::Approved->value)
+            ->whereIn('status', [LemburStatus::Approved->value, LemburStatus::UploadLaporan->value])
             ->where('tgl_lembur', $hariIni)
             ->where(function ($q) {
                 $q->whereNull('laporan_deskripsi')

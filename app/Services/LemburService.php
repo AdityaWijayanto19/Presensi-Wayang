@@ -38,8 +38,25 @@ class LemburService
         ];
     }
 
-    public static function initialLaporanStatus(Karyawan $karyawan): array
+    /**
+     * Status awal laporan saat pertama dikirim.
+     *
+     * @param bool $lewatiAtasan true untuk pengiriman lewat jalur status "upload_laporan":
+     *                           laporan langsung ke antrean super_admin (pending_admin) tanpa
+     *                           melibatkan atasan. laporan_atasan_status 'approved' menandai
+     *                           tahap atasan terlewat — pasangan laporan_atasan_nik = null
+     *                           yang diset di storeLaporanLembur.
+     */
+    public static function initialLaporanStatus(Karyawan $karyawan, bool $lewatiAtasan = false): array
     {
+        if ($lewatiAtasan) {
+            return [
+                'laporan_status' => LemburStatus::PendingAdmin->value,
+                'laporan_atasan_status' => 'approved',
+                'laporan_admin_status' => 'pending',
+            ];
+        }
+
         if ($karyawan->role_approved === 'Direktur' || empty($karyawan->role_approved) || empty($karyawan->atasan_nik)) {
             return [
                 'laporan_status' => LemburStatus::PendingAdmin->value,
@@ -147,7 +164,7 @@ class LemburService
     {
         $rows = Lembur::where('nik', $lembur->nik)
             ->where('tgl_lembur', self::tglLembur($lembur))
-            ->where('status', LemburStatus::Approved->value)
+            ->whereIn('status', [LemburStatus::Approved->value, LemburStatus::UploadLaporan->value])
             ->get(['id', 'nik', 'tgl_lembur', 'durasi_menit', 'durasi_jam']);
 
         return self::summarizeDaily($rows);
@@ -216,11 +233,17 @@ class LemburService
             $key = $lembur->nik . '|' . self::tglLembur($lembur);
             $group = $perHari[$key] ?? [$lembur];
 
-            // Total harian hanya menghitung sesi dengan pengajuan disetujui.
+            // Total harian hanya menghitung sesi dengan pengajuan disetujui
+            // (termasuk status jembatan upload_laporan yang masih "disetujui" fungsinya).
             // Kalau tidak ada (mis. semua pending/ditolak), pakai seluruh sesi di grup.
+            $statusYangDihitung = [LemburStatus::Approved->value, LemburStatus::UploadLaporan->value];
             $disetujui = array_values(array_filter(
                 $group,
-                fn ($l) => ($l->status instanceof LemburStatus ? $l->status->value : $l->status) === LemburStatus::Approved->value
+                fn ($l) => in_array(
+                    $l->status instanceof LemburStatus ? $l->status->value : $l->status,
+                    $statusYangDihitung,
+                    true
+                )
             ));
             $summary = self::summarizeDaily($disetujui ?: $group);
 
@@ -737,7 +760,7 @@ class LemburService
     public function getLaporanData(int $id, string $nik, bool $isEdit = false): ?object
     {
         $lembur = Lembur::where('id', $id)->where('nik', $nik)
-            ->whereIn('status', [LemburStatus::Approved->value, LemburStatus::Unpaid->value])
+            ->whereIn('status', [LemburStatus::Approved->value, LemburStatus::Unpaid->value, LemburStatus::UploadLaporan->value])
             ->first();
         if (!$lembur) return null;
 
@@ -749,10 +772,14 @@ class LemburService
             if ($lembur->laporan_status !== null) {
                 return (object) ['error' => 'Laporan sudah pernah dikirim. Gunakan Edit Laporan.'];
             }
-            if (!self::isHariHLembur($lembur) && !self::isRecoveryAdmin($lembur)) {
+            // Jalur "upload_laporan": super_admin meminta laporan tanpa foto, jadi hard cutoff
+            // hari-H dan syarat foto mulai/selesai tidak berlaku untuk status ini saja.
+            $tanpaSyaratFoto = $lembur->status === LemburStatus::UploadLaporan;
+
+            if (!$tanpaSyaratFoto && !self::isHariHLembur($lembur) && !self::isRecoveryAdmin($lembur)) {
                 return (object) ['error' => 'Laporan lembur hanya bisa dikirim pada tanggal lembur (' . self::tglLembur($lembur) . '). Hari ini: ' . now('Asia/Jakarta')->format('d M Y') . '.'];
             }
-            if (empty($lembur->foto_mulai) || empty($lembur->foto_selesai)) {
+            if (!$tanpaSyaratFoto && (empty($lembur->foto_mulai) || empty($lembur->foto_selesai))) {
                 return (object) ['error' => 'Anda harus mengambil foto mulai dan selesai lembur terlebih dahulu.'];
             }
         }
@@ -825,9 +852,14 @@ class LemburService
     public function storeLaporanLembur(Request $request, int $id, string $nik, bool $isEdit = false): array
     {
         $lembur = Lembur::where('id', $id)->where('nik', $nik)
-            ->whereIn('status', [LemburStatus::Approved->value, LemburStatus::Unpaid->value])
+            ->whereIn('status', [LemburStatus::Approved->value, LemburStatus::Unpaid->value, LemburStatus::UploadLaporan->value])
             ->first();
         if (!$lembur) return ['success' => false, 'message' => 'Akses ditolak'];
+
+        // Jalur "upload_laporan": super_admin meminta laporan tanpa foto, jadi hard cutoff
+        // hari-H dan syarat foto mulai/selesai tidak berlaku. Sekaligus penanda bahwa laporan
+        // harus langsung ke antrean super_admin (atasan dilewati).
+        $lewatiAtasan = $lembur->status === LemburStatus::UploadLaporan;
 
         if ($isEdit && $lembur->laporan_status !== LemburStatus::Rejected) {
             return ['success' => false, 'message' => 'Laporan ini tidak dalam status ditolak'];
@@ -837,19 +869,21 @@ class LemburService
             return ['success' => false, 'message' => 'Laporan sudah pernah dikirim. Gunakan Edit Laporan.'];
         }
 
-        if (!$isEdit && !self::isHariHLembur($lembur) && !self::isRecoveryAdmin($lembur)) {
+        if (!$isEdit && !$lewatiAtasan && !self::isHariHLembur($lembur) && !self::isRecoveryAdmin($lembur)) {
             return ['success' => false, 'message' => 'Laporan lembur hanya bisa dikirim pada tanggal lembur (' . self::tglLembur($lembur) . ').'];
         }
 
-        if (!$isEdit && (empty($lembur->foto_mulai) || empty($lembur->foto_selesai))) {
+        if (!$isEdit && !$lewatiAtasan && (empty($lembur->foto_mulai) || empty($lembur->foto_selesai))) {
             return ['success' => false, 'message' => 'Foto mulai dan selesai lembur harus diupload terlebih dahulu.'];
         }
 
         $karyawan = Karyawan::where('nik', $nik)->first();
         if (!$karyawan) return ['success' => false, 'message' => 'Data karyawan tidak ditemukan'];
 
-        $initialLaporan = self::initialLaporanStatus($karyawan);
-        $laporanAtasanNik = $karyawan->atasan_nik;
+        $initialLaporan = self::initialLaporanStatus($karyawan, $lewatiAtasan);
+        // Tanpa atasan berarti antrian approval hanya di super_admin, dan notifikasi
+        // ke atasan di bawah otomatis tidak terkirim (badge sidebar super_admin jadi indikatornya).
+        $laporanAtasanNik = $lewatiAtasan ? null : $karyawan->atasan_nik;
         if ($karyawan->role_approved === 'Direktur' || empty($karyawan->role_approved) || empty($laporanAtasanNik)) {
             $laporanAtasanNik = null;
         }
@@ -880,6 +914,12 @@ class LemburService
                 'laporan_atasan_status' => $initialLaporan['laporan_atasan_status'],
                 'laporan_admin_status' => $initialLaporan['laporan_admin_status'],
                 'laporan_rejected_reason' => null,
+                // Status jembatan "upload_laporan" berakhir begitu laporan terkirim: kembali
+                // ke Approved dalam transaksi yang sama supaya rekap bulanan, riwayat, dan
+                // cron mark-unpaid membacanya sebagai lembur normal kembali.
+                'status' => $lewatiAtasan
+                    ? LemburStatus::Approved->value
+                    : ($lembur->status instanceof LemburStatus ? $lembur->status->value : $lembur->status),
             ]);
 
             $pdfData = self::buildLaporanPdfData($lembur);
