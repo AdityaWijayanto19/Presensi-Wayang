@@ -423,6 +423,14 @@
         }
     </style>
 
+    {{-- Strip warna di belakang status bar iOS (PWA black-translucent).
+         iOS TIDAK membaca meta theme-color, jadi warna status bar harus
+         "dicat" oleh halaman sendiri. Height = env(safe-area-inset-top),
+         di desktop/iOS non-notch nilainya 0 sehingga elemen ini tidak terlihat. --}}
+    <div aria-hidden="true"
+        class="fixed top-0 left-0 right-0 z-[998] bg-[#51321D]"
+        style="height: env(safe-area-inset-top);"></div>
+
     {{-- Offline / online status banner --}}
     <div x-data="offlineBanner()" x-init="init()" x-cloak
         x-show="isOffline || showOnline"
