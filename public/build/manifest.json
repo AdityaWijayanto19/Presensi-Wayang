@@ -1,9 +1,22 @@
 {
-  "node_modules/@mediapipe/tasks-vision/vision_bundle.mjs": {
-    "file": "assets/vision_bundle-BP1Ar9Ko.js",
-    "name": "vision_bundle",
-    "src": "node_modules/@mediapipe/tasks-vision/vision_bundle.mjs",
-    "isDynamicEntry": true
+  "_vendor-9Nnv6g1i.css": {
+    "file": "assets/vendor-9Nnv6g1i.css",
+    "src": "_vendor-9Nnv6g1i.css"
+  },
+  "_vendor-DYVg8ecl.js": {
+    "file": "assets/vendor-DYVg8ecl.js",
+    "name": "vendor",
+    "isDynamicEntry": true,
+    "css": [
+      "assets/vendor-9Nnv6g1i.css"
+    ],
+    "assets": [
+      "assets/marker-icon-hN30_KVU.png",
+      "assets/marker-icon-2x-_ZA0WGCc.png",
+      "assets/marker-shadow-f7SaPCxT.png",
+      "assets/layers-BWBAp2CZ.png",
+      "assets/layers-2x-Bpkbi35X.png"
+    ]
   },
   "node_modules/leaflet/dist/images/layers-2x.png": {
     "file": "assets/layers-2x-Bpkbi35X.png",
@@ -31,34 +44,28 @@
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-hBhCipN-.js",
+    "file": "assets/app-Dv2msT2L.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
+    "imports": [
+      "_vendor-DYVg8ecl.js"
+    ],
     "dynamicImports": [
       "resources/js/face-quality.js"
-    ],
-    "css": [
-      "assets/app-9Nnv6g1i.css"
-    ],
-    "assets": [
-      "assets/marker-icon-hN30_KVU.png",
-      "assets/marker-icon-2x-_ZA0WGCc.png",
-      "assets/marker-shadow-f7SaPCxT.png",
-      "assets/layers-BWBAp2CZ.png",
-      "assets/layers-2x-Bpkbi35X.png"
     ]
   },
   "resources/js/face-quality.js": {
-    "file": "assets/face-quality-CvgFDLz-.js",
+    "file": "assets/face-quality-MAJn_HRQ.js",
     "name": "face-quality",
     "src": "resources/js/face-quality.js",
     "isDynamicEntry": true,
     "imports": [
-      "resources/js/app.js"
+      "resources/js/app.js",
+      "_vendor-DYVg8ecl.js"
     ],
     "dynamicImports": [
-      "node_modules/@mediapipe/tasks-vision/vision_bundle.mjs"
+      "_vendor-DYVg8ecl.js"
     ]
   }
 }
