@@ -202,6 +202,7 @@
                         data-tgl_lembur="{{ $d->tgl_lembur instanceof \Carbon\Carbon ? $d->tgl_lembur->format('Y-m-d') : $d->tgl_lembur }}"
                         data-status="{{ $status }}"
                         data-durasi_jam="{{ $d->durasi_jam ?? '' }}"
+                        data-keterangan="{{ $d->keterangan ?? '' }}"
                         @click="open = false">
                         <i data-lucide="pencil" style="width:12px;height:12px;"></i> Edit
                     </button>

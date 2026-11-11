@@ -136,6 +136,14 @@
             <option value="5.5">Prorate</option>
         </x-admin.select>
 
+        <div class="mb-2">
+            <label class="block text-xs font-medium text-slate-600 mb-1">Keterangan <span class="text-red-500">*</span></label>
+            <textarea name="keterangan" id="edit_keterangan" rows="3" maxlength="1000" minlength="5" required
+                class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-colors"
+                placeholder="Jelaskan alasan lembur..."></textarea>
+            <small class="text-[#a8a29e] text-[11px]">Min. 5 karakter, maks. 1000 karakter.</small>
+        </div>
+
         <div class="mt-2">
             <x-admin.button variant="primary" icon="save" type="submit" block>Simpan Perubahan</x-admin.button>
         </div>
@@ -321,6 +329,7 @@
                     var tgl = btn.dataset.tgl_lembur;
                     var status = btn.dataset.status;
                     var durasiJam = btn.dataset.durasi_jam;
+                    var keterangan = btn.dataset.keterangan || '';
 
                     document.getElementById('edit_lembur_id').value = id;
                     document.getElementById('edit_tgl_lembur').value = tgl;
@@ -329,6 +338,10 @@
                     if (durasiSelect) {
                         var durasiVal = durasiJam && parseFloat(durasiJam) > 5 ? '5.5' : durasiJam;
                         durasiSelect.value = durasiVal || '1';
+                    }
+                    var keteranganArea = document.getElementById('edit_keterangan');
+                    if (keteranganArea) {
+                        keteranganArea.value = keterangan;
                     }
                     document.getElementById('formEditLembur').action = '/presensi/lembur/' + id + '/update';
                     window.dispatchEvent(new CustomEvent('open-modal-modal-editlembur'));
