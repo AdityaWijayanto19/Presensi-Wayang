@@ -415,7 +415,7 @@
 
 </head>
 
-<body class="bg-[#e9ecef] pt-[env(safe-area-inset-top)]">
+<body class="bg-[##51321D] pt-[env(safe-area-inset-top)]">
 
     <style>
         :root {
