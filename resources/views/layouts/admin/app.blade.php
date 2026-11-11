@@ -38,124 +38,142 @@
     <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.js"></script>
 
     <script>
-    function searchableSelect() {
-        return {
-            open: false,
-            search: '',
-            selectedValue: '',
-            selectedLabel: '',
-            options: [],
-            filtered: [],
-            highlightedIndex: -1,
+        function searchableSelect() {
+            return {
+                open: false,
+                search: '',
+                selectedValue: '',
+                selectedLabel: '',
+                options: [],
+                filtered: [],
+                highlightedIndex: -1,
 
-            init() {
-                var self = this;
-                var select = self.$refs.nativeSelect;
-                if (select) {
+                init() {
+                    var self = this;
+                    var select = self.$refs.nativeSelect;
+                    if (select) {
+                        Array.from(select.options).forEach(function(opt) {
+                            if (opt.value !== '') {
+                                self.options.push({
+                                    value: opt.value,
+                                    label: opt.textContent.trim()
+                                });
+                            }
+                        });
+                        self.filtered = self.options.slice();
+                        if (select.value) {
+                            self.selectedValue = select.value;
+                            var found = self.options.find(function(o) {
+                                return o.value === select.value;
+                            });
+                            if (found) self.selectedLabel = found.label;
+                        }
+                    }
+                    self.$watch('search', function() {
+                        var q = self.search.toLowerCase();
+                        self.filtered = q ?
+                            self.options.filter(function(o) {
+                                return o.label.toLowerCase().indexOf(q) !== -1;
+                            }) :
+                            self.options.slice();
+                        self.highlightedIndex = -1;
+                        self.$nextTick(function() {
+                            if (window.lucide) lucide.createIcons();
+                        });
+                    });
+                },
+
+                toggle() {
+                    this.open = !this.open;
+                    if (this.open) {
+                        this.search = '';
+                        this.filtered = this.options.slice();
+                        this.highlightedIndex = -1;
+                        var self = this;
+                        this.$nextTick(function() {
+                            if (self.$refs.searchInput) self.$refs.searchInput.focus();
+                            if (window.lucide) lucide.createIcons();
+                        });
+                    }
+                },
+
+                close() {
+                    this.open = false;
+                    this.search = '';
+                },
+
+                select(option) {
+                    this.selectedValue = option.value;
+                    this.selectedLabel = option.label;
+                    var select = this.$refs.nativeSelect;
+                    if (select) {
+                        select.value = option.value;
+                        select.dispatchEvent(new Event('change', {
+                            bubbles: true
+                        }));
+                    }
+                    this.close();
+                },
+
+                handleKeydown(e) {
+                    if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        this.highlightedIndex = Math.min(this.highlightedIndex + 1, this.filtered.length - 1);
+                        this.scrollToHighlighted();
+                    } else if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        this.highlightedIndex = Math.max(this.highlightedIndex - 1, 0);
+                        this.scrollToHighlighted();
+                    } else if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (this.highlightedIndex >= 0 && this.filtered[this.highlightedIndex]) {
+                            this.select(this.filtered[this.highlightedIndex]);
+                        }
+                    }
+                },
+
+                scrollToHighlighted() {
+                    var self = this;
+                    self.$nextTick(function() {
+                        var list = self.$refs.optionsList;
+                        if (!list) return;
+                        var highlighted = list.querySelector('.bg-blue-50');
+                        if (highlighted) highlighted.scrollIntoView({
+                            block: 'nearest'
+                        });
+                    });
+                },
+
+                refreshOptions() {
+                    var self = this;
+                    var select = self.$refs.nativeSelect;
+                    if (!select) return;
+                    self.options = [];
                     Array.from(select.options).forEach(function(opt) {
                         if (opt.value !== '') {
-                            self.options.push({ value: opt.value, label: opt.textContent.trim() });
+                            self.options.push({
+                                value: opt.value,
+                                label: opt.textContent.trim()
+                            });
                         }
                     });
-                    self.filtered = self.options.slice();
-                    if (select.value) {
-                        self.selectedValue = select.value;
-                        var found = self.options.find(function(o) { return o.value === select.value; });
-                        if (found) self.selectedLabel = found.label;
-                    }
-                }
-                self.$watch('search', function() {
                     var q = self.search.toLowerCase();
-                    self.filtered = q
-                        ? self.options.filter(function(o) { return o.label.toLowerCase().indexOf(q) !== -1; })
-                        : self.options.slice();
-                    self.highlightedIndex = -1;
+                    self.filtered = q ?
+                        self.options.filter(function(o) {
+                            return o.label.toLowerCase().indexOf(q) !== -1;
+                        }) :
+                        self.options.slice();
+                    self.selectedValue = select.value;
+                    var found = self.options.find(function(o) {
+                        return o.value === select.value;
+                    });
+                    self.selectedLabel = found ? found.label : '';
                     self.$nextTick(function() {
                         if (window.lucide) lucide.createIcons();
                     });
-                });
-            },
-
-            toggle() {
-                this.open = !this.open;
-                if (this.open) {
-                    this.search = '';
-                    this.filtered = this.options.slice();
-                    this.highlightedIndex = -1;
-                    var self = this;
-                    this.$nextTick(function() {
-                        if (self.$refs.searchInput) self.$refs.searchInput.focus();
-                        if (window.lucide) lucide.createIcons();
-                    });
                 }
-            },
-
-            close() {
-                this.open = false;
-                this.search = '';
-            },
-
-            select(option) {
-                this.selectedValue = option.value;
-                this.selectedLabel = option.label;
-                var select = this.$refs.nativeSelect;
-                if (select) {
-                    select.value = option.value;
-                    select.dispatchEvent(new Event('change', { bubbles: true }));
-                }
-                this.close();
-            },
-
-            handleKeydown(e) {
-                if (e.key === 'ArrowDown') {
-                    e.preventDefault();
-                    this.highlightedIndex = Math.min(this.highlightedIndex + 1, this.filtered.length - 1);
-                    this.scrollToHighlighted();
-                } else if (e.key === 'ArrowUp') {
-                    e.preventDefault();
-                    this.highlightedIndex = Math.max(this.highlightedIndex - 1, 0);
-                    this.scrollToHighlighted();
-                } else if (e.key === 'Enter') {
-                    e.preventDefault();
-                    if (this.highlightedIndex >= 0 && this.filtered[this.highlightedIndex]) {
-                        this.select(this.filtered[this.highlightedIndex]);
-                    }
-                }
-            },
-
-            scrollToHighlighted() {
-                var self = this;
-                self.$nextTick(function() {
-                    var list = self.$refs.optionsList;
-                    if (!list) return;
-                    var highlighted = list.querySelector('.bg-blue-50');
-                    if (highlighted) highlighted.scrollIntoView({ block: 'nearest' });
-                });
-            },
-
-            refreshOptions() {
-                var self = this;
-                var select = self.$refs.nativeSelect;
-                if (!select) return;
-                self.options = [];
-                Array.from(select.options).forEach(function(opt) {
-                    if (opt.value !== '') {
-                        self.options.push({ value: opt.value, label: opt.textContent.trim() });
-                    }
-                });
-                var q = self.search.toLowerCase();
-                self.filtered = q
-                    ? self.options.filter(function(o) { return o.label.toLowerCase().indexOf(q) !== -1; })
-                    : self.options.slice();
-                self.selectedValue = select.value;
-                var found = self.options.find(function(o) { return o.value === select.value; });
-                self.selectedLabel = found ? found.label : '';
-                self.$nextTick(function() {
-                    if (window.lucide) lucide.createIcons();
-                });
-            }
-        };
-    }
+            };
+        }
     </script>
 
     <script>
@@ -188,46 +206,50 @@
     <x-admin.alert />
 
     <script>
-    (function(){
-        function pollAdminBadge(){
-            fetch('/api/realtime/admin', { credentials: 'same-origin' })
-                .then(function(r){ return r.json(); })
-                .then(function(data){
-                    var badgeEl = document.getElementById('adminWfhBadge');
-                    var total = (data.pending_wfh || 0) + (data.pending_laporan || 0);
-                    if(badgeEl){
-                        if(total > 0){
-                            badgeEl.textContent = total;
-                            badgeEl.style.display = 'inline-flex';
-                        } else {
-                            badgeEl.style.display = 'none';
+        (function() {
+            function pollAdminBadge() {
+                fetch('/api/realtime/admin', {
+                        credentials: 'same-origin'
+                    })
+                    .then(function(r) {
+                        return r.json();
+                    })
+                    .then(function(data) {
+                        var badgeEl = document.getElementById('adminWfhBadge');
+                        var total = (data.pending_wfh || 0) + (data.pending_laporan || 0);
+                        if (badgeEl) {
+                            if (total > 0) {
+                                badgeEl.textContent = total;
+                                badgeEl.style.display = 'inline-flex';
+                            } else {
+                                badgeEl.style.display = 'none';
+                            }
                         }
-                    }
-                    var badgeLembur = document.getElementById('adminLemburBadge');
-                    var totalLembur = (data.pending_lembur || 0) + (data.pending_laporan_lembur || 0);
-                    if(badgeLembur){
-                        if(totalLembur > 0){
-                            badgeLembur.textContent = totalLembur;
-                            badgeLembur.style.display = 'inline-flex';
-                        } else {
-                            badgeLembur.style.display = 'none';
+                        var badgeLembur = document.getElementById('adminLemburBadge');
+                        var totalLembur = (data.pending_lembur || 0) + (data.pending_laporan_lembur || 0);
+                        if (badgeLembur) {
+                            if (totalLembur > 0) {
+                                badgeLembur.textContent = totalLembur;
+                                badgeLembur.style.display = 'inline-flex';
+                            } else {
+                                badgeLembur.style.display = 'none';
+                            }
                         }
-                    }
-                    var badgeIzin = document.getElementById('adminIzinBadge');
-                    var totalIzin = data.pending_izin || 0;
-                    if(badgeIzin){
-                        if(totalIzin > 0){
-                            badgeIzin.textContent = totalIzin;
-                            badgeIzin.style.display = 'inline-flex';
-                        } else {
-                            badgeIzin.style.display = 'none';
+                        var badgeIzin = document.getElementById('adminIzinBadge');
+                        var totalIzin = data.pending_izin || 0;
+                        if (badgeIzin) {
+                            if (totalIzin > 0) {
+                                badgeIzin.textContent = totalIzin;
+                                badgeIzin.style.display = 'inline-flex';
+                            } else {
+                                badgeIzin.style.display = 'none';
+                            }
                         }
-                    }
-                }).catch(function(){});
-        }
-        pollAdminBadge();
-        setInterval(pollAdminBadge, 5000);
-    })();
+                    }).catch(function() {});
+            }
+            pollAdminBadge();
+            setInterval(pollAdminBadge, 5000);
+        })();
     </script>
 
     @stack('myscript')

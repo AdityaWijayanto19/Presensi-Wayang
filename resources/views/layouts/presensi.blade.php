@@ -18,7 +18,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="WAG-Presensi">
 
-    <meta name="theme-color" content="#7A5234">
+    <meta name="theme-color" content="#51321D">
     <meta name="description" content="WAG Presensi Digital">
 
     <title>WAG - Presensi Digital</title>
@@ -415,7 +415,7 @@
 
 </head>
 
-<body class="bg-[#e9ecef]">
+<body class="bg-[#e9ecef] pt-[env(safe-area-inset-top)]">
 
     <style>
         :root {
